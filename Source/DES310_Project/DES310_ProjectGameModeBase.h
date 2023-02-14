@@ -14,4 +14,9 @@ class DES310_PROJECT_API ADES310_ProjectGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 	
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Classes)
+	TSubclassOf< class APawn> PlayerPawnClass;
+	ADES310_ProjectGameModeBase();
+
 };
