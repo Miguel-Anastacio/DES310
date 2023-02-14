@@ -1,11 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-#include "SpacehipCharacter.h"
+
+
+#include "SpaceshipCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-//#include "InventoryComponent.h"
-//#include "RandomEventsComponent.h"
+#include "InventoryComponent.h"
+#include "RandomEventsComponent.h"
 
 // Sets default values
 ASpaceshipCharacter::ASpaceshipCharacter()
@@ -13,7 +15,7 @@ ASpaceshipCharacter::ASpaceshipCharacter()
 	// Set size for player capsule
 	GetCapsuleComponent()->InitCapsuleSize(84.f, 96.0f);
 
-	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+ 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	// Don't rotate character to camera direction
@@ -45,11 +47,11 @@ ASpaceshipCharacter::ASpaceshipCharacter()
 	TriggerBox->SetupAttachment(GetMesh());
 
 	// create player inventory
-	//PlayerInventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
+	PlayerInventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
 	GetCharacterMovement()->GravityScale = 0.0f;
 
 	// create component that handles events
-	//EventsComponent = CreateDefaultSubobject<URandomEventsComponent>(TEXT("Random Events"));
+	EventsComponent = CreateDefaultSubobject<URandomEventsComponent>(TEXT("Random Events"));
 }
 
 // Called when the game starts or when spawned
@@ -71,15 +73,14 @@ void ASpaceshipCharacter::BeginPlay()
 void ASpaceshipCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	//UGameEvents* event = nullptr;
+	UGameEvents* event = nullptr;
 	switch (State)
 	{
 	case MOVING:
 		MoveTowards(TargetLocation);
-		/*
 		// here it would get the chance of an event along this route instead of just a magic number
 		TimePassedSinceLastEventTick += DeltaTime;
-		if (TimePassedSinceLastEventTick > GameplayEventTick)
+		if(TimePassedSinceLastEventTick > GameplayEventTick)
 		{
 			TimePassedSinceLastEventTick = 0.0f;
 			event = EventsComponent->RollForEvent(20);
@@ -88,7 +89,7 @@ void ASpaceshipCharacter::Tick(float DeltaTime)
 				GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, event->Name);
 				State = IDLE;
 			}
-		}*/
+		}
 		break;
 	case FIGHTING:
 		break;

@@ -6,9 +6,12 @@
 #include "GameFramework/Character.h"
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
-//#include "InventoryComponent.h"
+#include "InventoryComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "SpacehipCharacter.generated.h"
+#include "SpaceshipCharacter.generated.h"
+
+class UInventoryComponent;
+class URandomEventsComponent;
 
 UENUM(BlueprintType)
 enum PlayerCurrentState
@@ -19,63 +22,61 @@ enum PlayerCurrentState
 	ON_PLANET UMETA(DisplayName = 'ON_PLANET')
 };
 
-class UInventoryComponent;
-class URandomEventsComponent;
-
 UCLASS()
 class DES310_PROJECT_API ASpaceshipCharacter : public ACharacter
 {
 	GENERATED_BODY()
-		UPROPERTY(VisibleAnywhere, Category = Camera)
-		UCameraComponent* TopDownCamera;
+
+
+public:
+	UPROPERTY(VisibleAnywhere, Category = Camera)
+	UCameraComponent* TopDownCamera;
 
 	UPROPERTY(EditAnywhere, Category = Camera)
-		USpringArmComponent* CameraBoom;
+	USpringArmComponent* CameraBoom;
 
 	// for some reason the default capsule component does not work
 	UPROPERTY(VisibleAnywhere, Category = "Trigger Box")
-		UBoxComponent* TriggerBox;
-
+	UBoxComponent* TriggerBox;
+	
 	// variable to store a reference to the player controller
 	// prevents casting every time we need to use it
 	UPROPERTY()
-		APlayerController* PlayerController;
-
-	/*
-	UPROPERTY(VisibleAnywhere)
-		UInventoryComponent* PlayerInventoryComponent;
+	APlayerController* PlayerController;
 
 	UPROPERTY(VisibleAnywhere)
-		URandomEventsComponent* EventsComponent;*/
+	UInventoryComponent* PlayerInventoryComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	URandomEventsComponent* EventsComponent;
 
 	// designer can set the frequency of the roll for event
 	UPROPERTY(EditAnywhere)
-		float GameplayEventTick = 3.0f;
+	float GameplayEventTick = 3.0f;
 
 	// Sets default values for this character's properties
 	ASpaceshipCharacter();
 
-	UFUNCTION(BlueprintCallable)
-		PlayerCurrentState GetPlayerStatus() {
+	UFUNCTION(BlueprintCallable)	
+	PlayerCurrentState GetPlayerStatus() {
 		return State;
 	};
 
 	UFUNCTION(BlueprintCallable)
-		void SetPlayerStatus(PlayerCurrentState newState) {
+	void SetPlayerStatus(PlayerCurrentState newState) {
 		State = newState;
 	};
 
 
-	/*
 	UFUNCTION(BlueprintCallable)
-		UInventoryComponent* GetPlayerInventory() {
+	UInventoryComponent* GetPlayerInventory() {
 		return PlayerInventoryComponent;
 	}
 
 	UFUNCTION(BlueprintCallable)
 		URandomEventsComponent* GetEventsComponent() {
 		return EventsComponent;
-	}*/
+	}
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -84,8 +85,8 @@ class DES310_PROJECT_API ASpaceshipCharacter : public ACharacter
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION()
-		void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp,
-			int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp,
+						int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	// change camera 
 	void MoveCameraTo(AActor* Actors);
@@ -106,5 +107,4 @@ protected:
 	virtual void BeginPlay() override;
 
 	void MouseClick();
-
 };
