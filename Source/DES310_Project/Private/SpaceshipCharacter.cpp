@@ -10,6 +10,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "InventoryComponent.h"
 #include "RandomEventsComponent.h"
+#include "Planet.h"
 
 // Sets default values
 ASpaceshipCharacter::ASpaceshipCharacter()
@@ -89,7 +90,7 @@ void ASpaceshipCharacter::Tick(float DeltaTime)
 			if (event)
 			{
 				GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, event->Name);
-				State = IDLE;
+				State = ON_PLANET;
 			}
 		}
 		break;
@@ -139,8 +140,36 @@ void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 	{
 		State = ON_PLANET;
 		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("Reached Planet"));
+		CurrentPlanet = Cast<APlanet>(OtherActor);
+
+		// test if we ended a quest
+		// compare current planet to target from quest
+		if (ActiveQuest)
+		{
+			APlanet* Target = ActiveQuest->Target.GetDefaultObject();
+			if (Target)
+			{
+				if (Target->Name == CurrentPlanet->Name)
+				{
+					// quest completed
+					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Quest Completed"));
+					ActiveQuest = nullptr;
+				}
+			}
+		}
+		EventsComponent->SetEventHasFiredOnThisRoute(false);
+		
 	}
 }
+
+
+void ASpaceshipCharacter::StartQuest(UQuest* QuestStarted)
+{
+	ActiveQuest = QuestStarted;
+	State = IDLE;
+	MoveCameraTo(this);
+}
+
 
 void ASpaceshipCharacter::MoveCameraTo(AActor* Actor)
 {
