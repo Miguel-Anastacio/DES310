@@ -1,5 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
+/*
+	Author: MIGUEL ANASTACIO 15/02/2023
+*/
 
 #include "SpaceshipCharacter.h"
 #include "Components/CapsuleComponent.h"
@@ -110,7 +112,7 @@ void ASpaceshipCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	// bind action
-	PlayerInputComponent->BindAction("Move", IE_Pressed, this, &ASpaceshipCharacter::MouseClick);
+	PlayerInputComponent->BindAction("Mouse Click", IE_Pressed, this, &ASpaceshipCharacter::MouseClick);
 }
 
 void ASpaceshipCharacter::MouseClick()
