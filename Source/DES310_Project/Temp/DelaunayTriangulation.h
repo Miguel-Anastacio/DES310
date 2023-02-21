@@ -12,7 +12,7 @@
 /**
  * 
  */
-class DES310_PROFPROJECT_API DelaunayTriangulation
+class DES310_PROJECT_API DelaunayTriangulation
 {
 public:
 	DelaunayTriangulation();

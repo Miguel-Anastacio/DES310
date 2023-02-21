@@ -10,7 +10,7 @@
 /**
  * 
  */
-class DES310_PROFPROJECT_API BaseState
+class DES310_PROJECT_API BaseState
 {
 public:
 	BaseState();

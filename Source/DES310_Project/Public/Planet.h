@@ -27,6 +27,9 @@ public:
 	USceneComponent* DummyRoot;
 
 	UPROPERTY(EditAnywhere, Category = Camera)
+	USpringArmComponent* CameraBoom;
+
+	UPROPERTY(EditAnywhere, Category = Camera)
 	UCameraComponent* FocusPlanetCamera;
 
 	/** Static Mesh Comp, Set In BP Default Properties */

@@ -10,7 +10,7 @@
 /**
  * 
  */
-class DES310_PROFPROJECT_API  Triangle
+class DES310_PROJECT_API  Triangle
 {
 public:
 	Triangle();

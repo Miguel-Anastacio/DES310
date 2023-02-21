@@ -12,7 +12,7 @@
 /**
  * 
  */
-class DES310_PROFPROJECT_API FightingState: public BaseState 
+class DES310_PROJECT_API FightingState: public BaseState
 {
 public:
 	FightingState();

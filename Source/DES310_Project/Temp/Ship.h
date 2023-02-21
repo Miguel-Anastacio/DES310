@@ -11,7 +11,7 @@
 #include "Ship.generated.h"
 
 UCLASS()
-class DES310_PROFPROJECT_API AShip : public ACharacter
+class DES310_PROJECT_API AShip : public ACharacter
 {
 	GENERATED_BODY()
 

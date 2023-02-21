@@ -12,7 +12,7 @@
 /**
  * 
  */
-class DES310_PROFPROJECT_API OrbitingState : public BaseState 
+class DES310_PROJECT_API OrbitingState : public BaseState
 {
 public:
 	OrbitingState();

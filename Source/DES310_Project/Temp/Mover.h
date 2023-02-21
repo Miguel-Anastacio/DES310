@@ -11,7 +11,7 @@
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class DES310_PROFPROJECT_API UMover : public UActorComponent
+class DES310_PROJECT_API UMover : public UActorComponent
 {
 	GENERATED_BODY()
 

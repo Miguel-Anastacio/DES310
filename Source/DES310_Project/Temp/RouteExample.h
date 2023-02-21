@@ -20,15 +20,16 @@
 #include "MovingState.h"
 #include "SelectingState.h"
 #include "OrbitingState.h"
+#include "RandomEventsComponent.h"
 #include "RouteExample.generated.h"
-
 
 enum PlayerStates
 {
 	Moving = 0,
 	Orbiting,
 	Selecting,
-	Fighting
+	Fighting,
+	Event
 };
 
 struct PathData
@@ -37,10 +38,11 @@ struct PathData
 	TArray<APlanet*> Stops;
 	int Index = 0;
 	int Max = 0; // Could probably just use Stops.Num
+	int EventChance = 10;
 };
 
 UCLASS()
-class DES310_PROFPROJECT_API ARouteExample : public AActor
+class DES310_PROJECT_API ARouteExample : public AActor
 {
 	GENERATED_BODY()
 	
@@ -68,6 +70,10 @@ public:
 	OrbitingState* OrbitingState;
 	MovingState* MovingState;
 
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	URandomEventsComponent* EventsComponent;
+
 	
 	//States for now will be do with just if statements but could possibly be deligated to their own classes
 	bool MoveAlongPath(PathData& PathData, float DeltaTime); 
@@ -93,7 +99,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = Camera)
 	USpringArmComponent* CameraBoom;
 
-	TArray<UCameraComponent*> PlanetCameras;
 
 	UPROPERTY(EditAnywhere, Category = Camera)
 	float CameraTransitionSpeed = 5;
@@ -111,7 +116,7 @@ public:
 		float SmoothFactor = 1;
 	
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class APlanet> PlanetBP;
+	TArray<TSubclassOf<class APlanet>> PlanetBP;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class APath> PathBP;

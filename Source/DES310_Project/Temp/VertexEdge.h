@@ -10,7 +10,7 @@
 /**
  * 
  */
-class DES310_PROFPROJECT_API VertexEdge
+class DES310_PROJECT_API VertexEdge
 {
 public:
 	VertexEdge();

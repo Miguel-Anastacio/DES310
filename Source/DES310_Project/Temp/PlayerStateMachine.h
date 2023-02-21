@@ -10,7 +10,7 @@
 /**
  * 
  */
-class DES310_PROFPROJECT_API PlayerStateMachine
+class DES310_PROJECT_API PlayerStateMachine
 {
 public:
 	PlayerStateMachine();

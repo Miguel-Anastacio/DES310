@@ -11,7 +11,7 @@
 /**
  * 
  */
-class DES310_PROFPROJECT_API  AStar
+class DES310_PROJECT_API  AStar
 {
 public:
 	AStar();

@@ -10,7 +10,7 @@
 #include "Path.generated.h"
 
 UCLASS()
-class DES310_PROFPROJECT_API APath : public AActor
+class DES310_PROJECT_API APath : public AActor
 {
 	GENERATED_BODY()
 	

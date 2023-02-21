@@ -19,17 +19,28 @@ APlanet::APlanet()
 	SphereCollisionComponent->SetGenerateOverlapEvents(true);
 
 	PlanetMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Planet Mesh"));
+	PlanetMeshComponent->SetWorldLocation(FVector(0, 0, 0));
 	if (PlanetMeshComponent)
 		PlanetMeshComponent->SetupAttachment(RootComponent);
-
-	FocusPlanetCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Planet Camera"));
-	FocusPlanetCamera->SetupAttachment(RootComponent);
-	FocusPlanetCamera->bUsePawnControlRotation = false;
 
 	Tags.Add(TEXT("Planet"));
 
 	RotationPerFrame = FRotator(0.0, 0.0, 2.0f);
 	
+
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+	CameraBoom->SetupAttachment(RootComponent);
+	CameraBoom->SetUsingAbsoluteRotation(true); // Don't want arm to rotate when character does
+	CameraBoom->SetUsingAbsoluteScale(false);
+	CameraBoom->TargetArmLength = 3000.f;
+	CameraBoom->bDoCollisionTest = false; // Don't want to pull camera in when it collides with level
+	CameraBoom->SetWorldRotation(FRotator(FMath::RandRange(300, 360), FMath::RandRange(0, 360), 0));
+
+
+
+	FocusPlanetCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Planet Camera"));
+	FocusPlanetCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	FocusPlanetCamera->bUsePawnControlRotation = false;
 
 }
 

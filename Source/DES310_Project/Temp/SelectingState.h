@@ -13,7 +13,7 @@
 /**
  * 
  */
-class DES310_PROFPROJECT_API SelectingState : public BaseState 
+class DES310_PROJECT_API SelectingState : public BaseState
 {
 public:
 	SelectingState();

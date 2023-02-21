@@ -11,7 +11,7 @@
 /**
  * 
  */
-class DES310_PROFPROJECT_API PoissonDiscSampling
+class DES310_PROJECT_API PoissonDiscSampling
 {
 public:
 	PoissonDiscSampling();

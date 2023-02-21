@@ -12,7 +12,7 @@
 /**
  * 
  */
-class DES310_PROFPROJECT_API MovingState: public BaseState 
+class DES310_PROJECT_API MovingState: public BaseState
 {
 public:
 	MovingState();

@@ -7,7 +7,7 @@
 #include "RouteExample.h"
 
 #include "Kismet/KismetMathLibrary.h"
-#include "TP_ThirdPerson/TP_ThirdPersonCharacter.h"
+#include "SpaceshipCharacter.h"
 
 
 // Sets default values
@@ -93,11 +93,15 @@ void ARouteExample::Tick(float DeltaTime)
 
 	switch  (PlayerState)
 	{
-	case PlayerStates::Moving:MoveAlongPath(RouteData,DeltaTime);;
+	case PlayerStates::Moving:
+		MoveAlongPath(RouteData,DeltaTime);
+		EventsComponent->RollForEvent(RouteData.EventChance);
 		break;
 	case PlayerStates::Orbiting: OrbitPlanet(RouteData,DeltaTime);
 		break;
 	case PlayerStates::Selecting: SelectPath();
+		break;
+	case PlayerStates::Event: 
 		break;
 	}
 	
@@ -122,14 +126,18 @@ APath* ARouteExample::CreateBasicCube(FTransform transform)
 
 APlanet*  ARouteExample::CreateBasicSphere(FTransform transform)
 {
+	
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	/*
+	APlanet* MyNewActor = GetWorld()->SpawnActor<APlanet>(PlanetBP,transform,SpawnParam);*/
 
-	FActorSpawnParameters SpawnParam;
-	SpawnParam.Owner = this;
+	int randomNumber = 0;
+	APlanet* APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[FMath::RandRange(0, PlanetBP.Num() - 1)], transform, SpawnParams);
+
+	APlanetActor->AttachToComponent(GetRootComponent(),FAttachmentTransformRules::KeepWorldTransform);
 	
-	APlanet* MyNewActor = GetWorld()->SpawnActor<APlanet>(PlanetBP,transform,SpawnParam);
-	MyNewActor->AttachToComponent(GetRootComponent(),FAttachmentTransformRules::KeepWorldTransform);
-	
-	return MyNewActor;
+	return APlanetActor;
 }
 
 TArray<FVector2D> ARouteExample::SmoothLine(TArray<FVector2D>& vect)
@@ -167,6 +175,27 @@ void ARouteExample::Generate()
 {
 	Path1.Empty();
 	Path2.Empty();
+	Path3.Empty();
+
+	for (auto& Planet : Planets)
+	{
+		Planet->Destroy();
+	}
+
+	for (auto& Cube : CubePath1)
+	{
+		Cube->Destroy();
+	}
+
+	for (auto& Cube : CubePath2)
+	{
+		Cube->Destroy();
+	}
+	for (auto& Cube : CubePath3)
+	{
+		Cube->Destroy();
+	}
+
 	
 	if (GetWorld())
 		FlushPersistentDebugLines(GetWorld());
@@ -377,22 +406,6 @@ void ARouteExample::Generate()
 		SpawnTransfrom.SetLocation(FVector(1,checkPoint.X- Dimensions.X/2,checkPoint.Y- Dimensions.Y/2));
 		Planets.Add(CreateBasicSphere(SpawnTransfrom * WorldLocation));
 	}
-	else
-	{
-
-		SpawnTransfrom.SetRotation(FQuat4d(0,0,0,1.f));
-		SpawnTransfrom.SetScale3D(FVector(0.5,0.5,0.5));
-		SpawnTransfrom.SetLocation(FVector(1,astar.begin.position.X- Dimensions.X/2,astar.begin.position.Y- Dimensions.Y/2));
-		
-		Planets[0]->SetActorTransform(SpawnTransfrom * WorldLocation);
-		Planets[0]->SetRandomMesh();
-		SpawnTransfrom.SetLocation(FVector(1,astar.end.position.X- Dimensions.X/2,astar.end.position.Y- Dimensions.Y/2));
-		Planets[1]->SetActorTransform(SpawnTransfrom * WorldLocation);
-		Planets[1]->SetRandomMesh();
-		SpawnTransfrom.SetLocation(FVector(1,checkPoint.X- Dimensions.X/2,checkPoint.Y- Dimensions.Y/2));
-		Planets[2]->SetActorTransform(SpawnTransfrom * WorldLocation);
-		Planets[2]->SetRandomMesh();
-	}
 
 	SpawnTransfrom *= WorldLocation;
 	
@@ -435,12 +448,7 @@ void ARouteExample::Generate()
 	player->ProjectWorldLocationToScreen(AveragePathPosition1,AveragePathPosition12D);
 	player->ProjectWorldLocationToScreen(AveragePathPosition2,AveragePathPosition22D);
 	
-	
-	//TODO no longer Needed so remove this later
-	for(auto planet : Planets)
-	{
-		PlanetCameras.Add(planet->Camera);
-	}
+
 	
 	//bool longPath = false;
 	//
@@ -667,7 +675,7 @@ void ARouteExample::SelectPath()
 		WhichPath = true;
 	}
 
-	ATP_ThirdPersonCharacter* Charac = Cast<ATP_ThirdPersonCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(),0));
+	ASpaceshipCharacter* Charac = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(),0));
 	Charac->Selected;
 	
 	if(	Charac->Selected) // TODO should be replaced with mouse click instead of a random timer

@@ -80,9 +80,10 @@ void ASpaceshipCharacter::Tick(float DeltaTime)
 	switch (State)
 	{
 	case MOVING:
-		MoveTowards(TargetLocation);
+		//MoveTowards(TargetLocation);
 		// here it would get the chance of an event along this route instead of just a magic number
 		TimePassedSinceLastEventTick += DeltaTime;
+		/*
 		if(TimePassedSinceLastEventTick > GameplayEventTick)
 		{
 			TimePassedSinceLastEventTick = 0.0f;
@@ -92,7 +93,7 @@ void ASpaceshipCharacter::Tick(float DeltaTime)
 				GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, event->Name);
 				State = ON_PLANET;
 			}
-		}
+		}*/
 		break;
 	case FIGHTING:
 		break;
@@ -130,6 +131,8 @@ void ASpaceshipCharacter::MouseClick()
 			}
 		}
 	}
+
+	Selected = true;
 
 }
 
@@ -173,10 +176,11 @@ void ASpaceshipCharacter::StartQuest(UQuest* QuestStarted)
 
 void ASpaceshipCharacter::MoveCameraTo(AActor* Actor)
 {
+	/*
 	struct FViewTargetTransitionParams TransitionParams;
 	TransitionParams.bLockOutgoing = true;
-	TransitionParams.BlendTime = 0.2f;
-	PlayerController->SetViewTarget(Actor, TransitionParams);
+	TransitionParams.BlendTime = 1.0f;
+	PlayerController->SetViewTarget(Actor, TransitionParams);*/
 }
 
 void ASpaceshipCharacter::MoveTowards(FVector Target)

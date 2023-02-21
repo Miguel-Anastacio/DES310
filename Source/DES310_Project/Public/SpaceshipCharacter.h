@@ -34,6 +34,10 @@ class DES310_PROJECT_API ASpaceshipCharacter : public ACharacter
 
 
 public:
+
+	bool Selected = false;
+
+
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	UCameraComponent* TopDownCamera;
 

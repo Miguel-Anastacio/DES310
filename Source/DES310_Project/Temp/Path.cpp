@@ -4,7 +4,6 @@
 //
 
 #include "Path.h"
-
 // Sets default values
 APath::APath()
 {

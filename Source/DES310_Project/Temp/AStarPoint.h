@@ -10,7 +10,7 @@
 /**
  * 
  */
-class DES310_PROFPROJECT_API  AStarPoint
+class DES310_PROJECT_API  AStarPoint
 {
 public:
 	AStarPoint();

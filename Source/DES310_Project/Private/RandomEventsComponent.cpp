@@ -4,7 +4,6 @@
 */
 
 #include "RandomEventsComponent.h"
-#include "SpaceshipCharacter.h"
 
 // Sets default values for this component's properties
 URandomEventsComponent::URandomEventsComponent()
@@ -103,14 +102,14 @@ void URandomEventsComponent::ConvertDataAssets()
 
 void URandomEventsComponent::HandleEvent(UEventOption* OptionPicked)
 {
-	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(GetOwner());
+	//ARouteExample* player = Cast<ARouteExample>(GetOwner());
 	EventIsDisplayed = false;
 	CurrentEvent = nullptr;
-	player->SetPlayerStatus(IDLE);
+	//player->SetPlayerStatus(IDLE);
 	// depnding on the effects of the option
 	// change the players stats 
-	if(player)
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Handling Event"));
+	//if(player)
+		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Handling Event"));
 	
 	if(OptionPicked)
 		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, OptionPicked->Description.ToString());

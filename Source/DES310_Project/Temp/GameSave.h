@@ -13,7 +13,7 @@
  * 
  */
 UCLASS()
-class DES310_PROFPROJECT_API UGameSave : public USaveGame
+class DES310_PROJECT_API UGameSave : public USaveGame
 {
 	GENERATED_BODY()
 	
