@@ -54,6 +54,10 @@ ARouteExample::ARouteExample()
 	CameraBoom->SetWorldRotation(FRotator(-90, 180, 0));
 
 	PlayerState = PlayerStates::Selecting;
+
+
+	// create event component
+	EventsComponent = CreateDefaultSubobject<URandomEventsComponent>(TEXT("Events Component"));
 	
 }
 
