@@ -16,8 +16,13 @@ class DES310_PROJECT_API URandomEventsComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Database)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Database)
 	URandomEventsData* EventsDatabase;
+
+	UPROPERTY(EditAnywhere)
+		float GameplayEventTick = 1.0f;
+	float EventTimer = 0.0f;
+
 
 	UPROPERTY(VisibleAnywhere)
 	TArray<UGameEvents*> EventsList;
