@@ -10,6 +10,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/SphereComponent.h"
 #include "Vendor.h"
+#include "Quest.h"
 #include "Planet.generated.h"
 
 
@@ -19,6 +20,9 @@ class DES310_PROJECT_API APlanet : public AActor
 	GENERATED_BODY()
 	
 public:	
+	UPROPERTY(EditAnywhere)
+	FString Name = "Planet";
+
 	UPROPERTY(EditAnywhere)
 	USceneComponent* DummyRoot;
 
@@ -35,10 +39,18 @@ public:
 	USphereComponent* SphereCollisionComponent;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AVendor> Vendor = AVendor::StaticClass();
+	TSubclassOf<class AVendor> Vendor;
 	// store casted actor from blueprint
 	UPROPERTY(VisibleAnywhere)
 	AVendor* VendorActor = nullptr;
+
+	// temporary 
+	// quests will have to be created at runtime
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UQuest> QuestTemplate;
+	UQuest* Quest;
+
+
 
 	// keeps track if player is in this planet
 	bool CurrentPlanet = false;
@@ -46,13 +58,12 @@ public:
 	APlanet();
 
 	UFUNCTION(BlueprintCallable)
-		bool IsCurrentPlanet() {
-		return CurrentPlanet;
-	};
-
+	bool IsCurrentPlanet() { return CurrentPlanet; };
 	UFUNCTION(BlueprintCallable)
 	AVendor* GetVendor() { return VendorActor; };
 
+	UFUNCTION(BlueprintCallable)
+	UQuest* GetQuest() { return Quest; };
 
 
 	UFUNCTION()
