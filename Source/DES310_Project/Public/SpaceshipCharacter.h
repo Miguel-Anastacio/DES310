@@ -56,8 +56,6 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	UInventoryComponent* PlayerInventoryComponent;
 
-	UPROPERTY(VisibleAnywhere)
-	URandomEventsComponent* EventsComponent;
 
 	// designer can set the frequency of the roll for event
 	UPROPERTY(EditAnywhere)
@@ -67,7 +65,7 @@ public:
 	APlanet* CurrentPlanet; 
 
 	UPROPERTY(BlueprintReadWrite)
-	UQuest* ActiveQuest;
+	UQuest* ActiveQuest = nullptr;
 
 	// Sets default values for this character's properties
 	ASpaceshipCharacter();
@@ -88,10 +86,7 @@ public:
 		return PlayerInventoryComponent;
 	}
 
-	UFUNCTION(BlueprintCallable)
-	URandomEventsComponent* GetEventsComponent() {
-		return EventsComponent;
-	}
+
 
 	UFUNCTION(BlueprintCallable)
 	void StartQuest(UQuest* QuestStarted);

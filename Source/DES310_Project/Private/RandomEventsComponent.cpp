@@ -4,13 +4,14 @@
 */
 
 #include "RandomEventsComponent.h"
+#include "RouteExample.h"
 
 // Sets default values for this component's properties
 URandomEventsComponent::URandomEventsComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 	EventsDatabase = CreateDefaultSubobject<URandomEventsData>("Events Database");
 	// ...
 }
@@ -27,6 +28,8 @@ UGameEvents* URandomEventsComponent::RollForEvent(int32 ChanceOfEventInThisRoute
 			int32 indexOfEvent = FMath::RandRange(0, EventsList.Num() - 1);
 			EventHasFiredOnThisRoute = true;
 			CurrentEvent = EventsList[indexOfEvent];
+			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Rolled Event"));
+
 			return EventsList[indexOfEvent];
 		}
 	}
@@ -102,14 +105,14 @@ void URandomEventsComponent::ConvertDataAssets()
 
 void URandomEventsComponent::HandleEvent(UEventOption* OptionPicked)
 {
-	//ARouteExample* player = Cast<ARouteExample>(GetOwner());
+	ARouteExample* route = Cast<ARouteExample>(GetOwner());
 	EventIsDisplayed = false;
 	CurrentEvent = nullptr;
-	//player->SetPlayerStatus(IDLE);
+	route->PlayerState = Moving;
 	// depnding on the effects of the option
 	// change the players stats 
-	//if(player)
-		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Handling Event"));
+	if(route)
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Handling Event"));
 	
 	if(OptionPicked)
 		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, OptionPicked->Description.ToString());

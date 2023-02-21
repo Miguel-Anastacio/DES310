@@ -52,9 +52,6 @@ ASpaceshipCharacter::ASpaceshipCharacter()
 	// create player inventory
 	PlayerInventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
 	GetCharacterMovement()->GravityScale = 0.0f;
-
-	// create component that handles events
-	EventsComponent = CreateDefaultSubobject<URandomEventsComponent>(TEXT("Random Events"));
 }
 
 // Called when the game starts or when spawned
@@ -160,7 +157,6 @@ void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 				}
 			}
 		}
-		EventsComponent->SetEventHasFiredOnThisRoute(false);
 		
 	}
 }

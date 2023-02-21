@@ -68,12 +68,13 @@ void ARouteExample::BeginPlay()
 	Generate();
 	randomSpinRate = FMath::RandRange(1,100);
 	//auto temp = CreateBasicCube(FVector(0,0,10),FRotator());
-
+	PlayerState = Selecting;
 	UGameplayStatics::GetPlayerController(GetWorld(),0)->SetViewTargetWithBlend(this,CameraTransitionSpeed,EViewTargetBlendFunction::VTBlend_Linear);
 	PlayerController = UGameplayStatics::GetPlayerController(GetWorld(),0);
 	PlayerController->SetShowMouseCursor(true);
 
 	CameraBoom->TargetArmLength = CameraDistance * this->GetActorScale().Length(); // TODO change to use Highest x/y/z instead of the pythag
+
 }
 
 // Called every frame
@@ -85,7 +86,7 @@ void ARouteExample::Tick(float DeltaTime)
 	if(timer >= RouteTickRate)
 	{
 		timer = 0;
-		Generate();
+		//Generate();
 	}
 
 	cameraTimer +=  DeltaTime;
@@ -99,7 +100,8 @@ void ARouteExample::Tick(float DeltaTime)
 	{
 	case PlayerStates::Moving:
 		MoveAlongPath(RouteData,DeltaTime);
-		EventsComponent->RollForEvent(RouteData.EventChance);
+		if (EventsComponent->RollForEvent(RouteData.EventChance))
+			PlayerState = Event;
 		break;
 	case PlayerStates::Orbiting: OrbitPlanet(RouteData,DeltaTime);
 		break;
@@ -529,7 +531,7 @@ bool ARouteExample::MoveAlongPath(PathData& PathData, float DeltaTime)
 	splineTimer += DeltaTime * PlayerTravelTime / SplineLength;
 	float DistanceTraveled = FMath::Lerp(SplineLength,0,splineTimer);
 	FVector PlayerPosition = PathData.Splines[PathData.Index]->GetLocationAtDistanceAlongSpline(DistanceTraveled, ESplineCoordinateSpace::Type::World);
-	FRotator PlayerRotation = PathData.Splines[PathData.Index]->GetRotationAtDistanceAlongSpline(DistanceTraveled, ESplineCoordinateSpace::Type::World);
+	FRotator PlayerRotation = PathData.Splines[PathData.Index]->GetWorldRotationAtDistanceAlongSpline(DistanceTraveled);
 	
 	UGameplayStatics::GetPlayerCharacter(GetWorld(),0)->SetActorLocation(PlayerPosition);
 	UGameplayStatics::GetPlayerCharacter(GetWorld(),0)->SetActorRotation(PlayerRotation);
@@ -548,7 +550,7 @@ void ARouteExample::OrbitPlanet(PathData& PathData, float DeltaTime)
 {
 	//TODO switch this to the statemachine and when it leaves up the index but for now, timer
 	orbitTimer += DeltaTime;
-	if(orbitTimer > 5)
+	if(orbitTimer > 1000)
 	{
 		orbitTimer = 0;
 		PathData.Index += 1;
@@ -707,4 +709,10 @@ void ARouteExample::SelectPath()
 		PlayerState = PlayerStates::Moving;
 	}
 	
+}
+
+void ARouteExample::TransitionToMap()
+{
+	PlayerController->SetViewTargetWithBlend(GetRootComponent()->GetAttachmentRootActor(), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
+	PlayerState = Selecting;
 }

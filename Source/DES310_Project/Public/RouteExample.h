@@ -23,6 +23,7 @@
 #include "RandomEventsComponent.h"
 #include "RouteExample.generated.h"
 
+UENUM(BlueprintType)
 enum PlayerStates
 {
 	Moving = 0,
@@ -80,8 +81,10 @@ public:
 	void OrbitPlanet(PathData& PathData, float DeltaTime);
 	void SelectPath();
 
-	int CameraIndex = 0;
+	UFUNCTION(BlueprintCallable)
+		void TransitionToMap();
 
+	int CameraIndex = 0;
 
 	PathData RouteData;
 	
@@ -164,6 +167,9 @@ public:
 	TArray<APlanet*> Planets;
 
 	PlayerStates PlayerState;
+
+	UFUNCTION(BlueprintCallable)
+		PlayerStates GetPlayerState() { return PlayerState; };
 	
 	float timer = 0;
 	float cameraTimer = 0;
@@ -173,4 +179,5 @@ public:
 
 	UStaticMesh* CubeMesh;
 	UStaticMesh* SphereMesh;
+
 };
