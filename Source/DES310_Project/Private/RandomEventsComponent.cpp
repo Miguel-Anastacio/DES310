@@ -104,7 +104,9 @@ void URandomEventsComponent::ConvertDataAssets()
 void URandomEventsComponent::HandleEvent(UEventOption* OptionPicked)
 {
 	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(GetOwner());
-	
+	EventIsDisplayed = false;
+	CurrentEvent = nullptr;
+	player->SetPlayerStatus(IDLE);
 	// depnding on the effects of the option
 	// change the players stats 
 	if(player)

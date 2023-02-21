@@ -51,6 +51,7 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	void SetEventHasFiredOnThisRoute(bool RouteStatus) { EventHasFiredOnThisRoute = RouteStatus; };
 
 protected:
 	

@@ -38,7 +38,6 @@ void APlanet::BeginPlay()
 {
 	Super::BeginPlay();
 	SphereCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlanet::OnOverlapBegin);
-	PlanetMeshComponent->OnComponentBeginOverlap.AddDynamic(this, &APlanet::OnOverlapBegin);
 	SphereCollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlanet::OnOverlapEnd);
 
 	FTransform SpawnTransform;
@@ -49,6 +48,16 @@ void APlanet::BeginPlay()
 	SpawnTransform.SetLocation(GetActorLocation());
 
 	VendorActor = GetWorld()->SpawnActor<AVendor>(Vendor, SpawnTransform, SpawnParams);
+
+	UObject* object = nullptr;
+	if(QuestTemplate)
+		object = QuestTemplate->GetDefaultObject();
+	else
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Error casting from template"));
+	if(object)
+		Quest = Cast<UQuest>(object);
+	else
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Error casting to object"));
 }
 
 // Called every frame

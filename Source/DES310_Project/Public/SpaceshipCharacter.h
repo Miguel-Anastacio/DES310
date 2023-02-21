@@ -10,9 +10,11 @@
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
 #include "InventoryComponent.h"
+#include "Quest.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "SpaceshipCharacter.generated.h"
 
+class APlanet;
 class UInventoryComponent;
 class URandomEventsComponent;
 
@@ -57,6 +59,12 @@ public:
 	UPROPERTY(EditAnywhere)
 	float GameplayEventTick = 3.0f;
 
+	UPROPERTY(BlueprintReadWrite)
+	APlanet* CurrentPlanet; 
+
+	UPROPERTY(BlueprintReadWrite)
+	UQuest* ActiveQuest;
+
 	// Sets default values for this character's properties
 	ASpaceshipCharacter();
 
@@ -77,9 +85,12 @@ public:
 	}
 
 	UFUNCTION(BlueprintCallable)
-		URandomEventsComponent* GetEventsComponent() {
+	URandomEventsComponent* GetEventsComponent() {
 		return EventsComponent;
 	}
+
+	UFUNCTION(BlueprintCallable)
+	void StartQuest(UQuest* QuestStarted);
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -96,7 +107,6 @@ public:
 
 	// helper function to move towards a location
 	void MoveTowards(FVector target);
-
 
 protected:
 
