@@ -11,6 +11,7 @@
 #include "InventoryComponent.h"
 #include "RandomEventsComponent.h"
 #include "Planet.h"
+#include "RouteExample.h"
 
 // Sets default values
 ASpaceshipCharacter::ASpaceshipCharacter()
@@ -74,6 +75,7 @@ void ASpaceshipCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	UGameEvents* event = nullptr;
+	/*
 	switch (State)
 	{
 	case MOVING:
@@ -90,7 +92,7 @@ void ASpaceshipCharacter::Tick(float DeltaTime)
 				GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, event->Name);
 				State = ON_PLANET;
 			}
-		}*/
+		}
 		break;
 	case FIGHTING:
 		break;
@@ -102,7 +104,7 @@ void ASpaceshipCharacter::Tick(float DeltaTime)
 		break;
 	default:
 		break;
-	}
+	}*/
 }
 
 // Called to bind functionality to input
@@ -117,6 +119,7 @@ void ASpaceshipCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 void ASpaceshipCharacter::MouseClick()
 {
 	FHitResult Hit;
+	/*
 	if (State == IDLE)
 	{
 		if (PlayerController->GetHitResultUnderCursor(ECC_Visibility, true, Hit))
@@ -127,7 +130,7 @@ void ASpaceshipCharacter::MouseClick()
 				State = MOVING;
 			}
 		}
-	}
+	}*/
 
 	Selected = true;
 
@@ -139,7 +142,7 @@ void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 	if (OtherActor->ActorHasTag(TEXT("Planet")))
 	{
 		State = ON_PLANET;
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("Reached Planet"));
+		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("Reached Planet"));
 		CurrentPlanet = Cast<APlanet>(OtherActor);
 
 		// test if we ended a quest
@@ -152,7 +155,7 @@ void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 				if (Target->Name == CurrentPlanet->Name)
 				{
 					// quest completed
-					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Quest Completed"));
+					GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("Quest Completed"));
 					ActiveQuest = nullptr;
 				}
 			}

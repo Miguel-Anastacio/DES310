@@ -16,8 +16,13 @@ class DES310_PROJECT_API URandomEventsComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Database)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Database)
 	URandomEventsData* EventsDatabase;
+
+	UPROPERTY(EditAnywhere)
+		float GameplayEventTick = 1.0f;
+	float EventTimer = 0.0f;
+
 
 	UPROPERTY(VisibleAnywhere)
 	TArray<UGameEvents*> EventsList;
@@ -46,7 +51,7 @@ public:
 
 	// returns the event that is supposed to happen
 	// returns null if no event is to happen
-	UGameEvents* RollForEvent(int32 ChanceOfEventInThisRoute);
+	UGameEvents* RollForEvent(int32 ChanceOfEventInThisRoute, float deltaTime);
 
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

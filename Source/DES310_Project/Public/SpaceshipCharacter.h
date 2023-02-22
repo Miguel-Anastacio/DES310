@@ -17,6 +17,7 @@
 class APlanet;
 class UInventoryComponent;
 class URandomEventsComponent;
+class ARouteExample;
 
 UENUM(BlueprintType)
 enum PlayerCurrentState
@@ -67,6 +68,11 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	UQuest* ActiveQuest = nullptr;
 
+
+	ARouteExample* Route = nullptr;
+
+	void SetActiveRoute(ARouteExample* currentRoute) { Route = currentRoute; };
+
 	// Sets default values for this character's properties
 	ASpaceshipCharacter();
 
@@ -85,7 +91,6 @@ public:
 	UInventoryComponent* GetPlayerInventory() {
 		return PlayerInventoryComponent;
 	}
-
 
 
 	UFUNCTION(BlueprintCallable)

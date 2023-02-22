@@ -11,28 +11,34 @@ URandomEventsComponent::URandomEventsComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 	EventsDatabase = CreateDefaultSubobject<URandomEventsData>("Events Database");
 	// ...
 }
 
-UGameEvents* URandomEventsComponent::RollForEvent(int32 ChanceOfEventInThisRoute)
+UGameEvents* URandomEventsComponent::RollForEvent(int32 ChanceOfEventInThisRoute, float deltaTime)
 {
 	// roll to see if event happens
 	// if yes then choose a random event
+	EventTimer += deltaTime;
 	float roll =  FMath::RandRange(0, 100);
 	if (EventsList.Num() > 0)
 	{
-		if (roll < ChanceOfEventInThisRoute && !EventHasFiredOnThisRoute)
+		if (EventTimer > GameplayEventTick)
 		{
-			int32 indexOfEvent = FMath::RandRange(0, EventsList.Num() - 1);
-			EventHasFiredOnThisRoute = true;
-			CurrentEvent = EventsList[indexOfEvent];
-			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Rolled Event"));
+			if (roll < ChanceOfEventInThisRoute && !EventHasFiredOnThisRoute)
+			{
+				int32 indexOfEvent = FMath::RandRange(0, EventsList.Num() - 1);
+				EventHasFiredOnThisRoute = true;
+				CurrentEvent = EventsList[indexOfEvent];
+				GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Rolled Event"));
 
-			return EventsList[indexOfEvent];
+				return EventsList[indexOfEvent];
+			}
 		}
 	}
+	else
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Empty"));
 	return nullptr;
 }
 
@@ -126,7 +132,6 @@ void URandomEventsComponent::HandleEvent(UEventOption* OptionPicked)
 void URandomEventsComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
 	// ...
 }
 
