@@ -33,6 +33,7 @@ enum PlayerStates
 	Event
 };
 
+
 struct PathData
 {
 	TArray<USplineComponent*> Splines;
@@ -41,6 +42,12 @@ struct PathData
 	int Max = 0; // Could probably just use Stops.Num
 	int EventChance = 10;
 };
+
+
+// binding an event th when the state of the game changes
+// this is the delegate
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTestDelegate);
+
 
 UCLASS()
 class DES310_PROJECT_API ARouteExample : public AActor
@@ -179,5 +186,11 @@ public:
 
 	UStaticMesh* CubeMesh;
 	UStaticMesh* SphereMesh;
+
+	void SwapToOrbiting();
+
+	UPROPERTY(BlueprintAssignable, Category = "Test")
+	FTestDelegate OnTestDelegate;
+
 
 };

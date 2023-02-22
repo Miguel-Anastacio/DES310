@@ -5,7 +5,6 @@
 
 
 #include "RouteExample.h"
-
 #include "Kismet/KismetMathLibrary.h"
 #include "SpaceshipCharacter.h"
 
@@ -15,7 +14,6 @@ ARouteExample::ARouteExample()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	
 
 	USceneComponent* root = this->CreateDefaultSubobject<USceneComponent>(TEXT("Scene Root"));
 	root->Mobility = EComponentMobility::Type::Movable;
@@ -55,7 +53,6 @@ ARouteExample::ARouteExample()
 
 	PlayerState = PlayerStates::Selecting;
 
-
 	// create event component
 	EventsComponent = CreateDefaultSubobject<URandomEventsComponent>(TEXT("Events Component"));
 	
@@ -74,6 +71,8 @@ void ARouteExample::BeginPlay()
 	PlayerController->SetShowMouseCursor(true);
 
 	CameraBoom->TargetArmLength = CameraDistance * this->GetActorScale().Length(); // TODO change to use Highest x/y/z instead of the pythag
+
+	OnTestDelegate.AddDynamic(this, &ARouteExample::SwapToOrbiting);
 
 }
 
@@ -100,7 +99,7 @@ void ARouteExample::Tick(float DeltaTime)
 	{
 	case PlayerStates::Moving:
 		MoveAlongPath(RouteData,DeltaTime);
-		if (EventsComponent->RollForEvent(RouteData.EventChance))
+		if (EventsComponent->RollForEvent(RouteData.EventChance, DeltaTime))
 			PlayerState = Event;
 		break;
 	case PlayerStates::Orbiting: OrbitPlanet(RouteData,DeltaTime);
@@ -531,16 +530,17 @@ bool ARouteExample::MoveAlongPath(PathData& PathData, float DeltaTime)
 	splineTimer += DeltaTime * PlayerTravelTime / SplineLength;
 	float DistanceTraveled = FMath::Lerp(SplineLength,0,splineTimer);
 	FVector PlayerPosition = PathData.Splines[PathData.Index]->GetLocationAtDistanceAlongSpline(DistanceTraveled, ESplineCoordinateSpace::Type::World);
-	FRotator PlayerRotation = PathData.Splines[PathData.Index]->GetWorldRotationAtDistanceAlongSpline(DistanceTraveled);
+	//FRotator PlayerRotation = PathData.Splines[PathData.Index]->GetWorldRotationAtDistanceAlongSpline(DistanceTraveled);
 	
 	UGameplayStatics::GetPlayerCharacter(GetWorld(),0)->SetActorLocation(PlayerPosition);
-	UGameplayStatics::GetPlayerCharacter(GetWorld(),0)->SetActorRotation(PlayerRotation);
+	//UGameplayStatics::GetPlayerCharacter(GetWorld(),0)->SetActorRotation(PlayerRotation);
 
 	if(splineTimer > 1)
 	{
 		splineTimer = 0;
 		PlayerController->SetViewTargetWithBlend(PathData.Stops[PathData.Index],CameraTransitionSpeed,EViewTargetBlendFunction::VTBlend_Linear);
-		PlayerState = PlayerStates::Orbiting;
+		PlayerState = Orbiting;
+		OnTestDelegate.Broadcast();
 	}
 
 	return false; // The Movement is still in progress
@@ -581,7 +581,7 @@ void ARouteExample::OrbitPlanet(PathData& PathData, float DeltaTime)
 }
 void ARouteExample::SelectPath()
 {
-	
+	PlayerState = Selecting;
 	auto player = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	FVector LookPosition;
 	FVector LookDirection;
@@ -715,4 +715,9 @@ void ARouteExample::TransitionToMap()
 {
 	PlayerController->SetViewTargetWithBlend(GetRootComponent()->GetAttachmentRootActor(), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
 	PlayerState = Selecting;
+}
+
+void ARouteExample::SwapToOrbiting()
+{
+	PlayerState = Orbiting;
 }

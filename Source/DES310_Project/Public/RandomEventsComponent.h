@@ -51,7 +51,7 @@ public:
 
 	// returns the event that is supposed to happen
 	// returns null if no event is to happen
-	UGameEvents* RollForEvent(int32 ChanceOfEventInThisRoute);
+	UGameEvents* RollForEvent(int32 ChanceOfEventInThisRoute, float deltaTime);
 
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
