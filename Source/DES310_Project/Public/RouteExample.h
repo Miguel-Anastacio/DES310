@@ -187,6 +187,7 @@ public:
 	UStaticMesh* CubeMesh;
 	UStaticMesh* SphereMesh;
 
+	UFUNCTION()
 	void SwapToOrbiting();
 
 	UPROPERTY(BlueprintAssignable, Category = "Test")

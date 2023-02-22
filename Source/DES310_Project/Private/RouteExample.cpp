@@ -72,7 +72,7 @@ void ARouteExample::BeginPlay()
 
 	CameraBoom->TargetArmLength = CameraDistance * this->GetActorScale().Length(); // TODO change to use Highest x/y/z instead of the pythag
 
-	OnTestDelegate.AddDynamic(this, &ARouteExample::SwapToOrbiting);
+	OnTestDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToOrbiting);
 
 }
 
@@ -530,16 +530,18 @@ bool ARouteExample::MoveAlongPath(PathData& PathData, float DeltaTime)
 	splineTimer += DeltaTime * PlayerTravelTime / SplineLength;
 	float DistanceTraveled = FMath::Lerp(SplineLength,0,splineTimer);
 	FVector PlayerPosition = PathData.Splines[PathData.Index]->GetLocationAtDistanceAlongSpline(DistanceTraveled, ESplineCoordinateSpace::Type::World);
-	//FRotator PlayerRotation = PathData.Splines[PathData.Index]->GetWorldRotationAtDistanceAlongSpline(DistanceTraveled);
+	FRotator PlayerRotation = PathData.Splines[PathData.Index]->GetRotationAtDistanceAlongSpline(DistanceTraveled, ESplineCoordinateSpace::Type::World);
+
+	PlayerRotation = FRotator(PlayerRotation.Pitch - 180, PlayerRotation.Yaw, 180);
 	
 	UGameplayStatics::GetPlayerCharacter(GetWorld(),0)->SetActorLocation(PlayerPosition);
-	//UGameplayStatics::GetPlayerCharacter(GetWorld(),0)->SetActorRotation(PlayerRotation);
+	UGameplayStatics::GetPlayerCharacter(GetWorld(),0)->SetActorRotation(PlayerRotation);
 
 	if(splineTimer > 1)
 	{
 		splineTimer = 0;
 		PlayerController->SetViewTargetWithBlend(PathData.Stops[PathData.Index],CameraTransitionSpeed,EViewTargetBlendFunction::VTBlend_Linear);
-		PlayerState = Orbiting;
+		//PlayerState = Orbiting;
 		OnTestDelegate.Broadcast();
 	}
 
