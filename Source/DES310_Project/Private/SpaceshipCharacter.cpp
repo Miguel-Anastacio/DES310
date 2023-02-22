@@ -192,6 +192,6 @@ void ASpaceshipCharacter::MoveTowards(FVector Target)
 
 void ASpaceshipCharacter::CompleteQuest()
 {
-	//GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("Quest Completed"));
+	GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("Quest Completed"));
 	ActiveQuest = nullptr;
 }

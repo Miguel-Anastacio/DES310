@@ -32,7 +32,7 @@ UGameEvents* URandomEventsComponent::RollForEvent(int32 ChanceOfEventInThisRoute
 				EventHasFiredOnThisRoute = true;
 				CurrentEvent = EventsList[indexOfEvent];
 				GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Rolled Event"));
-
+				GameplayEventFiredDelegate.Broadcast();
 				return EventsList[indexOfEvent];
 			}
 		}
@@ -48,6 +48,8 @@ void URandomEventsComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	ConvertDataAssets();
+
+	GameplayEventFiredDelegate.AddUniqueDynamic(this, &URandomEventsComponent::EventFired);
 	// ...
 	
 }
@@ -133,5 +135,10 @@ void URandomEventsComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	// ...
+}
+
+void URandomEventsComponent::EventFired()
+{
+
 }
 

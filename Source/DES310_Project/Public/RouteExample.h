@@ -201,9 +201,9 @@ public:
 	FMovingTransitionDelegate MovingTransitionDelegate;
 
 	UFUNCTION()
-		void SwapToSelecting();
+	void SwapToSelecting();
 
 	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)
-		FSelectingTransitionDelegate SelectTransitionDelegate;
+	FSelectingTransitionDelegate SelectTransitionDelegate;
 
 };
