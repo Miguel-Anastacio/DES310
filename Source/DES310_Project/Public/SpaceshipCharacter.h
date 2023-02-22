@@ -28,6 +28,10 @@ enum PlayerCurrentState
 	ON_PLANET UMETA(DisplayName = 'ON_PLANET')
 };
 
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FQuestCompletedDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FQuestStartedDelegate, UQuest*, NewQuest);
+
 UCLASS()
 class DES310_PROJECT_API ASpaceshipCharacter : public ACharacter
 {
@@ -69,10 +73,6 @@ public:
 	UQuest* ActiveQuest = nullptr;
 
 
-	ARouteExample* Route = nullptr;
-
-	void SetActiveRoute(ARouteExample* currentRoute) { Route = currentRoute; };
-
 	// Sets default values for this character's properties
 	ASpaceshipCharacter();
 
@@ -93,8 +93,6 @@ public:
 	}
 
 
-	UFUNCTION(BlueprintCallable)
-	void StartQuest(UQuest* QuestStarted);
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -111,6 +109,20 @@ public:
 
 	// helper function to move towards a location
 	void MoveTowards(FVector target);
+
+	// Events delegates and fucntions binded to events
+	UFUNCTION()
+	void CompleteQuest();
+
+	UPROPERTY(BlueprintAssignable, Category = "Custom Events", BlueprintCallable)
+	FQuestCompletedDelegate CompleteQuestDelegate;
+
+
+	UFUNCTION(BlueprintCallable)
+		void StartQuest(UQuest* QuestStarted);
+
+	UPROPERTY(BlueprintAssignable, Category = "Custom Events", BlueprintCallable)
+		FQuestStartedDelegate StartQuestDelegate;
 
 protected:
 
