@@ -72,7 +72,9 @@ void ARouteExample::BeginPlay()
 
 	CameraBoom->TargetArmLength = CameraDistance * this->GetActorScale().Length(); // TODO change to use Highest x/y/z instead of the pythag
 
-	OnTestDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToOrbiting);
+	OrbitTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToOrbiting);
+	MovingTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToMoving);
+	SelectTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToSelecting);
 
 }
 
@@ -542,7 +544,7 @@ bool ARouteExample::MoveAlongPath(PathData& PathData, float DeltaTime)
 		splineTimer = 0;
 		PlayerController->SetViewTargetWithBlend(PathData.Stops[PathData.Index],CameraTransitionSpeed,EViewTargetBlendFunction::VTBlend_Linear);
 		//PlayerState = Orbiting;
-		OnTestDelegate.Broadcast();
+		OrbitTransitionDelegate.Broadcast();
 	}
 
 	return false; // The Movement is still in progress
@@ -706,9 +708,10 @@ void ARouteExample::SelectPath()
 			RouteData.Max = RouteData.Splines.Num();
 			RouteData.Index = 0;
 		}
-		
+		// remove this
 		PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(),0),CameraTransitionSpeed,EViewTargetBlendFunction::VTBlend_Linear);
 		PlayerState = PlayerStates::Moving;
+		MovingTransitionDelegate.Broadcast();
 	}
 	
 }
@@ -722,4 +725,15 @@ void ARouteExample::TransitionToMap()
 void ARouteExample::SwapToOrbiting()
 {
 	PlayerState = Orbiting;
+}
+
+void ARouteExample::SwapToMoving()
+{
+	PlayerState = Moving;
+}
+
+void ARouteExample::SwapToSelecting()
+{
+	PlayerController->SetViewTargetWithBlend(GetRootComponent()->GetAttachmentRootActor(), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
+	PlayerState = Selecting;
 }

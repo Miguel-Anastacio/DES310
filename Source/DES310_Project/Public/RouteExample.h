@@ -46,8 +46,9 @@ struct PathData
 
 // binding an event th when the state of the game changes
 // this is the delegate
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTestDelegate);
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOrbitTransitionDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FMovingTransitionDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSelectingTransitionDelegate);
 
 UCLASS()
 class DES310_PROJECT_API ARouteExample : public AActor
@@ -190,8 +191,19 @@ public:
 	UFUNCTION()
 	void SwapToOrbiting();
 
-	UPROPERTY(BlueprintAssignable, Category = "Test")
-	FTestDelegate OnTestDelegate;
+	UPROPERTY(BlueprintAssignable, Category = "Transitions")
+	FOrbitTransitionDelegate OrbitTransitionDelegate;
 
+	UFUNCTION()
+	void SwapToMoving();
+
+	UPROPERTY(BlueprintAssignable, Category = "Transitions")
+	FMovingTransitionDelegate MovingTransitionDelegate;
+
+	UFUNCTION()
+		void SwapToSelecting();
+
+	UPROPERTY(BlueprintAssignable, Category = "Transitions")
+		FSelectingTransitionDelegate SelectTransitionDelegate;
 
 };
