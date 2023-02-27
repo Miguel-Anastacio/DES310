@@ -708,9 +708,7 @@ void ARouteExample::SelectPath()
 			RouteData.Max = RouteData.Splines.Num();
 			RouteData.Index = 0;
 		}
-		// remove this
-		PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(),0),CameraTransitionSpeed,EViewTargetBlendFunction::VTBlend_Linear);
-		PlayerState = PlayerStates::Moving;
+
 		MovingTransitionDelegate.Broadcast();
 	}
 	
@@ -729,7 +727,8 @@ void ARouteExample::SwapToOrbiting()
 
 void ARouteExample::SwapToMoving()
 {
-	PlayerState = Moving;
+	PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
+	PlayerState = PlayerStates::Moving;
 }
 
 void ARouteExample::SwapToSelecting()

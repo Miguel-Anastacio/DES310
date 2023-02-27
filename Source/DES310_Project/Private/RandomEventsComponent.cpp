@@ -56,6 +56,10 @@ void URandomEventsComponent::BeginPlay()
 
 void URandomEventsComponent::ConvertDataAssets()
 {
+	// this might be a problem if we have a lot of events
+	// it might lead to too many casting operations happening in the begin play - bad in performance
+	// works for now
+	// probably it would be better to only do the casting when we need to use the event object
 	for (auto it : EventsDatabase->Data)
 	{
 		UObject* object = it->GetDefaultObject();
