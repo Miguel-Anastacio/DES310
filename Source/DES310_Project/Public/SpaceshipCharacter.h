@@ -22,8 +22,6 @@ class ARouteExample;
 UENUM(BlueprintType)
 enum PlayerCurrentState
 {
-	MOVING   UMETA(DisplayName = "MOVING"),
-	FIGHTING     UMETA(DisplayName = "FIGHTING"),
 	IDLE   UMETA(DisplayName = "IDLE"),
 	ON_PLANET UMETA(DisplayName = 'ON_PLANET')
 };

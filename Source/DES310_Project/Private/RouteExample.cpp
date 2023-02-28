@@ -722,6 +722,7 @@ void ARouteExample::TransitionToMap()
 
 void ARouteExample::SwapToOrbiting()
 {
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Swapping to Orbiting")));
 	PlayerState = Orbiting;
 }
 
