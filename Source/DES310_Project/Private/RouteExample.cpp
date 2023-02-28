@@ -56,6 +56,7 @@ ARouteExample::ARouteExample()
 	// create event component
 	EventsComponent = CreateDefaultSubobject<URandomEventsComponent>(TEXT("Events Component"));
 
+
 	
 }
 
@@ -66,7 +67,6 @@ void ARouteExample::BeginPlay()
 	Generate();
 	randomSpinRate = FMath::RandRange(1,100);
 	//auto temp = CreateBasicCube(FVector(0,0,10),FRotator());
-	SelectTransitionDelegate.Broadcast();
 	UGameplayStatics::GetPlayerController(GetWorld(),0)->SetViewTargetWithBlend(this,CameraTransitionSpeed,EViewTargetBlendFunction::VTBlend_Linear);
 	PlayerController = UGameplayStatics::GetPlayerController(GetWorld(),0);
 	PlayerController->SetShowMouseCursor(true);
@@ -77,7 +77,8 @@ void ARouteExample::BeginPlay()
 	MovingTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToMoving);
 	SelectTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToSelecting);
 
-
+	PlayerState = Selecting;
+	SelectTransitionDelegate.Broadcast();
 	PathClickedDelegate.AddUniqueDynamic(this, &ARouteExample::GetPathSelected);
 }
 
@@ -712,6 +713,7 @@ void ARouteExample::SelectPath()
 			RouteData.Max = RouteData.Splines.Num();
 			RouteData.Index = 0;
 		}
+		//MovingTransitionDelegate.Broadcast();
 
 	}
 	
