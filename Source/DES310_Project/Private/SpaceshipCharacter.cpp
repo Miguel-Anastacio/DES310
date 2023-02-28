@@ -134,6 +134,7 @@ void ASpaceshipCharacter::MouseClick()
 		}
 	}*/
 
+
 	Selected = true;
 
 }

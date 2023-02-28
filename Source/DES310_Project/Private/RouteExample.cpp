@@ -55,6 +55,7 @@ ARouteExample::ARouteExample()
 
 	// create event component
 	EventsComponent = CreateDefaultSubobject<URandomEventsComponent>(TEXT("Events Component"));
+
 	
 }
 
@@ -65,7 +66,7 @@ void ARouteExample::BeginPlay()
 	Generate();
 	randomSpinRate = FMath::RandRange(1,100);
 	//auto temp = CreateBasicCube(FVector(0,0,10),FRotator());
-	PlayerState = Selecting;
+	SelectTransitionDelegate.Broadcast();
 	UGameplayStatics::GetPlayerController(GetWorld(),0)->SetViewTargetWithBlend(this,CameraTransitionSpeed,EViewTargetBlendFunction::VTBlend_Linear);
 	PlayerController = UGameplayStatics::GetPlayerController(GetWorld(),0);
 	PlayerController->SetShowMouseCursor(true);
@@ -76,6 +77,8 @@ void ARouteExample::BeginPlay()
 	MovingTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToMoving);
 	SelectTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToSelecting);
 
+
+	PathClickedDelegate.AddUniqueDynamic(this, &ARouteExample::GetPathSelected);
 }
 
 // Called every frame
@@ -690,6 +693,7 @@ void ARouteExample::SelectPath()
 	
 	if(	Charac->Selected) // TODO should be replaced with mouse click instead of a random timer
 	{
+		PathClickedDelegate.Broadcast();
 		Charac->Selected = false;
 		timer = 0;
 		if(WhichPath)
@@ -709,7 +713,6 @@ void ARouteExample::SelectPath()
 			RouteData.Index = 0;
 		}
 
-		MovingTransitionDelegate.Broadcast();
 	}
 	
 }
@@ -736,4 +739,9 @@ void ARouteExample::SwapToSelecting()
 {
 	PlayerController->SetViewTargetWithBlend(GetRootComponent()->GetAttachmentRootActor(), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
 	PlayerState = Selecting;
+}
+
+void ARouteExample::GetPathSelected()
+{
+	// path = currentPath;
 }
