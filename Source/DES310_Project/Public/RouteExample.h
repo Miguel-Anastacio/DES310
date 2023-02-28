@@ -191,19 +191,19 @@ public:
 	UFUNCTION()
 	void SwapToOrbiting();
 
-	UPROPERTY(BlueprintAssignable, Category = "Transitions")
+	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)
 	FOrbitTransitionDelegate OrbitTransitionDelegate;
 
 	UFUNCTION()
 	void SwapToMoving();
 
-	UPROPERTY(BlueprintAssignable, Category = "Transitions")
+	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)
 	FMovingTransitionDelegate MovingTransitionDelegate;
 
 	UFUNCTION()
-		void SwapToSelecting();
+	void SwapToSelecting();
 
-	UPROPERTY(BlueprintAssignable, Category = "Transitions")
-		FSelectingTransitionDelegate SelectTransitionDelegate;
+	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)
+	FSelectingTransitionDelegate SelectTransitionDelegate;
 
 };

@@ -708,9 +708,7 @@ void ARouteExample::SelectPath()
 			RouteData.Max = RouteData.Splines.Num();
 			RouteData.Index = 0;
 		}
-		// remove this
-		PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(),0),CameraTransitionSpeed,EViewTargetBlendFunction::VTBlend_Linear);
-		PlayerState = PlayerStates::Moving;
+
 		MovingTransitionDelegate.Broadcast();
 	}
 	
@@ -724,12 +722,14 @@ void ARouteExample::TransitionToMap()
 
 void ARouteExample::SwapToOrbiting()
 {
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Swapping to Orbiting")));
 	PlayerState = Orbiting;
 }
 
 void ARouteExample::SwapToMoving()
 {
-	PlayerState = Moving;
+	PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
+	PlayerState = PlayerStates::Moving;
 }
 
 void ARouteExample::SwapToSelecting()
