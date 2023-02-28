@@ -23,20 +23,35 @@ ARouteExample::ARouteExample()
 	SphereMesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Sphere.Sphere'")).Object;
 
 
-	SplineComponent1 = CreateDefaultSubobject<USplineComponent>(TEXT("Spline Short Path"));
+	SplineComponent1 = CreateDefaultSubobject<USplineComponent>(TEXT("Spline Short Path 1"));
 	SplineComponent1->AttachToComponent(GetRootComponent(),FAttachmentTransformRules::KeepRelativeTransform);
 	SplineComponent1->ClearSplinePoints();
 	SplineComponent1->bDrawDebug = true;
 
-	SplineComponent2 = CreateDefaultSubobject<USplineComponent>(TEXT("Spline Long Path"));
+	SplineComponent2 = CreateDefaultSubobject<USplineComponent>(TEXT("Spline Long Path 2"));
 	SplineComponent2->AttachToComponent(GetRootComponent(),FAttachmentTransformRules::KeepRelativeTransform);
 	SplineComponent2->ClearSplinePoints();
 	SplineComponent2->bDrawDebug = true;
 	
-	SplineComponent3 = CreateDefaultSubobject<USplineComponent>(TEXT("Spline Long Path 2"));
+	SplineComponent3 = CreateDefaultSubobject<USplineComponent>(TEXT("Spline Long Path 3"));
 	SplineComponent3->AttachToComponent(GetRootComponent(),FAttachmentTransformRules::KeepRelativeTransform);
 	SplineComponent3->ClearSplinePoints();
 	SplineComponent3->bDrawDebug = true;
+	
+	CameraSplineComponent1 = CreateDefaultSubobject<USplineComponent>(TEXT("Camera Spline Long Path 1"));
+	CameraSplineComponent1->AttachToComponent(GetRootComponent(),FAttachmentTransformRules::KeepRelativeTransform);
+	CameraSplineComponent1->ClearSplinePoints();
+	CameraSplineComponent1->bDrawDebug = true;
+	
+	CameraSplineComponent2 = CreateDefaultSubobject<USplineComponent>(TEXT("Camera Spline Long Path 2"));
+	CameraSplineComponent2->AttachToComponent(GetRootComponent(),FAttachmentTransformRules::KeepRelativeTransform);
+	CameraSplineComponent2->ClearSplinePoints();
+	CameraSplineComponent2->bDrawDebug = true;
+
+	CameraSplineComponent3 = CreateDefaultSubobject<USplineComponent>(TEXT("Camera Spline Long Path 3"));
+	CameraSplineComponent3->AttachToComponent(GetRootComponent(),FAttachmentTransformRules::KeepRelativeTransform);
+	CameraSplineComponent3->ClearSplinePoints();
+	CameraSplineComponent3->bDrawDebug = true;
 	
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("Camera Boom"));
 	CameraBoom->SetupAttachment(RootComponent);
@@ -64,13 +79,12 @@ void ARouteExample::BeginPlay()
 	Super::BeginPlay();
 	Generate();
 	randomSpinRate = FMath::RandRange(1,100);
-	//auto temp = CreateBasicCube(FVector(0,0,10),FRotator());
 	PlayerState = Selecting;
 	UGameplayStatics::GetPlayerController(GetWorld(),0)->SetViewTargetWithBlend(this,CameraTransitionSpeed,EViewTargetBlendFunction::VTBlend_Linear);
 	PlayerController = UGameplayStatics::GetPlayerController(GetWorld(),0);
 	PlayerController->SetShowMouseCursor(true);
 
-	CameraBoom->TargetArmLength = CameraDistance * this->GetActorScale().Length(); // TODO change to use Highest x/y/z instead of the pythag
+	CameraBoom->TargetArmLength = CameraBoom->TargetArmLength * this->GetActorScale().Length(); // TODO change to use Highest x/y/z instead of the pythag
 
 	OrbitTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToOrbiting);
 	MovingTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToMoving);
@@ -136,10 +150,9 @@ APlanet*  ARouteExample::CreateBasicSphere(FTransform transform)
 	
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
-	/*
-	APlanet* MyNewActor = GetWorld()->SpawnActor<APlanet>(PlanetBP,transform,SpawnParam);*/
 
-	int randomNumber = 0;
+
+
 	APlanet* APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[FMath::RandRange(0, PlanetBP.Num() - 1)], transform, SpawnParams);
 
 	APlanetActor->AttachToComponent(GetRootComponent(),FAttachmentTransformRules::KeepWorldTransform);
@@ -147,36 +160,7 @@ APlanet*  ARouteExample::CreateBasicSphere(FTransform transform)
 	return APlanetActor;
 }
 
-TArray<FVector2D> ARouteExample::SmoothLine(TArray<FVector2D>& vect)
-{
-	int NumberOfPoint = vect.Num();
-	TArray<FVector2D> SmoothedPoints;
-	FVector2D Average(0,0);
-	float Total = 0;
 
-	for(auto point : vect)
-	{
-		Average = FVector2D(0,0);
-		Total = 0;
-		for(auto otherPoint : vect)
-		{
-			float Distance = FVector2D::Distance(otherPoint, point);
-			if(Distance != 0)
-			{
-				Average += otherPoint * 1 / (Distance * SmoothFactor);
-				Total += 1 / (Distance * SmoothFactor);
-			}
-			else
-			{
-				Average += otherPoint;
-				Total += 1;
-			}
-			
-		}
-		SmoothedPoints.Add(Average / Total);
-	}
-	return SmoothedPoints;
-}
 
 void ARouteExample::Generate()
 {
@@ -184,25 +168,44 @@ void ARouteExample::Generate()
 	Path2.Empty();
 	Path3.Empty();
 
+	CurrentSpline = NULL;
+	CurrentPlanet = NULL;
+
+	RouteData.Splines.Empty();
+	RouteData.Stops.Empty();
+	RouteData.Index = 0;
+	RouteData.Max = 0;
+	
+	SplineComponent1->ClearSplinePoints();
+	SplineComponent2->ClearSplinePoints();
+	SplineComponent3->ClearSplinePoints();
+	
+	CameraSplineComponent1->ClearSplinePoints();
+	CameraSplineComponent2->ClearSplinePoints();
+	CameraSplineComponent3->ClearSplinePoints();
+
 	for (auto& Planet : Planets)
 	{
 		Planet->Destroy();
 	}
-
-	for (auto& Cube : CubePath1)
+	Planets.Empty();
+	
+	for (auto& CubePath : CubePath1)
 	{
-		Cube->Destroy();
+		CubePath->Destroy();
 	}
-
-	for (auto& Cube : CubePath2)
+	CubePath1.Empty();
+	
+	for (auto& CubePath : CubePath2)
 	{
-		Cube->Destroy();
+		CubePath->Destroy();
 	}
-	for (auto& Cube : CubePath3)
+	CubePath2.Empty();
+	
+	for (auto& CubePath : CubePath3)
 	{
-		Cube->Destroy();
+		CubePath->Destroy();
 	}
-
 	
 	if (GetWorld())
 		FlushPersistentDebugLines(GetWorld());
@@ -347,23 +350,52 @@ void ARouteExample::Generate()
 	astar.search(maxXID, maxID);
 	Path3 = astar.path;
 
-	/*Path2 = SmoothLine(Path2);
-	Path1 = SmoothLine(Path1);*/
+	for (int j = 0; j < Path1.Num() - 1; j++)
+	{
+		int id = astar.findPoint(Path1[j]);
+		if (id != -1 && j != 0)
+		{
+			astar.points[id].blocked = true;
+		}
+	}
+	
+	for (int j = 0; j < Path2.Num()- 1; j++)
+	{
+		int id = astar.findPoint(Path2[j]);
+		if (id != -1 && j != 0)
+		{
+			astar.points[id].blocked = true;
+		}
+	}
+
+	for (int j = 0; j < Path3.Num()- 1; j++)
+	{
+		int id = astar.findPoint(Path3[j]);
+		if (id != -1 && j != 0)
+		{
+			astar.points[id].blocked = true;
+		}
+	}
+
+
 	
 	for (int i = 0; i < Path1.Num(); i++)
 	{
 		FTransform SpawnTransfrom;
 		SpawnTransfrom.SetRotation(FQuat4d(0,0,0,1.f));
 		SpawnTransfrom.SetScale3D(FVector(0.1,0.1,0.1));
-		SpawnTransfrom.SetLocation(FVector(1,Path1[i].X - Dimensions.X/2,Path1[i].Y - Dimensions.Y/2));
-		SpawnTransfrom *= WorldLocation;
+		SpawnTransfrom.SetLocation(FVector(UKismetMathLibrary::Sin(i) * 10 ,Path1[i].X - Dimensions.X/2,Path1[i].Y - Dimensions.Y/2));
+
 		
 		if (i >= CubePath1.Num())
 		{
-			CubePath1.Add(CreateBasicCube(SpawnTransfrom));
+			CubePath1.Add(CreateBasicCube(SpawnTransfrom* WorldLocation));
 		}
-		CubePath1[i]->SetActorTransform(SpawnTransfrom);
-		SplineComponent1->AddSplinePoint(SpawnTransfrom.GetLocation(), ESplineCoordinateSpace::Type::World,true);
+		CubePath1[i]->SetActorTransform(SpawnTransfrom * WorldLocation);
+		SplineComponent1->AddSplinePoint((SpawnTransfrom * WorldLocation).GetLocation(), ESplineCoordinateSpace::Type::World,true);
+		SpawnTransfrom.AddToTranslation(FVector(50,50,0));
+		SpawnTransfrom *= WorldLocation;
+		CameraSplineComponent1->AddSplinePoint(SpawnTransfrom.GetLocation(), ESplineCoordinateSpace::Type::World,true);
 	}
 
 	for (int i = 0; i < Path2.Num(); i++)
@@ -371,15 +403,18 @@ void ARouteExample::Generate()
 		FTransform SpawnTransfrom;
 		SpawnTransfrom.SetRotation(FQuat4d(0,0,0,1.f));
 		SpawnTransfrom.SetScale3D(FVector(0.1,0.1,0.1));
-		SpawnTransfrom.SetLocation(FVector(1,Path2[i].X- Dimensions.X/2,Path2[i].Y- Dimensions.Y/2));
-		SpawnTransfrom *= WorldLocation;
+		SpawnTransfrom.SetLocation(FVector(UKismetMathLibrary::Sin(i) * 10,Path2[i].X- Dimensions.X/2,Path2[i].Y- Dimensions.Y/2));
+		
 		
 		if (i >= CubePath2.Num())
 		{
-			CubePath2.Add(CreateBasicCube(SpawnTransfrom));
+			CubePath2.Add(CreateBasicCube(SpawnTransfrom * WorldLocation));
 		}
-		CubePath2[i]->SetActorTransform(SpawnTransfrom);
-		SplineComponent2->AddSplinePoint(SpawnTransfrom.GetLocation(), ESplineCoordinateSpace::Type::World,true);
+		CubePath2[i]->SetActorTransform(SpawnTransfrom * WorldLocation);
+		SplineComponent2->AddSplinePoint((SpawnTransfrom * WorldLocation).GetLocation(), ESplineCoordinateSpace::Type::World,true);
+		SpawnTransfrom.AddToTranslation(FVector(50,50,0));
+		SpawnTransfrom *= WorldLocation;
+		CameraSplineComponent2->AddSplinePoint(SpawnTransfrom.GetLocation(), ESplineCoordinateSpace::Type::World,true);
 	}
 
 	for (int i = 0; i < Path3.Num(); i++)
@@ -387,15 +422,18 @@ void ARouteExample::Generate()
 		FTransform SpawnTransfrom;
 		SpawnTransfrom.SetRotation(FQuat4d(0,0,0,1.f));
 		SpawnTransfrom.SetScale3D(FVector(0.1,0.1,0.1));
-		SpawnTransfrom.SetLocation(FVector(1,Path3[i].X- Dimensions.X/2,Path3[i].Y- Dimensions.Y/2));
-		SpawnTransfrom *= WorldLocation;
+		SpawnTransfrom.SetLocation(FVector(UKismetMathLibrary::Sin(i) * 10,Path3[i].X- Dimensions.X/2,Path3[i].Y- Dimensions.Y/2));
+
 		
 		if (i >= CubePath3.Num())
 		{
-			CubePath3.Add(CreateBasicCube(SpawnTransfrom));
+			CubePath3.Add(CreateBasicCube(SpawnTransfrom * WorldLocation));
 		}
-		CubePath3[i]->SetActorTransform(SpawnTransfrom);
-		SplineComponent3->AddSplinePoint(SpawnTransfrom.GetLocation(), ESplineCoordinateSpace::Type::World,true);
+		CubePath3[i]->SetActorTransform(SpawnTransfrom * WorldLocation);
+		SplineComponent3->AddSplinePoint((SpawnTransfrom * WorldLocation).GetLocation(), ESplineCoordinateSpace::Type::World,true);
+		SpawnTransfrom.AddToTranslation(FVector(50,50,0));
+		SpawnTransfrom *= WorldLocation;
+		CameraSplineComponent3->AddSplinePoint(SpawnTransfrom.GetLocation(), ESplineCoordinateSpace::Type::World,true);
 	}
 
 
@@ -414,6 +452,19 @@ void ARouteExample::Generate()
 		Planets.Add(CreateBasicSphere(SpawnTransfrom * WorldLocation));
 	}
 
+	for (auto point : astar.points)
+	{
+		if(point.blocked)
+			continue;
+		
+		SpawnTransfrom.SetRotation(FQuat4d(0,0,0,1.f));
+		SpawnTransfrom.SetScale3D(FVector(0.5,0.5,0.5));
+		SpawnTransfrom.SetLocation(FVector(1,point.position.X - Dimensions.X/2,point.position.Y- Dimensions.Y/2));
+
+		Planets.Add(CreateBasicSphere(SpawnTransfrom * WorldLocation));
+		
+	}
+	
 	SpawnTransfrom *= WorldLocation;
 	
 	auto playerController = UGameplayStatics::GetPlayerCharacter(GetWorld(),0);
@@ -423,92 +474,6 @@ void ARouteExample::Generate()
 		
 		playerController->SetActorLocation(FVector(SpawnTransfrom.GetLocation().X,SpawnTransfrom.GetLocation().Y,1000));
 	}
-
-	AveragePathPosition1 = FVector(0,0,0);
-	int i =0;
-	for(auto pathPoint : CubePath1)
-	{
-		AveragePathPosition1 += pathPoint->GetActorLocation();
-		i++;
-	}
-	AveragePathPosition1 /= i;
-	
-	AveragePathPosition2 = FVector(0,0,0);
-	i =0;
-	for(auto pathPoint : CubePath2)
-	{
-		AveragePathPosition2 += pathPoint->GetActorLocation();
-		i++;
-
-	}
-	for(auto pathPoint : CubePath3)
-	{
-		AveragePathPosition2 += pathPoint->GetActorLocation();
-		i++;
-
-	}
-
-	AveragePathPosition2 /= i;
-
-	
-	auto player = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	player->ProjectWorldLocationToScreen(AveragePathPosition1,AveragePathPosition12D);
-	player->ProjectWorldLocationToScreen(AveragePathPosition2,AveragePathPosition22D);
-	
-
-	
-	//bool longPath = false;
-	//
-	//for(int i =0; i < PathsWanted; i++)
-	//{
-
-	//	if (longPath)
-	//	{
-	//		astar.search(minID, maxXID);
-	//		for (int j = 0; j < astar.path.Num() - 1; j++)
-	//		{
-	//			DrawDebugSphere(GetWorld(), WorldLocation.TransformPosition(FVector(-5, astar.path[j].X, astar.path[j].Y)), scale * DisplayRadius / 6, 10, FColor::Yellow, true, 5);
-	//			DrawDebugLine(GetWorld(), WorldLocation.TransformPosition(FVector(-5, astar.path[j].X, astar.path[j].Y)), WorldLocation.TransformPosition(FVector(-5, astar.path[j + 1].X, astar.path[j + 1].Y)), FColor::Orange, true, 5, 0, scale * 1);
-	//		}
-	//		astar.search(maxXID, maxID);
-	//		for (int j = 0; j < astar.path.Num() - 1; j++)
-	//		{
-	//			DrawDebugSphere(GetWorld(), WorldLocation.TransformPosition(FVector(-5, astar.path[j].X, astar.path[j].Y)), scale * DisplayRadius / 6, 10, FColor::Yellow, true, 5);
-	//			DrawDebugLine(GetWorld(), WorldLocation.TransformPosition(FVector(-5, astar.path[j].X, astar.path[j].Y)), WorldLocation.TransformPosition(FVector(-5, astar.path[j + 1].X, astar.path[j + 1].Y)), FColor::Orange, true, 5, 0, scale * 1);
-	//		}
-	//	}
-	//	else
-	//	{
-	//		astar.search(minID, maxID);
-	//		for (int j = 0; j < astar.path.Num() - 1; j++)
-	//		{
-	//			DrawDebugSphere(GetWorld(), WorldLocation.TransformPosition(FVector(-5, astar.path[j].X, astar.path[j].Y)), scale * DisplayRadius / 6, 10, FColor::Yellow, true, 5);
-	//			DrawDebugLine(GetWorld(), WorldLocation.TransformPosition(FVector(-5, astar.path[j].X, astar.path[j].Y)), WorldLocation.TransformPosition(FVector(-5, astar.path[j + 1].X, astar.path[j + 1].Y)), FColor::Orange, true, 5, 0, scale * 1);
-	//			int id = astar.findPoint(astar.path[j]);
-	//			if (id != -1 && j != 0)
-	//			{
-	//				astar.points[id].blocked = true;
-	//			}
-	//		}
-
-
-	//		if (astar.path.Num() - 1 > 0)
-	//		{
-	//			DrawDebugLine(GetWorld(), WorldLocation.TransformPosition(FVector(-5, astar.path[astar.path.Num() - 1].X, astar.path[astar.path.Num() - 1].Y)), WorldLocation.TransformPosition(FVector(-5, astar.begin.position.X, astar.begin.position.Y)), FColor::Orange, true, 5, 0, scale * 1);
-	//			DrawDebugSphere(GetWorld(), WorldLocation.TransformPosition(FVector(-5, astar.path[astar.path.Num() - 1].X, astar.path[astar.path.Num() - 1].Y)), scale * DisplayRadius / 6, 10, FColor::Yellow, true, 5);
-	//		}
-
-	//	}
-
-	//	longPath = true;
-	//}
-
-
-	//DrawDebugSphere(GetWorld(), WorldLocation.TransformPosition(FVector(-5, astar.begin.position.X, astar.begin.position.Y)), scale *DisplayRadius / 2, 10, FColor::Green, true, 5);
-	//DrawDebugSphere(GetWorld(), WorldLocation.TransformPosition(FVector(-5, astar.end.position.X, astar.end.position.Y)), scale *DisplayRadius / 2, 10, FColor::White, true, 5);
-
-
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Path Points: %i"), astar.path.Num()));
 
 }
 
@@ -535,6 +500,15 @@ bool ARouteExample::MoveAlongPath(PathData& PathData, float DeltaTime)
 	FRotator PlayerRotation = PathData.Splines[PathData.Index]->GetRotationAtDistanceAlongSpline(DistanceTraveled, ESplineCoordinateSpace::Type::World);
 
 	PlayerRotation = FRotator(PlayerRotation.Pitch - 180, PlayerRotation.Yaw, 180);
+
+	//TODO gives the spaceship a "Hover Feel" but not working currently
+	/*
+	FVector Offset;
+	Offset.X = UKismetMathLibrary::Sin(timer);
+	Offset.Y = UKismetMathLibrary::Cos(timer);
+	Offset.Z = UKismetMathLibrary::Cos(timer * 2);
+	*/
+	//PlayerPosition += Offset * 500;
 	
 	UGameplayStatics::GetPlayerCharacter(GetWorld(),0)->SetActorLocation(PlayerPosition);
 	UGameplayStatics::GetPlayerCharacter(GetWorld(),0)->SetActorRotation(PlayerRotation);
@@ -557,7 +531,8 @@ void ARouteExample::OrbitPlanet(PathData& PathData, float DeltaTime)
 	if(orbitTimer > 1000)
 	{
 		orbitTimer = 0;
-		PathData.Index += 1;
+		//TODO only delete if paths is now working e.g clicking off the planet continues along next path
+		/*PathData.Index += 1;
 		if(PathData.Index >= PathData.Max)
 		{
 			//TODO probably make a runctions for reseting everyting
@@ -579,13 +554,13 @@ void ARouteExample::OrbitPlanet(PathData& PathData, float DeltaTime)
 		{
 			PlayerState = PlayerStates::Moving;
 			PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(),0),CameraTransitionSpeed,EViewTargetBlendFunction::VTBlend_Linear);
-		}
+		}*/
 
 	}
 }
 void ARouteExample::SelectPath()
 {
-	PlayerState = Selecting;
+	//SwapState(Selecting); TODO maybe not needed/ messes up previous state
 	auto player = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	FVector LookPosition;
 	FVector LookDirection;
@@ -688,7 +663,7 @@ void ARouteExample::SelectPath()
 	ASpaceshipCharacter* Charac = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(),0));
 	Charac->Selected;
 	
-	if(	Charac->Selected) // TODO should be replaced with mouse click instead of a random timer
+	if(Charac->Selected) // TODO should be replaced with mouse click instead of a random timer
 	{
 		Charac->Selected = false;
 		timer = 0;
@@ -710,7 +685,6 @@ void ARouteExample::SelectPath()
 		}
 		// remove this
 		PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(),0),CameraTransitionSpeed,EViewTargetBlendFunction::VTBlend_Linear);
-		PlayerState = PlayerStates::Moving;
 		MovingTransitionDelegate.Broadcast();
 	}
 	
@@ -719,21 +693,56 @@ void ARouteExample::SelectPath()
 void ARouteExample::TransitionToMap()
 {
 	PlayerController->SetViewTargetWithBlend(GetRootComponent()->GetAttachmentRootActor(), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
-	PlayerState = Selecting;
+	SwapState(Selecting);
 }
 
 void ARouteExample::SwapToOrbiting()
 {
-	PlayerState = Orbiting;
+	SwapState(Orbiting);
+	
+	RouteData.Index += 1;
+		if(RouteData.Index >= RouteData.Max)
+		{
+			//TODO probably make a runctions for reseting everyting
+			
+			PlayerState = PlayerStates::Selecting;
+			Generate();
+			RouteData.Splines.Empty();
+			RouteData.Stops.Empty();
+			RouteData.Index = 0;
+			RouteData.Max = 0;
+
+			SplineComponent1->ClearSplinePoints();
+			SplineComponent2->ClearSplinePoints();
+			SplineComponent3->ClearSplinePoints();
+
+			CameraSplineComponent1->ClearSplinePoints();
+			CameraSplineComponent2->ClearSplinePoints();
+			CameraSplineComponent3->ClearSplinePoints();
+
+			
+			PlayerController->SetViewTargetWithBlend(GetRootComponent()->GetAttachmentRootActor(),CameraTransitionSpeed,EViewTargetBlendFunction::VTBlend_Linear);
+		}
+		else
+		{
+			PlayerState = PlayerStates::Moving;
+			PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(),0),CameraTransitionSpeed,EViewTargetBlendFunction::VTBlend_Linear);
+		}
 }
 
 void ARouteExample::SwapToMoving()
 {
-	PlayerState = Moving;
+	SwapState(Moving);
 }
 
 void ARouteExample::SwapToSelecting()
 {
 	PlayerController->SetViewTargetWithBlend(GetRootComponent()->GetAttachmentRootActor(), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
-	PlayerState = Selecting;
+	SwapState(Selecting);
+}
+
+void ARouteExample::SwapState(PlayerStates State)
+{
+	PreviousState = PlayerState;
+	PlayerState = State;
 }

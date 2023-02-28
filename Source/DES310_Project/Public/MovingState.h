@@ -1,26 +1,25 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-//
-// Author: Liam Donald 2000495 19/02/23
-//
-
 
 #pragma once
 
-#include "BaseState.h"
 #include "CoreMinimal.h"
+#include "BaseState.h"
+#include "UObject/NoExportTypes.h"
+#include "MovingState.generated.h"
 
 /**
  * 
  */
-class DES310_PROJECT_API MovingState: public BaseState
+UCLASS()
+class DES310_PROJECT_API UMovingState : public UBaseState
 {
-public:
-	MovingState();
-	~MovingState();
+	GENERATED_BODY()
+
+	public:
 
 	virtual void OnEnter() override;
-	virtual void Run() override;
+	virtual void Update() override;
 	virtual void OnExit() override;
+
+	virtual void Reset() override;
 };
-
-

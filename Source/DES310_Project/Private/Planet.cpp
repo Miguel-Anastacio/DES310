@@ -13,10 +13,10 @@ APlanet::APlanet()
 	DummyRoot = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	RootComponent = DummyRoot;
 	
-	SphereCollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("Collision Sphere"));
+	/*SphereCollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("Collision Sphere"));
 	SphereCollisionComponent->SetupAttachment(RootComponent);
 	SphereCollisionComponent->InitSphereRadius(20.0f);
-	SphereCollisionComponent->SetGenerateOverlapEvents(true);
+	SphereCollisionComponent->SetGenerateOverlapEvents(true);*/
 
 	PlanetMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Planet Mesh"));
 	PlanetMeshComponent->SetWorldLocation(FVector(0, 0, 0));
@@ -48,8 +48,8 @@ APlanet::APlanet()
 void APlanet::BeginPlay()
 {
 	Super::BeginPlay();
-	SphereCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlanet::OnOverlapBegin);
-	SphereCollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlanet::OnOverlapEnd);
+	/*SphereCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlanet::OnOverlapBegin);
+	SphereCollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlanet::OnOverlapEnd);*/
 
 	FTransform SpawnTransform;
 	FActorSpawnParameters SpawnParams;
@@ -82,6 +82,7 @@ void APlanet::Tick(float DeltaTime)
 
 }
 
+/*
 void APlanet::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	CurrentPlanet = true;
@@ -96,3 +97,4 @@ void APlanet::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 {
 
 }
+*/

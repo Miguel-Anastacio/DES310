@@ -15,11 +15,11 @@
 #include "DelaunayTriangulation.h"
 #include "Engine/StaticMeshActor.h"
 #include "Kismet/GameplayStatics.h"
-#include "BaseState.h"
+/*#include "BaseState.h"
 #include "FightingState.h"
 #include "MovingState.h"
 #include "SelectingState.h"
-#include "OrbitingState.h"
+#include "OrbitingState.h"*/
 #include "RandomEventsComponent.h"
 #include "RouteExample.generated.h"
 
@@ -69,15 +69,15 @@ public:
 	void Generate();
 	APath* CreateBasicCube(FTransform transform);
 	APlanet* CreateBasicSphere(FTransform transform);
-	TArray<FVector2D> SmoothLine(TArray<FVector2D>& vect);
+
 	void SwitchCamera();
 
 	//State Variables
-	BaseState* CurrentState;
+	/*BaseState* CurrentState;
 	FightingState* FightingState;
 	SelectingState* SelectingState;
 	OrbitingState* OrbitingState;
-	MovingState* MovingState;
+	MovingState* MovingState;*/
 
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
@@ -93,12 +93,17 @@ public:
 		void TransitionToMap();
 
 	int CameraIndex = 0;
-
+	FVector positionOffset;
+		
 	PathData RouteData;
 	
 	USplineComponent* SplineComponent1;
 	USplineComponent* SplineComponent2;
 	USplineComponent* SplineComponent3;
+
+	USplineComponent* CameraSplineComponent1;
+	USplineComponent* CameraSplineComponent2;
+	USplineComponent* CameraSplineComponent3;
 
 	USplineComponent* CurrentSpline;
 	APlanet* CurrentPlanet;
@@ -122,6 +127,9 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	float PlayerTravelTime = 10;
+
+	UPROPERTY(EditAnywhere)
+		int OverallPaths = 3;
 	
 	UPROPERTY(EditAnywhere)
 		float SmoothFactor = 1;
@@ -159,15 +167,15 @@ public:
 	UPROPERTY(EditAnywhere)
 		AActor* cubeBP;
 
+	TArray<TArray<APath*>> Hello;
+	
 	TArray<APath*> CubePath1;
 	TArray<FVector2D> Path1;
-	FVector AveragePathPosition1;
-	FVector2D AveragePathPosition12D; // TODO better names ;(
+
 	
 	TArray<APath*> CubePath2;
 	TArray<FVector2D> Path2;
-	FVector AveragePathPosition2;
-	FVector2D AveragePathPosition22D;
+
 
 	TArray<APath*> CubePath3;
 	TArray<FVector2D> Path3;
@@ -175,6 +183,7 @@ public:
 	TArray<APlanet*> Planets;
 
 	PlayerStates PlayerState;
+	PlayerStates PreviousState;
 
 	UFUNCTION(BlueprintCallable)
 		PlayerStates GetPlayerState() { return PlayerState; };
@@ -188,6 +197,8 @@ public:
 	UStaticMesh* CubeMesh;
 	UStaticMesh* SphereMesh;
 
+	void SwapState(PlayerStates State);
+	
 	UFUNCTION()
 	void SwapToOrbiting();
 

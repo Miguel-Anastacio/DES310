@@ -4,23 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "BaseState.generated.h"
+#include "TestState.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class DES310_PROJECT_API UBaseState : public UObject
+class DES310_PROJECT_API UTestState : public UObject
 {
 	GENERATED_BODY()
-	
-public:
-	
-	virtual void OnEnter();
-	virtual void Update();
-	virtual void OnExit();
-
-	virtual void Reset();
-
 	
 };
