@@ -55,6 +55,8 @@ ARouteExample::ARouteExample()
 
 	// create event component
 	EventsComponent = CreateDefaultSubobject<URandomEventsComponent>(TEXT("Events Component"));
+
+
 	
 }
 
@@ -62,20 +64,15 @@ ARouteExample::ARouteExample()
 void ARouteExample::BeginPlay()
 {
 	Super::BeginPlay();
-	Generate();
-	randomSpinRate = FMath::RandRange(1,100);
-	//auto temp = CreateBasicCube(FVector(0,0,10),FRotator());
-	PlayerState = Selecting;
-	UGameplayStatics::GetPlayerController(GetWorld(),0)->SetViewTargetWithBlend(this,CameraTransitionSpeed,EViewTargetBlendFunction::VTBlend_Linear);
-	PlayerController = UGameplayStatics::GetPlayerController(GetWorld(),0);
-	PlayerController->SetShowMouseCursor(true);
-
 	CameraBoom->TargetArmLength = CameraDistance * this->GetActorScale().Length(); // TODO change to use Highest x/y/z instead of the pythag
-
+	UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetViewTargetWithBlend(this, CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
 	OrbitTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToOrbiting);
 	MovingTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToMoving);
 	SelectTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToSelecting);
-
+	PlayerState = Event;
+	//PlayerState = Selecting;
+	//SelectTransitionDelegate.Broadcast();
+	PathClickedDelegate.AddUniqueDynamic(this, &ARouteExample::GetPathSelected);
 }
 
 // Called every frame
@@ -554,7 +551,7 @@ void ARouteExample::OrbitPlanet(PathData& PathData, float DeltaTime)
 {
 	//TODO switch this to the statemachine and when it leaves up the index but for now, timer
 	orbitTimer += DeltaTime;
-	if(orbitTimer > 1000)
+	if(orbitTimer > 5000)
 	{
 		orbitTimer = 0;
 		PathData.Index += 1;
@@ -690,6 +687,7 @@ void ARouteExample::SelectPath()
 	
 	if(	Charac->Selected) // TODO should be replaced with mouse click instead of a random timer
 	{
+		PathClickedDelegate.Broadcast();
 		Charac->Selected = false;
 		timer = 0;
 		if(WhichPath)
@@ -708,8 +706,8 @@ void ARouteExample::SelectPath()
 			RouteData.Max = RouteData.Splines.Num();
 			RouteData.Index = 0;
 		}
+		//MovingTransitionDelegate.Broadcast();
 
-		MovingTransitionDelegate.Broadcast();
 	}
 	
 }
@@ -736,4 +734,19 @@ void ARouteExample::SwapToSelecting()
 {
 	PlayerController->SetViewTargetWithBlend(GetRootComponent()->GetAttachmentRootActor(), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
 	PlayerState = Selecting;
+}
+
+void ARouteExample::GetPathSelected()
+{
+	// path = currentPath;
+}
+
+void ARouteExample::StartGame()
+{
+	Generate();
+	randomSpinRate = FMath::RandRange(1, 100);
+	//auto temp = CreateBasicCube(FVector(0,0,10),FRotator());
+	UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetViewTargetWithBlend(Planets[0], CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
+	PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	PlayerController->SetShowMouseCursor(true);
 }
