@@ -1,30 +1,24 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-//
-// Author: Liam Donald 2000495 19/02/23
-//
+
 
 #include "BaseState.h"
-#include "RouteExample.h"
 
-BaseState::BaseState()
-{
-}
+ void UBaseState::OnEnter()
+ {
+  
+ }
 
-BaseState::~BaseState()
-{
-}
+ void UBaseState::Update()
+ {
+  
+ }
 
+ void UBaseState::OnExit()
+ {
+  
+ }
 
-void BaseState::OnEnter()
-{
-
-}
-
-void BaseState::Run()
-{
-}
-
-void BaseState::OnExit()
-{
-}
-
+ void UBaseState::Reset()
+ {
+  
+ }

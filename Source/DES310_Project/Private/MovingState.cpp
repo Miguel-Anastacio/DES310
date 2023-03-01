@@ -1,28 +1,24 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-//
-// Author: Liam Donald 2000495 19/02/23
-//
+
 
 #include "MovingState.h"
 
-MovingState::MovingState()
+void UMovingState::OnEnter()
 {
+  
 }
 
-MovingState::~MovingState()
+void UMovingState::Update()
 {
+  
 }
 
-void MovingState::OnEnter()
+void UMovingState::OnExit()
 {
-
+  
 }
 
-void MovingState::Run()
+void UMovingState::Reset()
 {
+  
 }
-
-void MovingState::OnExit()
-{
-}
-
