@@ -81,9 +81,10 @@ void ARouteExample::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Generate();
+	
+	/*Generate();
 	randomSpinRate = FMath::RandRange(1, 100);
-	PlayerState = Selecting;
+	PlayerState = Selecting;*/
 	UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetViewTargetWithBlend(this, CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
 	PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	PlayerController->SetShowMouseCursor(true);
@@ -695,9 +696,7 @@ void ARouteExample::SelectPath()
 			RouteData->Index = 0;
 		}
 
-		// remove this
-		PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
-		MovingTransitionDelegate.Broadcast();
+
 
 	}
 
