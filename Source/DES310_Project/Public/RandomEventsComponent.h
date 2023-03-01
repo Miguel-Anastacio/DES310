@@ -11,7 +11,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGameplayEventFiredDelegate);
 
-
+class ASpaceshipCharacter;
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), Blueprintable)
 class DES310_PROJECT_API URandomEventsComponent : public UActorComponent
 {
@@ -28,6 +28,8 @@ public:
 
 	UPROPERTY(VisibleAnywhere)
 	TArray<UGameEvents*> EventsList;
+
+	ASpaceshipCharacter* Player;
 
 	UFUNCTION(BlueprintCallable)
 	UGameEvents* GetCurrentEvent() {

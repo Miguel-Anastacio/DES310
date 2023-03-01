@@ -44,7 +44,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FMovingTransitionDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSelectingTransitionDelegate);
 
 // delegate to notify UI when user presses on a route
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FPathClickedDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPathClickedDelegate, UPathData*, CurrentPath);
 
 UCLASS()
 class DES310_PROJECT_API ARouteExample : public AActor
@@ -166,14 +166,14 @@ public:
 	void SwapState(PlayerStates State);
 
 	UFUNCTION()
-		void SwapToOrbiting();
+	void SwapToOrbiting();
 
 
 	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)
 	FOrbitTransitionDelegate OrbitTransitionDelegate;
 
 	UFUNCTION()
-		void SwapToMoving();
+	void SwapToMoving();
 
 	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)
 
@@ -188,7 +188,7 @@ public:
 
 
 	UFUNCTION()
-	void GetPathSelected();
+	void GetPathSelected(UPathData* path);
 
 	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)
 	FPathClickedDelegate PathClickedDelegate;

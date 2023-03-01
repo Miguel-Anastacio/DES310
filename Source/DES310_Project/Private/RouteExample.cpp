@@ -527,6 +527,9 @@ bool ARouteExample::MoveAlongPath(UPathData* PathData , float DeltaTime)
 	{
 		splineTimer = 0;
 		PlayerController->SetViewTargetWithBlend(PathData->Stops[PathData->Index], CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
+		// update the current planet
+		// this bool in the planet class is used by the vendor UI
+		PathData->Stops[PathData->Index]->CurrentPlanet = true;
 		OrbitTransitionDelegate.Broadcast();
 	}
 
@@ -676,7 +679,7 @@ void ARouteExample::SelectPath()
 
 	if (Charac->Selected) // TODO should be replaced with mouse click instead of a random timer
 	{
-		PathClickedDelegate.Broadcast();
+		PathClickedDelegate.Broadcast(RouteData);
 		Charac->Selected = false;
 		timer = 0;
 		if (WhichPath)
@@ -710,6 +713,10 @@ void ARouteExample::TransitionToMap()
 
 void ARouteExample::SwapToOrbiting()
 {
+	// it would probably look better 
+	// if we made all other planets and the path invisible when we are in a planet
+
+
 
 	RouteData->Index += 1;
 	SwapState(Orbiting);
@@ -757,6 +764,17 @@ void ARouteExample::SwapToSelecting()
 {
 	PlayerController->SetViewTargetWithBlend(GetRootComponent()->GetAttachmentRootActor(), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
 	SwapState(Selecting);
+	// if leaving planet
+	// put all planets as not being the current planet
+	// this is not the best away to go about this
+	// but this way we have to change less stuff
+	if (PreviousState == Orbiting)
+	{
+		for (auto it : RouteData->Stops)
+		{
+			it->CurrentPlanet = false;
+		}
+	}
 }
 
 
@@ -766,9 +784,9 @@ void ARouteExample::SwapState(PlayerStates State)
 	PlayerState = State;
 }
 
-void ARouteExample::GetPathSelected()
+void ARouteExample::GetPathSelected(UPathData* path)
 {
-	// path = currentPath;
+	path = RouteData;
 }
 
 void ARouteExample::StartGame()
@@ -776,7 +794,8 @@ void ARouteExample::StartGame()
 	Generate();
 	randomSpinRate = FMath::RandRange(1, 100);
 	//auto temp = CreateBasicCube(FVector(0,0,10),FRotator());
-	UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetViewTargetWithBlend(Planets[0], CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
+	UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetViewTargetWithBlend(Planets[2], CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
+	Planets[2]->CurrentPlanet = true;
 	PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	PlayerController->SetShowMouseCursor(true);
 }
