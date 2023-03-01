@@ -50,12 +50,15 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	AVendor* VendorActor = nullptr;
 
+
+	UPROPERTY(EditAnywhere, Category = Camera)
+	float CameraDistance = 4000;
+
 	// temporary 
 	// quests will have to be created at runtime
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UQuest> QuestTemplate;
 	UQuest* Quest;
-
 
 
 	// keeps track if player is in this planet

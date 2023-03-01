@@ -9,6 +9,8 @@
 #include "RandomEventsData.h"
 #include "RandomEventsComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGameplayEventFiredDelegate);
+
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), Blueprintable)
 class DES310_PROJECT_API URandomEventsComponent : public UActorComponent
@@ -57,6 +59,13 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	void SetEventHasFiredOnThisRoute(bool RouteStatus) { EventHasFiredOnThisRoute = RouteStatus; };
+
+
+	UFUNCTION()
+	void EventFired();
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FGameplayEventFiredDelegate GameplayEventFiredDelegate;
 
 protected:
 	

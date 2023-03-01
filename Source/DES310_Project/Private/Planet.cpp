@@ -58,6 +58,8 @@ void APlanet::BeginPlay()
 	SpawnTransform.SetScale3D(FVector(1.0f, 1.0f, 1.0f));
 	SpawnTransform.SetLocation(GetActorLocation());
 
+	CameraBoom->TargetArmLength = CameraDistance * this->GetActorScale().Length();
+
 	VendorActor = GetWorld()->SpawnActor<AVendor>(Vendor, SpawnTransform, SpawnParams);
 
 	UObject* object = nullptr;

@@ -67,6 +67,8 @@ void ASpaceshipCharacter::BeginPlay()
 	TargetLocation = GetActorLocation();
 
 	TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ASpaceshipCharacter::OnOverlapBegin);
+	CompleteQuestDelegate.AddUniqueDynamic(this, &ASpaceshipCharacter::CompleteQuest);
+	StartQuestDelegate.AddUniqueDynamic(this, &ASpaceshipCharacter::StartQuest);
 
 }
 
@@ -132,6 +134,7 @@ void ASpaceshipCharacter::MouseClick()
 		}
 	}*/
 
+
 	Selected = true;
 
 }
@@ -154,9 +157,8 @@ void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 			{
 				if (Target->Name == CurrentPlanet->Name)
 				{
-					// quest completed
-					GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("Quest Completed"));
-					ActiveQuest = nullptr;
+					GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("Event Broadcasted"));
+					CompleteQuestDelegate.Broadcast();
 				}
 			}
 		}
@@ -187,4 +189,10 @@ void ASpaceshipCharacter::MoveTowards(FVector Target)
 	FVector Direction = Target - GetActorLocation();
 	Direction.Normalize();
 	GetCharacterMovement()->Velocity = Direction * 400;
+}
+
+void ASpaceshipCharacter::CompleteQuest()
+{
+	GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("Quest Completed"));
+	ActiveQuest = nullptr;
 }
