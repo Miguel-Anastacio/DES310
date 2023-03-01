@@ -216,4 +216,7 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)
 	FPathClickedDelegate PathClickedDelegate;
 
+	UFUNCTION(BlueprintCallable)
+	void StartGame();
+
 };
