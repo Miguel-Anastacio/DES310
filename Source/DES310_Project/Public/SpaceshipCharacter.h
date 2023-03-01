@@ -70,6 +70,8 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	UQuest* ActiveQuest = nullptr;
 
+	UPROPERTY(BlueprintReadWrite)
+	int Credits = 100.0f;
 
 	// Sets default values for this character's properties
 	ASpaceshipCharacter();
