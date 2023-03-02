@@ -196,4 +196,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void StartGame();
 
+
+
+	// used to hide the route when the player transitions to orbiting
+	// and to display it when it chnages to selecting
+	void ChangeVisibilityOfRoute(bool toHide);
 };

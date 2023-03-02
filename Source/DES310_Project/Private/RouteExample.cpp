@@ -715,8 +715,14 @@ void ARouteExample::SwapToOrbiting()
 {
 	// it would probably look better 
 	// if we made all other planets and the path invisible when we are in a planet
+	// either do this or make the UI more opaque
+	ChangeVisibilityOfRoute(true);
 
-
+	for (auto it : Planets)
+	{
+		if (it->CurrentPlanet)
+			it->SetActorHiddenInGame(false);
+	}
 
 	RouteData->Index += 1;
 	SwapState(Orbiting);
@@ -770,11 +776,15 @@ void ARouteExample::SwapToSelecting()
 	// but this way we have to change less stuff
 	if (PreviousState == Orbiting)
 	{
-		for (auto it : RouteData->Stops)
+		// change the visibility of all the planets
+		for (auto it : Planets)
 		{
 			it->CurrentPlanet = false;
 		}
+
+		ChangeVisibilityOfRoute(false);
 	}
+
 }
 
 
@@ -800,3 +810,24 @@ void ARouteExample::StartGame()
 	PlayerController->SetShowMouseCursor(true);
 }
 
+void ARouteExample::ChangeVisibilityOfRoute(bool toHide)
+{
+	for (auto it : Planets)
+	{
+		it->SetActorHiddenInGame(toHide);
+	}
+
+	for (auto it : CubePath1)
+	{
+		it->SetActorHiddenInGame(toHide);
+	}
+
+	for (auto it : CubePath2)
+	{
+		it->SetActorHiddenInGame(toHide);
+	}
+	for (auto it : CubePath3)
+	{
+		it->SetActorHiddenInGame(toHide);
+	}
+}
