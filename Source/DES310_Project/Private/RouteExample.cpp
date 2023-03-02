@@ -717,12 +717,19 @@ void ARouteExample::SwapToOrbiting()
 	// if we made all other planets and the path invisible when we are in a planet
 	// either do this or make the UI more opaque
 	ChangeVisibilityOfRoute(true);
-
 	for (auto it : Planets)
 	{
 		if (it->CurrentPlanet)
+		{
 			it->SetActorHiddenInGame(false);
+			// see if player completed quest
+			ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+			player->WasQuestCompleted(it->Name);
+		}
 	}
+	// see if player completed quest
+	
+
 
 	RouteData->Index += 1;
 	SwapState(Orbiting);
@@ -776,7 +783,6 @@ void ARouteExample::SwapToSelecting()
 	// but this way we have to change less stuff
 	if (PreviousState == Orbiting)
 	{
-		// change the visibility of all the planets
 		for (auto it : Planets)
 		{
 			it->CurrentPlanet = false;

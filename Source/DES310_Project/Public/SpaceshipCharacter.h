@@ -110,6 +110,8 @@ public:
 	// helper function to move towards a location
 	void MoveTowards(FVector target);
 
+	void WasQuestCompleted();
+
 	// Events delegates and fucntions binded to events
 	UFUNCTION()
 	void CompleteQuest();
