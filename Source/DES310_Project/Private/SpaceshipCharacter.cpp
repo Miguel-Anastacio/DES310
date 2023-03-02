@@ -128,6 +128,7 @@ void ASpaceshipCharacter::WasQuestCompleted(FString planetName)
 		{
 			if (Target->Name == planetName)
 			{
+				LastCompletedQuest = ActiveQuest;
 				CompleteQuestDelegate.Broadcast();
 			}
 		}
@@ -137,5 +138,6 @@ void ASpaceshipCharacter::WasQuestCompleted(FString planetName)
 void ASpaceshipCharacter::CompleteQuest()
 {
 	GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("Quest Completed"));
+	Credits += LastCompletedQuest->CreditsGained;
 	ActiveQuest = nullptr;
 }

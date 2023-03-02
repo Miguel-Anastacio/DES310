@@ -71,6 +71,8 @@ public:
 	UQuest* ActiveQuest = nullptr;
 
 	UPROPERTY(BlueprintReadWrite)
+	UQuest* LastCompletedQuest = nullptr;
+	UPROPERTY(BlueprintReadWrite)
 	int Credits = 100.0f;
 
 	// Sets default values for this character's properties
@@ -110,7 +112,7 @@ public:
 	// helper function to move towards a location
 	void MoveTowards(FVector target);
 
-	void WasQuestCompleted();
+	void WasQuestCompleted(FString planetName);
 
 	// Events delegates and fucntions binded to events
 	UFUNCTION()

@@ -42,6 +42,7 @@ enum PlayerStates
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOrbitTransitionDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FMovingTransitionDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSelectingTransitionDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCheckpointTransitionDelegate);
 
 // delegate to notify UI when user presses on a route
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPathClickedDelegate, UPathData*, CurrentPath);
@@ -101,6 +102,7 @@ public:
 	USplineComponent* CameraSplineComponent3;
 
 	USplineComponent* CurrentSpline;
+	UPROPERTY(BlueprintReadOnly)
 	APlanet* CurrentPlanet;
 
 	APlayerController* PlayerController;
@@ -193,10 +195,13 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)
 	FPathClickedDelegate PathClickedDelegate;
 
+	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)
+	FCheckpointTransitionDelegate CheckpointTransitionDelegate;
+
 	UFUNCTION(BlueprintCallable)
 	void StartGame();
 
-
+	
 
 	// used to hide the route when the player transitions to orbiting
 	// and to display it when it chnages to selecting
