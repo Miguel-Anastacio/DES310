@@ -37,6 +37,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Quest)
 	int32 XPGained;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Quest)
+	int32 CreditsGained;
+
 	/*
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Item)
 	UTexture2D* Icon;
