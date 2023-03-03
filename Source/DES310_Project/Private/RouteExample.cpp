@@ -106,6 +106,8 @@ void ARouteExample::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+
+	
 	timer += DeltaTime;
 	if (timer >= RouteTickRate)
 	{
@@ -120,20 +122,27 @@ void ARouteExample::Tick(float DeltaTime)
 		SwitchCamera();
 	}
 
+	FString StateName = "";
 	switch (PlayerState)
 	{
 	case PlayerStates::Moving:
+		StateName = "Moving";
 		MoveAlongPath(RouteData, DeltaTime);
 		if (EventsComponent->RollForEvent(RouteData->EventChance, DeltaTime))
 			PlayerState = Event;
 		break;
 	case PlayerStates::Orbiting: OrbitPlanet(RouteData, DeltaTime);
+		StateName = "Orbiting";
 		break;
 	case PlayerStates::Selecting: SelectPath();
+		StateName = "Selecting";
 		break;
 	case PlayerStates::Event:
+		StateName = "Event";
 		break;
 	}
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple, StateName);
 
 }
 
@@ -324,14 +333,6 @@ void ARouteExample::Generate()
 	}
 
 
-	FColor leftRouteColor = FColor::Orange;
-	FColor rightRouteColor = FColor::Orange;
-
-
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("%i AStar Positions"), astar.points.Num()));
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Begin Point: %i"), minID));
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("End Point: %i"), maxID));
-
 	FTransform WorldLocation;
 	float scale = 1;
 	if (GetRootComponent())
@@ -393,7 +394,7 @@ void ARouteExample::Generate()
 		FTransform SpawnTransfrom;
 		SpawnTransfrom.SetRotation(FQuat4d(0, 0, 0, 1.f));
 		SpawnTransfrom.SetScale3D(FVector(1, 1, 1));
-		SpawnTransfrom.SetLocation(FVector(UKismetMathLibrary::Sin(i) * 10, Path1[i].X - Dimensions.X / 2, Path1[i].Y - Dimensions.Y / 2));
+		SpawnTransfrom.SetLocation(FVector( Path1[i].X - Dimensions.X / 2, Path1[i].Y - Dimensions.Y / 2, UKismetMathLibrary::Sin(i) * 10));
 
 
 		if (i >= CubePath1.Num())
@@ -402,7 +403,7 @@ void ARouteExample::Generate()
 		}
 		CubePath1[i]->SetActorTransform(SpawnTransfrom * WorldLocation);
 		SplineComponent1->AddSplinePoint((SpawnTransfrom * WorldLocation).GetLocation(), ESplineCoordinateSpace::Type::World, true);
-		SpawnTransfrom.AddToTranslation(FVector(50, 50, 0));
+		SpawnTransfrom.AddToTranslation(FVector(0 ,50, 50));
 		SpawnTransfrom *= WorldLocation;
 		CameraSplineComponent1->AddSplinePoint(SpawnTransfrom.GetLocation(), ESplineCoordinateSpace::Type::World, true);
 	}
@@ -412,7 +413,7 @@ void ARouteExample::Generate()
 		FTransform SpawnTransfrom;
 		SpawnTransfrom.SetRotation(FQuat4d(0, 0, 0, 1.f));
 		SpawnTransfrom.SetScale3D(FVector(1, 1, 1));
-		SpawnTransfrom.SetLocation(FVector(UKismetMathLibrary::Sin(i) * 10, Path2[i].X - Dimensions.X / 2, Path2[i].Y - Dimensions.Y / 2));
+		SpawnTransfrom.SetLocation(FVector( Path2[i].X - Dimensions.X / 2, Path2[i].Y - Dimensions.Y / 2, UKismetMathLibrary::Sin(i) * 10));
 
 
 		if (i >= CubePath2.Num())
@@ -421,7 +422,7 @@ void ARouteExample::Generate()
 		}
 		CubePath2[i]->SetActorTransform(SpawnTransfrom * WorldLocation);
 		SplineComponent2->AddSplinePoint((SpawnTransfrom * WorldLocation).GetLocation(), ESplineCoordinateSpace::Type::World, true);
-		SpawnTransfrom.AddToTranslation(FVector(50, 50, 0));
+		SpawnTransfrom.AddToTranslation(FVector(0, 50, 50));
 		SpawnTransfrom *= WorldLocation;
 		CameraSplineComponent2->AddSplinePoint(SpawnTransfrom.GetLocation(), ESplineCoordinateSpace::Type::World, true);
 	}
@@ -431,7 +432,7 @@ void ARouteExample::Generate()
 		FTransform SpawnTransfrom;
 		SpawnTransfrom.SetRotation(FQuat4d(0, 0, 0, 1.f));
 		SpawnTransfrom.SetScale3D(FVector(1, 1, 1));
-		SpawnTransfrom.SetLocation(FVector(UKismetMathLibrary::Sin(i) * 10, Path3[i].X - Dimensions.X / 2, Path3[i].Y - Dimensions.Y / 2));
+		SpawnTransfrom.SetLocation(FVector( Path3[i].X - Dimensions.X / 2, Path3[i].Y - Dimensions.Y / 2,UKismetMathLibrary::Sin(i) * 10));
 
 
 		if (i >= CubePath3.Num())
@@ -440,7 +441,7 @@ void ARouteExample::Generate()
 		}
 		CubePath3[i]->SetActorTransform(SpawnTransfrom * WorldLocation);
 		SplineComponent3->AddSplinePoint((SpawnTransfrom * WorldLocation).GetLocation(), ESplineCoordinateSpace::Type::World, true);
-		SpawnTransfrom.AddToTranslation(FVector(50, 50, 0));
+		SpawnTransfrom.AddToTranslation(FVector(0, 50, 50));
 		SpawnTransfrom *= WorldLocation;
 		CameraSplineComponent3->AddSplinePoint(SpawnTransfrom.GetLocation(), ESplineCoordinateSpace::Type::World, true);
 	}
@@ -452,12 +453,12 @@ void ARouteExample::Generate()
 
 		SpawnTransfrom.SetRotation(FQuat4d(0, 0, 0, 1.f));
 		SpawnTransfrom.SetScale3D(FVector(1, 1, 1));
-		SpawnTransfrom.SetLocation(FVector(1, astar.begin.position.X - Dimensions.X / 2, astar.begin.position.Y - Dimensions.Y / 2));
+		SpawnTransfrom.SetLocation(FVector(astar.begin.position.X - Dimensions.X / 2, astar.begin.position.Y - Dimensions.Y / 2, 0));
 
 		Planets.Add(CreateBasicSphere(SpawnTransfrom * WorldLocation));
-		SpawnTransfrom.SetLocation(FVector(1, astar.end.position.X - Dimensions.X / 2, astar.end.position.Y - Dimensions.Y / 2));
+		SpawnTransfrom.SetLocation(FVector(astar.end.position.X - Dimensions.X / 2, astar.end.position.Y - Dimensions.Y / 2, 0));
 		Planets.Add(CreateBasicSphere(SpawnTransfrom * WorldLocation));
-		SpawnTransfrom.SetLocation(FVector(1, checkPoint.X - Dimensions.X / 2, checkPoint.Y - Dimensions.Y / 2));
+		SpawnTransfrom.SetLocation(FVector(checkPoint.X - Dimensions.X / 2, checkPoint.Y - Dimensions.Y / 2 , 0));
 		Planets.Add(CreateBasicSphere(SpawnTransfrom * WorldLocation));
 	}
 

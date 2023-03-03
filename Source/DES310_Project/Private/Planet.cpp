@@ -25,7 +25,7 @@ APlanet::APlanet()
 
 	Tags.Add(TEXT("Planet"));
 
-	RotationPerFrame = FRotator(0.0, 0.0, 2.0f);
+	RotationPerFrame = FRotator(0.0, 0.0, 0.0f);
 	
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -58,7 +58,7 @@ void APlanet::BeginPlay()
 	SpawnTransform.SetScale3D(FVector(1.0f, 1.0f, 1.0f));
 	SpawnTransform.SetLocation(GetActorLocation());
 
-	CameraBoom->TargetArmLength = CameraDistance * this->GetActorScale().Length();
+	CameraBoom->TargetArmLength = CameraBoom->TargetArmLength * this->GetActorScale().Length();
 
 	VendorActor = GetWorld()->SpawnActor<AVendor>(Vendor, SpawnTransform, SpawnParams);
 
