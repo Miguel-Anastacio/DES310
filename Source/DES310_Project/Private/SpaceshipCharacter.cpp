@@ -76,102 +76,30 @@ void ASpaceshipCharacter::BeginPlay()
 void ASpaceshipCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	UGameEvents* event = nullptr;
-	/*
-	switch (State)
-	{
-	case MOVING:
-		//MoveTowards(TargetLocation);
-		// here it would get the chance of an event along this route instead of just a magic number
-		TimePassedSinceLastEventTick += DeltaTime;
-		/*
-		if(TimePassedSinceLastEventTick > GameplayEventTick)
-		{
-			TimePassedSinceLastEventTick = 0.0f;
-			event = EventsComponent->RollForEvent(20);
-			if (event)
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, event->Name);
-				State = ON_PLANET;
-			}
-		}
-		break;
-	case FIGHTING:
-		break;
-	case IDLE:
-		GetCharacterMovement()->Velocity = FVector(0, 0, 0);
-		break;
-	case ON_PLANET:
-		GetCharacterMovement()->Velocity = FVector(0, 0, 0);
-		break;
-	default:
-		break;
-	}*/
 }
 
 // Called to bind functionality to input
 void ASpaceshipCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
 	// bind action
 	PlayerInputComponent->BindAction("Mouse Click", IE_Pressed, this, &ASpaceshipCharacter::MouseClick);
 }
 
 void ASpaceshipCharacter::MouseClick()
 {
-	FHitResult Hit;
-	/*
-	if (State == IDLE)
-	{
-		if (PlayerController->GetHitResultUnderCursor(ECC_Visibility, true, Hit))
-		{
-			if (Hit.GetActor()->ActorHasTag(TEXT("Planet")))
-			{
-				TargetLocation = Hit.GetActor()->GetActorLocation();
-				State = MOVING;
-			}
-		}
-	}*/
-
-
 	Selected = true;
-
 }
 
 void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	// stop moving
-	if (OtherActor->ActorHasTag(TEXT("Planet")))
-	{
-		State = ON_PLANET;
-		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("Reached Planet"));
-		CurrentPlanet = Cast<APlanet>(OtherActor);
 
-		// test if we ended a quest
-		// compare current planet to target from quest
-		if (ActiveQuest)
-		{
-			APlanet* Target = ActiveQuest->Target.GetDefaultObject();
-			if (Target)
-			{
-				if (Target->Name == CurrentPlanet->Name)
-				{
-					GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("Event Broadcasted"));
-					CompleteQuestDelegate.Broadcast();
-				}
-			}
-		}
-		
-	}
 }
 
 
 void ASpaceshipCharacter::StartQuest(UQuest* QuestStarted)
 {
 	ActiveQuest = QuestStarted;
-	State = IDLE;
-	MoveCameraTo(this);
 }
 
 
@@ -191,8 +119,25 @@ void ASpaceshipCharacter::MoveTowards(FVector Target)
 	GetCharacterMovement()->Velocity = Direction * 400;
 }
 
+void ASpaceshipCharacter::WasQuestCompleted(FString planetName)
+{
+	if (ActiveQuest)
+	{
+		APlanet* Target = ActiveQuest->Target.GetDefaultObject();
+		if (Target)
+		{
+			if (Target->Name == planetName)
+			{
+				LastCompletedQuest = ActiveQuest;
+				CompleteQuestDelegate.Broadcast();
+			}
+		}
+	}
+}
+
 void ASpaceshipCharacter::CompleteQuest()
 {
 	GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("Quest Completed"));
+	Credits += LastCompletedQuest->CreditsGained;
 	ActiveQuest = nullptr;
 }

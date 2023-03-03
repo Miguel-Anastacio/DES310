@@ -26,8 +26,13 @@ public:
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Option)
 	//TSubclassOf<class AEnemy> Enemy;
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Option)
+	FText Outcome;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Option)
-	float XPGained = 0;
+	int XPGained = 0;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Option)
+	int CreditsGained = 0;
 
 };

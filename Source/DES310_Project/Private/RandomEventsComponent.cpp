@@ -4,6 +4,7 @@
 */
 
 #include "RandomEventsComponent.h"
+#include "SpaceshipCharacter.h"
 #include "RouteExample.h"
 
 // Sets default values for this component's properties
@@ -50,6 +51,10 @@ void URandomEventsComponent::BeginPlay()
 	ConvertDataAssets();
 
 	GameplayEventFiredDelegate.AddUniqueDynamic(this, &URandomEventsComponent::EventFired);
+
+	Player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	if(Player)
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Player Casted"));
 	// ...
 	
 }
@@ -120,14 +125,17 @@ void URandomEventsComponent::HandleEvent(UEventOption* OptionPicked)
 	ARouteExample* route = Cast<ARouteExample>(GetOwner());
 	EventIsDisplayed = false;
 	CurrentEvent = nullptr;
-	route->PlayerState = Moving;
+	route->MovingTransitionDelegate.Broadcast();
 	// depnding on the effects of the option
 	// change the players stats 
+	Player->Credits += OptionPicked->CreditsGained;
+
 	if(route)
 		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Handling Event"));
 	
 	if(OptionPicked)
 		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, OptionPicked->Description.ToString());
+	
 	// if the option leads to combat then change the state
 	// and pass the enemy data associated with the event ??? 
 
