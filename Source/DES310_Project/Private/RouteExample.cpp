@@ -7,6 +7,7 @@
 #include "RouteExample.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "SpaceshipCharacter.h"
+#include "Components/AudioComponent.h"
 
 
 // Sets default values
@@ -22,7 +23,10 @@ ARouteExample::ARouteExample()
 	CubeMesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Cube.Cube'")).Object;
 	SphereMesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Sphere.Sphere'")).Object;
 
-
+	AmbientSoundComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio Component 1"));
+	BattleSoundComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio Component 2"));
+	ThrusterSoundComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio Component 3"));
+	
 	SplineComponent1 = CreateDefaultSubobject<USplineComponent>(TEXT("Spline Short Path 1"));
 	SplineComponent1->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 	SplineComponent1->ClearSplinePoints();
@@ -90,6 +94,23 @@ void ARouteExample::BeginPlay()
 	PlayerController->SetShowMouseCursor(true);
 
 	CameraBoom->TargetArmLength = CameraBoom->TargetArmLength * this->GetActorScale().Length(); // TODO change to use Highest x/y/z instead of the pythag
+
+
+	
+	if(SoundCues[0]){
+		AmbientSoundComponent->SetSound(SoundCues[0]);
+		AmbientSoundComponent->Play();
+	}
+		
+	if(SoundCues[1]){
+		BattleSoundComponent->SetSound(SoundCues[1]);
+	}
+		
+	if(SoundCues[2]){
+		ThrusterSoundComponent->SetSound(SoundCues[2]);
+	}
+	
+	
 
 
 	OrbitTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToOrbiting);
@@ -262,6 +283,13 @@ void ARouteExample::Generate()
 	int maxID = 0;
 	int maxXID = 0;
 
+	int sign = 1;
+	if(FMath::RandBool())
+	{
+		sign = -1;
+	}
+	
+	
 	for (int i = 0; i < vect.Num(); i++)
 	{
 		astar.AddPoint(vect[i]);
@@ -290,19 +318,19 @@ void ARouteExample::Generate()
 			maxID = id1;
 		}
 
-		if (abs(p1.X + 5) > maxX && p1.Y < 250 && p1.Y > 50)
+		if (sign * abs(p1.X + 5) > sign * maxX && p1.Y < Dimensions.Y - 50 && p1.Y > 50)
 		{
 			maxX = abs(p1.X);
 			maxXID = id1;
 		}
 
-		if (abs(p2.X + 5) > maxX && p2.Y < 250 && p2.Y > 50)
+		if (sign * abs(p2.X + 5) > sign * maxX && p2.Y <  Dimensions.Y - 50 && p2.Y > 50)
 		{
 			maxX = abs(p2.X);
 			maxXID = id2;
 		}
 
-		if (abs(p3.X + 5) > maxX && p3.Y < 250 && p3.Y > 50)
+		if (sign * abs(p3.X + 5) > sign * maxX && p3.Y <  Dimensions.Y - 50 && p3.Y > 50)
 		{
 			maxX = abs(p3.X);
 			maxXID = id3;
@@ -525,6 +553,7 @@ bool ARouteExample::MoveAlongPath(UPathData* PathData , float DeltaTime)
 
 	UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->SetActorLocation(PlayerPosition);
 	UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->SetActorRotation(PlayerRotation);
+	ThrusterSoundComponent->SetWorldLocation(PlayerPosition);
 
 
 	if (splineTimer > 1)
@@ -690,13 +719,14 @@ void ARouteExample::SelectPath()
 		CurrentPlanet = Planets[0];
 		WhichPath = true;
 	}
+	
 
 	ASpaceshipCharacter* Charac = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	Charac->Selected;
 
 	if (Charac->Selected) // TODO should be replaced with mouse click instead of a random timer
 	{
-		PathClickedDelegate.Broadcast(RouteData);
+
 		Charac->Selected = false;
 		timer = 0;
 		if (WhichPath)
@@ -707,16 +737,18 @@ void ARouteExample::SelectPath()
 			RouteData->Stops.Add(Planets[1]);
 			RouteData->Max = RouteData->Splines.Num();
 			RouteData->Index = 0;
+			RouteData->RouteName = "Route A";
 		}
 		else
 		{
 			RouteData->Splines.Add(SplineComponent1);
 			RouteData->Stops.Add(Planets[1]);
 			RouteData->Max = RouteData->Splines.Num();
+			RouteData->RouteName = "Route B";
 			RouteData->Index = 0;
 		}
 
-
+		PathClickedDelegate.Broadcast(RouteData);
 
 	}
 
@@ -813,6 +845,15 @@ void ARouteExample::SwapState(PlayerStates State)
 {
 	PreviousState = PlayerState;
 	PlayerState = State;
+
+	if(PreviousState == Moving)
+	{
+		ThrusterSoundComponent->Stop();
+	}
+	else if (PlayerState == Moving)
+	{
+		ThrusterSoundComponent->Play();
+	}
 }
 
 void ARouteExample::GetPathSelected(UPathData* path)

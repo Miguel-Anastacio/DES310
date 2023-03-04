@@ -23,11 +23,14 @@ public:
 	TArray<APlanet*> Stops;
 	int Index = 0;
 	int Max = 0; // Could probably just use Stops.Num
-	UPROPERTY(BlueprintReadOnly)
-	int EventChance = 10;
-	UPROPERTY(BlueprintReadOnly)
-	int StoryQuestChance = 10;
-	UPROPERTY(BlueprintReadOnly)
-	int RandomQuestChance = 10;
+	
+	UPROPERTY(BlueprintReadOnly) int EventChance = 10;
+	UPROPERTY(BlueprintReadOnly) int StoryQuestChance = 10;
+	UPROPERTY(BlueprintReadOnly) int RandomQuestChance = 10;
+
+	UPROPERTY(BlueprintReadOnly) FString RouteName = "Temp";
+	
+
+	
 	
 };

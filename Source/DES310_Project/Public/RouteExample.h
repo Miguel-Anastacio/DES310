@@ -22,6 +22,7 @@
 #include "SelectingState.h"
 #include "OrbitingState.h"*/
 #include "RandomEventsComponent.h"
+#include "Sound/SoundCue.h"
 #include "RouteExample.generated.h"
 
 UENUM(BlueprintType)
@@ -93,20 +94,29 @@ public:
 	FVector positionOffset;
 
 
-	USplineComponent* SplineComponent1;
-	USplineComponent* SplineComponent2;
-	USplineComponent* SplineComponent3;
+	UPROPERTY() UAudioComponent* AmbientSoundComponent;
+	UPROPERTY() UAudioComponent* BattleSoundComponent;
+	UPROPERTY() UAudioComponent* ThrusterSoundComponent;
+	
+	UPROPERTY() USplineComponent* SplineComponent1;
+	UPROPERTY() USplineComponent* SplineComponent2;
+	UPROPERTY() USplineComponent* SplineComponent3;
 
-	USplineComponent* CameraSplineComponent1;
-	USplineComponent* CameraSplineComponent2;
-	USplineComponent* CameraSplineComponent3;
+	UPROPERTY() USplineComponent* CameraSplineComponent1;
+	UPROPERTY() USplineComponent* CameraSplineComponent2;
+	UPROPERTY() USplineComponent* CameraSplineComponent3;
 
-	USplineComponent* CurrentSpline;
+	UPROPERTY() USplineComponent* CurrentSpline;
+	
 	UPROPERTY(BlueprintReadOnly)
 	APlanet* CurrentPlanet;
 
 	APlayerController* PlayerController;
 
+
+	UPROPERTY(EditAnywhere, Category = Sound)  TArray <class USoundCue*> SoundCues;
+
+	
 	UPROPERTY(EditAnywhere, Category = Camera) UCameraComponent* Camera;
 	UPROPERTY(EditAnywhere, Category = Camera) USpringArmComponent* CameraBoom;
 	UPROPERTY(EditAnywhere, Category = Camera) float CameraTransitionSpeed = 5;
