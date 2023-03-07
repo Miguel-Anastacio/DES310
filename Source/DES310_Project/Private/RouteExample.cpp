@@ -968,9 +968,11 @@ void ARouteExample::StartGame()
 {
 	Generate();
 	randomSpinRate = FMath::RandRange(1, 100);
+
 	UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetViewTargetWithBlend(Planets[2], CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
 	Planets[2]->CurrentPlanet = true;
 	CurrentPlanet = Planets[2];
+
 	PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	PlayerController->SetShowMouseCursor(true);
 }
