@@ -19,15 +19,22 @@ class DES310_PROJECT_API UPathData : public UObject
 
 public:
 
+
+	void Reset();
+	
 	TArray<USplineComponent*> Splines;
 	TArray<APlanet*> Stops;
 	int Index = 0;
 	int Max = 0; // Could probably just use Stops.Num
-	UPROPERTY(BlueprintReadOnly)
-	int EventChance = 10;
-	UPROPERTY(BlueprintReadOnly)
-	int StoryQuestChance = 10;
-	UPROPERTY(BlueprintReadOnly)
-	int RandomQuestChance = 10;
+	bool AtFirstPlanet = true;
+	
+	UPROPERTY(BlueprintReadOnly) int EventChance = 10;
+	UPROPERTY(BlueprintReadOnly) int StoryQuestChance = 10;
+	UPROPERTY(BlueprintReadOnly) int RandomQuestChance = 10;
+
+	UPROPERTY(BlueprintReadOnly) FString RouteName = "Temp";
+	
+
+	
 	
 };
