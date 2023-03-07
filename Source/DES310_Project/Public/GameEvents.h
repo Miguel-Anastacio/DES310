@@ -50,6 +50,9 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	TArray<UEventOption*> EventOptions;
 
+	bool HasFired = false;
+
+
 
 
 };

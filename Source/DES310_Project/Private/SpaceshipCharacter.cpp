@@ -123,15 +123,12 @@ void ASpaceshipCharacter::WasQuestCompleted(FString planetName)
 {
 	if (ActiveQuest)
 	{
-		APlanet* Target = ActiveQuest->Target.GetDefaultObject();
-		if (Target)
+		if (ActiveQuest->TargetName == planetName)
 		{
-			if (Target->Name == planetName)
-			{
-				LastCompletedQuest = ActiveQuest;
-				CompleteQuestDelegate.Broadcast();
-			}
+			LastCompletedQuest = ActiveQuest;
+			CompleteQuestDelegate.Broadcast();
 		}
+	
 	}
 }
 

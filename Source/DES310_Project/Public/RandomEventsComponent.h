@@ -22,7 +22,12 @@ public:
 	URandomEventsData* EventsDatabase;
 
 	UPROPERTY(EditAnywhere)
-		float GameplayEventTick = 1.0f;
+	float GameplayEventTick = 1.0f;
+
+	// whenever an event is fired the frenquency of the roll decreases
+	UPROPERTY(EditAnywhere)
+	float GameplayEventTickMultiplier = 1.25f;
+
 	float EventTimer = 0.0f;
 
 
@@ -62,6 +67,7 @@ public:
 
 	void SetEventHasFiredOnThisRoute(bool RouteStatus) { EventHasFiredOnThisRoute = RouteStatus; };
 
+	bool AnyEventsPossible();
 
 	UFUNCTION()
 	void EventFired();

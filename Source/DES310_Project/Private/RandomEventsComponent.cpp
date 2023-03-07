@@ -27,14 +27,29 @@ UGameEvents* URandomEventsComponent::RollForEvent(int32 ChanceOfEventInThisRoute
 	{
 		if (EventTimer > GameplayEventTick)
 		{
-			if (roll < ChanceOfEventInThisRoute && !EventHasFiredOnThisRoute)
+			if (roll < ChanceOfEventInThisRoute)
 			{
+				// roll for an event
 				int32 indexOfEvent = FMath::RandRange(0, EventsList.Num() - 1);
-				EventHasFiredOnThisRoute = true;
-				CurrentEvent = EventsList[indexOfEvent];
-				GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Rolled Event"));
-				GameplayEventFiredDelegate.Broadcast();
-				return EventsList[indexOfEvent];
+				// make sure there is a possible event
+				if (AnyEventsPossible())
+				{
+					// if event has already fired then roll again
+					while (EventsList[indexOfEvent]->HasFired)
+					{
+						indexOfEvent = FMath::RandRange(0, EventsList.Num() - 1);
+					}
+
+					EventsList[indexOfEvent]->HasFired = true;
+
+					CurrentEvent = EventsList[indexOfEvent];
+					GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Rolled Event"));
+					GameplayEventFiredDelegate.Broadcast();
+					// increase the tick of tht events
+					GameplayEventTick *= GameplayEventTickMultiplier;
+
+					return EventsList[indexOfEvent];
+				}
 			}
 		}
 	}
@@ -147,6 +162,18 @@ void URandomEventsComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	// ...
+}
+
+bool URandomEventsComponent::AnyEventsPossible()
+{
+	for (auto it : EventsList)
+	{
+		if (!it->HasFired)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 void URandomEventsComponent::EventFired()

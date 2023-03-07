@@ -172,9 +172,31 @@ APlanet* ARouteExample::CreateBasicSphere(FTransform transform)
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
 
+	int planetIndex =  0;
+	bool foundUnique = false;
+	if (indexOfPlanetsInUse.size() > 0)
+	{
+		while (!foundUnique)
+		{
+			planetIndex = FMath::RandRange(0, PlanetBP.Num() - 1);
 
+			for (int i = 0; i < indexOfPlanetsInUse.size(); i++)
+			{
+				if (planetIndex == indexOfPlanetsInUse[i])
+				{
+					foundUnique = false;
+					break;
+				}
+				else
+				{
+					foundUnique = true;
+				}
+			}
+		}
 
-	APlanet* APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[FMath::RandRange(0, PlanetBP.Num() - 1)], transform, SpawnParams);
+	}
+	indexOfPlanetsInUse.push_back(planetIndex);
+	APlanet* APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[planetIndex], transform, SpawnParams);
 
 	APlanetActor->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
 
@@ -487,6 +509,9 @@ void ARouteExample::Generate()
 
 		playerController->SetActorLocation(FVector(SpawnTransfrom.GetLocation().X, SpawnTransfrom.GetLocation().Y, 1000));
 	}
+
+	// set quests
+	SetQuest();
 
 }
 
@@ -825,9 +850,9 @@ void ARouteExample::StartGame()
 	Generate();
 	randomSpinRate = FMath::RandRange(1, 100);
 	//auto temp = CreateBasicCube(FVector(0,0,10),FRotator());
-	UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetViewTargetWithBlend(Planets[0], CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
-	Planets[0]->CurrentPlanet = true;
-	CurrentPlanet = Planets[0];
+	UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetViewTargetWithBlend(Planets[2], CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
+	Planets[2]->CurrentPlanet = true;
+	CurrentPlanet = Planets[2];
 	PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	PlayerController->SetShowMouseCursor(true);
 }
@@ -852,4 +877,12 @@ void ARouteExample::ChangeVisibilityOfRoute(bool toHide)
 	{
 		it->SetActorHiddenInGame(toHide);
 	}
+}
+
+void ARouteExample::SetQuest()
+{
+	// On the starting planet a quest for the last one of the route?
+	Planets[2]->Quest->TargetName = Planets[0]->Name;
+	// when we have more quests randomize the contents out of a set of templates
+
 }
