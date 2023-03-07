@@ -95,10 +95,6 @@ void ARouteExample::BeginPlay()
 
 	CameraBoom->TargetArmLength = CameraBoom->TargetArmLength * this->GetActorScale().Length(); // TODO change to use Highest x/y/z instead of the pythag
 
-	for (int i = 0; i < PlanetsBP.Num(); i++)
-	{
-		PlanetIndex.push_back();
-	}
 
 	
 	AudioManager->AmbientSoundComponent->Play();
@@ -475,7 +471,7 @@ void ARouteExample::Generate()
 		FTransform SpawnTransfrom;
 		SpawnTransfrom.SetRotation(FQuat4d(0, 0, 0, 1.f));
 		SpawnTransfrom.SetScale3D(FVector(1, 1, 1));
-		SpawnTransfrom.SetLocation(FVector( Path1[i].X - Dimensions.X / 2, Path1[i].Y - Dimensions.Y / 2, UKismetMathLibrary::Sin(i) * 10));
+		SpawnTransfrom.SetLocation(FVector( Path1[i].X - Dimensions.X / 2, Path1[i].Y - Dimensions.Y / 2, UKismetMathLibrary::Sin(i) * SinWaveAmplitude));
 
 
 		if (i >= CubePath1.Num())
@@ -494,7 +490,7 @@ void ARouteExample::Generate()
 		FTransform SpawnTransfrom;
 		SpawnTransfrom.SetRotation(FQuat4d(0, 0, 0, 1.f));
 		SpawnTransfrom.SetScale3D(FVector(1, 1, 1));
-		SpawnTransfrom.SetLocation(FVector( Path2[i].X - Dimensions.X / 2, Path2[i].Y - Dimensions.Y / 2, UKismetMathLibrary::Sin(i) * 10));
+		SpawnTransfrom.SetLocation(FVector( Path2[i].X - Dimensions.X / 2, Path2[i].Y - Dimensions.Y / 2, UKismetMathLibrary::Sin(i) * SinWaveAmplitude));
 
 
 		if (i >= CubePath2.Num())
@@ -513,7 +509,7 @@ void ARouteExample::Generate()
 		FTransform SpawnTransfrom;
 		SpawnTransfrom.SetRotation(FQuat4d(0, 0, 0, 1.f));
 		SpawnTransfrom.SetScale3D(FVector(1, 1, 1));
-		SpawnTransfrom.SetLocation(FVector( Path3[i].X - Dimensions.X / 2, Path3[i].Y - Dimensions.Y / 2,UKismetMathLibrary::Sin(i) * 10));
+		SpawnTransfrom.SetLocation(FVector( Path3[i].X - Dimensions.X / 2, Path3[i].Y - Dimensions.Y / 2,UKismetMathLibrary::Sin(i) * SinWaveAmplitude));
 
 
 		if (i >= CubePath3.Num())
@@ -533,7 +529,7 @@ void ARouteExample::Generate()
 	{
 
 		SpawnTransfrom.SetRotation(FQuat4d(0, 0, 0, 1.f));
-		SpawnTransfrom.SetScale3D(FVector(1, 1, 1));
+		SpawnTransfrom.SetScale3D(FVector(10, 10, 10));
 		SpawnTransfrom.SetLocation(FVector(astar.begin.position.X - Dimensions.X / 2, astar.begin.position.Y - Dimensions.Y / 2, 0));
 
 		Planets.Add(CreateBasicSphere(SpawnTransfrom * WorldLocation));
@@ -609,6 +605,28 @@ bool ARouteExample::MoveAlongPath(UPathData* PathData , float DeltaTime)
 	FRotator PlayerRotation = PathData->Splines[PathData->Index]->GetRotationAtDistanceAlongSpline(DistanceTraveled, ESplineCoordinateSpace::Type::World);
 
 	//PlayerRotation = FRotator(PlayerRotation.Pitch, PlayerRotation.Yaw, 180);
+	
+	//Make the Camera Face the direction we are moving
+	/*
+	ASpaceshipCharacter* Charac = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	
+
+	FVector StartPoint = Charac->TopDownCamera->GetComponentLocation();
+	FVector EndPoint = Charac->GetActorLocation();
+
+	FRotator CameraRotation = UKismetMathLibrary::FindLookAtRotation(StartPoint,EndPoint);
+	Charac->TopDownCamera->SetWorldRotation(FQuat::Slerp(CameraRotation.Quaternion(), Charac->GetActorRotation().Quaternion(), CameraLerpSpeed * DeltaTime));
+	*/
+
+	
+	/*StartPoint =Charac->TopDownCamera->GetComponentLocation();
+	EndPoint = RouteData->Splines[RouteData->Index]->GetLocationAtDistanceAlongSpline(SplineLength, ESplineCoordinateSpace::Type::World);
+
+	FRotator PlanetRotation = UKismetMathLibrary::FindLookAtRotation(EndPoint,StartPoint);
+
+	FRotator NewRotation = FQuat::Slerp(CameraRotation.Quaternion(), PlanetRotation.Quaternion(), 0.5).Rotator();
+
+	Charac->CameraBoom->SetWorldRotation(FQuat::Slerp(NewRotation.Quaternion(), Charac->GetActorRotation().Quaternion(), CameraLerpSpeed * DeltaTime));*/
 	
 
 	
@@ -892,7 +910,6 @@ void ARouteExample::SwapToMoving()
 	
 	Charac->CameraBoom->SetWorldRotation(UKismetMathLibrary::FindLookAtRotation(EndPoint, StartPoint));
 
-	
 	
 	
 	/*if (RouteData->Index >= RouteData->Max)
