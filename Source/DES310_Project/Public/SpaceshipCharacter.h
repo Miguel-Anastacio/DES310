@@ -140,4 +140,5 @@ protected:
 	virtual void BeginPlay() override;
 
 	void MouseClick();
+	void ResetGame();
 };

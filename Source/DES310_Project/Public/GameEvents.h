@@ -13,7 +13,8 @@ UENUM(BlueprintType)
 enum EventType
 {
 	STORY UMETA(DisplayName = "STORY"),
-	COMBAT  UMETA(DisplayName = "COMBAT")
+	COMBAT  UMETA(DisplayName = "COMBAT"),
+	RANDOM  UMETA(DisplayName = "COMBAT")
 };
 
 /**
@@ -50,6 +51,7 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	TArray<UEventOption*> EventOptions;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Event)
 	bool HasFired = false;
 
 

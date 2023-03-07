@@ -95,10 +95,11 @@ void ARouteExample::BeginPlay()
 
 	CameraBoom->TargetArmLength = CameraBoom->TargetArmLength * this->GetActorScale().Length(); // TODO change to use Highest x/y/z instead of the pythag
 
+	/*
 	for (int i = 0; i < PlanetsBP.Num(); i++)
 	{
 		PlanetIndex.push_back();
-	}
+	}*/
 
 	
 	AudioManager->AmbientSoundComponent->Play();
@@ -145,7 +146,9 @@ void ARouteExample::Tick(float DeltaTime)
 	case PlayerStates::Moving:
 		StateName = "Moving";
 		MoveAlongPath(RouteData, DeltaTime);
-		if (EventsComponent->RollForEvent(RouteData->EventChance, DeltaTime))
+		// passing the current path is cleaner
+		// pass the values for now 
+		if (EventsComponent->RollForEvent(RouteData->EventChance, DeltaTime, RouteData->CombatEventChance, RouteData->StoryEventChance, RouteData->RandomEventChance))
 			PlayerState = Event;
 		break;
 	case PlayerStates::Orbiting: OrbitPlanet(RouteData, DeltaTime);
@@ -1011,7 +1014,7 @@ void ARouteExample::StartGame()
 
 void ARouteExample::ChangeVisibilityOfRoute(bool toHide)
 {
-	/*for (auto it : Planets)
+	for (auto it : Planets)
 	{
 		it->SetActorHiddenInGame(toHide);
 	}
@@ -1035,7 +1038,7 @@ void ARouteExample::ChangeVisibilityOfRoute(bool toHide)
 void ARouteExample::SetQuest()
 {
 	// On the starting planet a quest for the last one of the route?
-	Planets[2]->Quest->TargetName = Planets[0]->Name;
+	Planets[2]->Quest->TargetName = Planets[1]->Name;
 	// when we have more quests randomize the contents out of a set of templates
 
 }

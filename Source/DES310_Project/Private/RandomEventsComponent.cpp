@@ -17,45 +17,63 @@ URandomEventsComponent::URandomEventsComponent()
 	// ...
 }
 
-UGameEvents* URandomEventsComponent::RollForEvent(int32 ChanceOfEventInThisRoute, float deltaTime)
+UGameEvents* URandomEventsComponent::RollForEvent(int32 ChanceOfEventInThisRoute, float deltaTime, int CombatChance, int StoryChance, int RandomChance)
 {
 	// roll to see if event happens
 	// if yes then choose a random event
 	EventTimer += deltaTime;
 	float roll =  FMath::RandRange(0, 100);
-	if (EventsList.Num() > 0)
+	
+	if (EventTimer > GameplayEventTick)
 	{
-		if (EventTimer > GameplayEventTick)
+		if (roll < ChanceOfEventInThisRoute)
 		{
-			if (roll < ChanceOfEventInThisRoute)
-			{
-				// roll for an event
-				int32 indexOfEvent = FMath::RandRange(0, EventsList.Num() - 1);
-				// make sure there is a possible event
-				if (AnyEventsPossible())
-				{
-					// if event has already fired then roll again
-					while (EventsList[indexOfEvent]->HasFired)
-					{
-						indexOfEvent = FMath::RandRange(0, EventsList.Num() - 1);
-					}
+			// determine the type of event
+			int typeOfEventRoll = FMath::RandRange(0, 100);	
+			if (typeOfEventRoll < CombatChance)
+				RollEventFromArray(CombatEventsList);
+			else if (typeOfEventRoll < CombatChance + StoryChance && typeOfEventRoll >= CombatChance)
+				RollEventFromArray(StoryEventsList);
+			else if(typeOfEventRoll < CombatChance + StoryChance + RandomChance && typeOfEventRoll >= CombatChance + StoryChance)
+				RollEventFromArray(RandomEventsList);
 
-					EventsList[indexOfEvent]->HasFired = true;
-
-					CurrentEvent = EventsList[indexOfEvent];
-					GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Rolled Event"));
-					GameplayEventFiredDelegate.Broadcast();
-					// increase the tick of tht events
-					GameplayEventTick *= GameplayEventTickMultiplier;
-
-					return EventsList[indexOfEvent];
-				}
-			}
+			return CurrentEvent;
 		}
 	}
-	else
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Empty"));
+
 	return nullptr;
+}
+
+UGameEvents* URandomEventsComponent::RollEventFromArray(TArray<UGameEvents*>& eventsList)
+{
+	// roll for an event
+	int32 indexOfEvent = FMath::RandRange(0, eventsList.Num() - 1);
+	// make sure there is a possible event
+	if (eventsList.Num() > 0)
+	{
+		if (AnyEventsPossible(eventsList))
+		{
+			// if event has already fired then roll again
+			while (eventsList[indexOfEvent]->HasFired)
+			{
+				indexOfEvent = FMath::RandRange(0, eventsList.Num() - 1);
+			}
+
+			eventsList[indexOfEvent]->HasFired = true;
+
+			CurrentEvent = eventsList[indexOfEvent];
+			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Rolled Event"));
+			GameplayEventFiredDelegate.Broadcast();
+			// increase the tick of the events
+			GameplayEventTick *= GameplayEventTickMultiplier;
+
+			return CurrentEvent;
+		}
+	}
+
+	return nullptr;
+
+
 }
 
 
@@ -70,6 +88,8 @@ void URandomEventsComponent::BeginPlay()
 	Player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	if(Player)
 		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Player Casted"));
+
+	ResetEvents();
 	// ...
 	
 }
@@ -89,7 +109,19 @@ void URandomEventsComponent::ConvertDataAssets()
 			Event = Cast<UGameEvents>(object);
 			if (Event)
 			{
-				EventsList.Add(Event);
+				switch (Event->Type)
+				{
+				case STORY:
+					StoryEventsList.Add(Event);
+					break;
+				case COMBAT:
+					CombatEventsList.Add(Event);
+					break;
+				case RANDOM:
+					RandomEventsList.Add(Event);
+				default:
+					break;
+				}
 			}
 			else
 			{
@@ -104,7 +136,7 @@ void URandomEventsComponent::ConvertDataAssets()
 	}
 
 	// iterate through each event and cast the options to values that we can use
-	for (auto it : EventsList)
+	for (auto it : RandomEventsList)
 	{
 		it->EventOptions.Empty();
 		for(int i= 0; i < it->Options.Num(); i++)
@@ -164,9 +196,9 @@ void URandomEventsComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	// ...
 }
 
-bool URandomEventsComponent::AnyEventsPossible()
+bool URandomEventsComponent::AnyEventsPossible(TArray<UGameEvents*>& eventsList)
 {
-	for (auto it : EventsList)
+	for (auto it : eventsList)
 	{
 		if (!it->HasFired)
 		{
@@ -174,6 +206,24 @@ bool URandomEventsComponent::AnyEventsPossible()
 		}
 	}
 	return false;
+}
+
+void URandomEventsComponent::ResetEvents()
+{
+	for (auto it : RandomEventsList)
+	{
+		it->HasFired = false;
+	}
+
+	for (auto it : StoryEventsList)
+	{
+		it->HasFired = false;
+	}
+
+	for (auto it : CombatEventsList)
+	{
+		it->HasFired = false;
+	}
 }
 
 void URandomEventsComponent::EventFired()
