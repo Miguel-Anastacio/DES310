@@ -95,6 +95,10 @@ void ARouteExample::BeginPlay()
 
 	CameraBoom->TargetArmLength = CameraBoom->TargetArmLength * this->GetActorScale().Length(); // TODO change to use Highest x/y/z instead of the pythag
 
+	for (int i = 0; i < PlanetsBP.Num(); i++)
+	{
+		PlanetIndex.push_back();
+	}
 
 	
 	AudioManager->AmbientSoundComponent->Play();
@@ -195,6 +199,23 @@ APlanet* ARouteExample::CreateBasicSphere(FTransform transform)
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
 
+
+
+	//if (PlanetIndex.Num() < 1)
+	//{
+
+	//	for (int i = 0; i < PlanetsBP.Num(); i++)
+	//	{
+	//		PlanetIndex.push_back(i);
+	//	}
+
+	//}
+
+
+	//int numChosen = rand() % PlanetBP.Num();
+	//int numSelected = arr[numChosen];
+
+	//arr.RemoveAt(numChosen);
 
 
 	APlanet* APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[FMath::RandRange(0, PlanetBP.Num() - 1)], transform, SpawnParams);
@@ -555,7 +576,7 @@ bool ARouteExample::MoveAlongPath(UPathData* PathData , float DeltaTime)
 	FVector PlayerPosition = PathData->Splines[PathData->Index]->GetLocationAtDistanceAlongSpline(DistanceTraveled, ESplineCoordinateSpace::Type::World);
 	FRotator PlayerRotation = PathData->Splines[PathData->Index]->GetRotationAtDistanceAlongSpline(DistanceTraveled, ESplineCoordinateSpace::Type::World);
 
-	PlayerRotation = FRotator(PlayerRotation.Pitch - 180, PlayerRotation.Yaw, 180);
+	//PlayerRotation = FRotator(PlayerRotation.Pitch, PlayerRotation.Yaw, 180);
 	
 
 	
@@ -723,7 +744,7 @@ void ARouteExample::SelectPath()
 	ASpaceshipCharacter* Charac = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	Charac->Selected;
 
-	if (Charac->Selected) // TODO should be replaced with mouse click instead of a random timer
+	if (Charac->Selected)
 	{
 		
 		Charac->Selected = false; // TODO change this back once the player clicks on the ui and move everything inside this if statement so scaling isnt changing all the time

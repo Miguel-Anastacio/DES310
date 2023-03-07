@@ -116,6 +116,8 @@ public:
 	APlanet* CurrentPlanet;
 
 	APlayerController* PlayerController;
+
+	std::vector<int> PlanetIndex;
 	
 	UPROPERTY(EditAnywhere, Category = Camera) UCameraComponent* Camera;
 	UPROPERTY(EditAnywhere, Category = Camera) USpringArmComponent* CameraBoom;
