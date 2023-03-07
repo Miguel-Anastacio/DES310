@@ -35,6 +35,9 @@ public:
 	TSubclassOf<class APlanet> Target;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Quest)
+	FString TargetName;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Quest)
 	int32 XPGained;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Quest)

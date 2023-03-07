@@ -184,7 +184,6 @@ public:
 	void SwapState(PlayerStates State);
 
 
-
 	UFUNCTION() void SwapToOrbiting();
 	UFUNCTION() void BeginToOrbiting();
 	UFUNCTION() void SwapToMoving();
@@ -203,10 +202,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void StartGame();
-
-	
-
 	// used to hide the route when the player transitions to orbiting
 	// and to display it when it chnages to selecting
 	void ChangeVisibilityOfRoute(bool toHide);
+
+	// used to make sure that we don't repeat planets on the same route
+	std::vector<int> indexOfPlanetsInUse;
+
+	void SetQuest();
 };
