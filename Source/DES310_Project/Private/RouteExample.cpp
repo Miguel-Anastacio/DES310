@@ -993,7 +993,6 @@ void ARouteExample::LeaveOrbit()
 	}
 	else // Space Station
 	{
-
 		MovingTransitionDelegate.Broadcast();
 	}
 	
