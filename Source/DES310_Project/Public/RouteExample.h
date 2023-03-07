@@ -16,6 +16,7 @@
 #include "Engine/StaticMeshActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "PathData.h"
+#include "AudioManager.h"
 /*#include "BaseState.h"
 #include "FightingState.h"
 #include "MovingState.h"
@@ -44,6 +45,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOrbitTransitionDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FMovingTransitionDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSelectingTransitionDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCheckpointTransitionDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FBeginOrbitTransitionDelegate);
 
 // delegate to notify UI when user presses on a route
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPathClickedDelegate, UPathData*, CurrentPath);
@@ -65,6 +67,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	void Generate();
+	void ClearRouteData();
 	APath* CreateBasicCube(FTransform transform);
 	APlanet* CreateBasicSphere(FTransform transform);
 
@@ -82,6 +85,8 @@ public:
 		URandomEventsComponent* EventsComponent;
 
 
+	UPROPERTY(EditAnywhere,BlueprintReadWrite) AAudioManager* AudioManager;
+	
 	//States for now will be do with just if statements but could possibly be deligated to their own classes
 	bool MoveAlongPath(UPathData* PathData, float DeltaTime);
 	void OrbitPlanet(UPathData* PathData, float DeltaTime);
@@ -92,11 +97,10 @@ public:
 
 	int CameraIndex = 0;
 	FVector positionOffset;
+	
 
-
-	UPROPERTY() UAudioComponent* AmbientSoundComponent;
-	UPROPERTY() UAudioComponent* BattleSoundComponent;
-	UPROPERTY() UAudioComponent* ThrusterSoundComponent;
+	UPROPERTY(BlueprintReadWrite) bool Temp;
+	UPROPERTY(BlueprintReadWrite) bool Temp2;
 	
 	UPROPERTY() USplineComponent* SplineComponent1;
 	UPROPERTY() USplineComponent* SplineComponent2;
@@ -112,19 +116,17 @@ public:
 	APlanet* CurrentPlanet;
 
 	APlayerController* PlayerController;
-
-
-	UPROPERTY(EditAnywhere, Category = Sound)  TArray <class USoundCue*> SoundCues;
-
 	
 	UPROPERTY(EditAnywhere, Category = Camera) UCameraComponent* Camera;
 	UPROPERTY(EditAnywhere, Category = Camera) USpringArmComponent* CameraBoom;
 	UPROPERTY(EditAnywhere, Category = Camera) float CameraTransitionSpeed = 5;
 	UPROPERTY(EditAnywhere, Category = Camera) float CameraDistance = 20000;
 
-	UPROPERTY(EditAnywhere, Category = Route) float PlayerTravelTime = 10;
+	UPROPERTY(EditAnywhere, Category = Route) float PlayerMovementSpeed = 10;
+	UPROPERTY(EditAnywhere, Category = Route) FVector2D PathStartEndPercent = FVector2D(0.1,0.9);
 	UPROPERTY(EditAnywhere, Category = Route) int OverallPaths = 3;
-
+	UPROPERTY(EditAnywhere, Category = Route) float PathHeightOffset = 20;
+	
 	UPROPERTY(EditAnywhere, Category = BpActors) TArray<TSubclassOf<class APlanet>> PlanetBP;
 	UPROPERTY(EditAnywhere, Category = BpActors) TSubclassOf<class APath> PathBP;
 
@@ -177,36 +179,23 @@ public:
 
 	void SwapState(PlayerStates State);
 
-	UFUNCTION()
-	void SwapToOrbiting();
 
 
-	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)
-	FOrbitTransitionDelegate OrbitTransitionDelegate;
-
-	UFUNCTION()
-	void SwapToMoving();
-
-	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)
-
-	FMovingTransitionDelegate MovingTransitionDelegate;
-
-
-	UFUNCTION()
-	void SwapToSelecting();
-
-	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)
-	FSelectingTransitionDelegate SelectTransitionDelegate;
-
-
-	UFUNCTION()
-	void GetPathSelected(UPathData* path);
-
-	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)
-	FPathClickedDelegate PathClickedDelegate;
-
-	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)
-	FCheckpointTransitionDelegate CheckpointTransitionDelegate;
+	UFUNCTION() void SwapToOrbiting();
+	UFUNCTION() void BeginToOrbiting();
+	UFUNCTION() void SwapToMoving();
+	UFUNCTION() void SwapToSelecting();
+	
+	UFUNCTION(BlueprintCallable) void GetPathSelected(UPathData* path);
+	UFUNCTION(BlueprintCallable) void LeaveOrbit();
+	
+	
+	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)FOrbitTransitionDelegate OrbitTransitionDelegate;
+	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable) FBeginOrbitTransitionDelegate BeginOrbitTransitionDelegate;
+	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)	FMovingTransitionDelegate MovingTransitionDelegate;
+	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)	FSelectingTransitionDelegate SelectTransitionDelegate;
+	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)FPathClickedDelegate PathClickedDelegate;
+	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)FCheckpointTransitionDelegate CheckpointTransitionDelegate;
 
 	UFUNCTION(BlueprintCallable)
 	void StartGame();
