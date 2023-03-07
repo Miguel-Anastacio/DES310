@@ -199,7 +199,32 @@ APlanet* ARouteExample::CreateBasicSphere(FTransform transform)
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
 
+	int planetIndex =  0;
+	bool foundUnique = false;
+	if (indexOfPlanetsInUse.size() > 0)
+	{
+		while (!foundUnique)
+		{
+			planetIndex = FMath::RandRange(0, PlanetBP.Num() - 1);
 
+			for (int i = 0; i < indexOfPlanetsInUse.size(); i++)
+			{
+				if (planetIndex == indexOfPlanetsInUse[i])
+				{
+					foundUnique = false;
+					break;
+				}
+				else
+				{
+					foundUnique = true;
+				}
+			}
+		}
+
+
+	}
+	indexOfPlanetsInUse.push_back(planetIndex);
+	APlanet* APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[planetIndex], transform, SpawnParams);
 
 	//if (PlanetIndex.Num() < 1)
 	//{
@@ -218,7 +243,8 @@ APlanet* ARouteExample::CreateBasicSphere(FTransform transform)
 	//arr.RemoveAt(numChosen);
 
 
-	APlanet* APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[FMath::RandRange(0, PlanetBP.Num() - 1)], transform, SpawnParams);
+	//APlanet* APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[FMath::RandRange(0, PlanetBP.Num() - 1)], transform, SpawnParams);
+
 
 	APlanetActor->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
 
@@ -540,12 +566,18 @@ void ARouteExample::Generate()
 		playerController->SetActorLocation(FVector(SpawnTransfrom.GetLocation().X, SpawnTransfrom.GetLocation().Y, 1000));
 	}
 
+
+	// set quests
+	SetQuest();
+
+
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Spline Count: %i,%i,%i"),SplineComponent1->GetNumberOfSplinePoints(),SplineComponent2->GetNumberOfSplinePoints(),SplineComponent3->GetNumberOfSplinePoints()));
 }
 
 void ARouteExample::ClearRouteData()
 {
 	
+
 }
 
 void  ARouteExample::SwitchCamera()
@@ -996,5 +1028,14 @@ void ARouteExample::ChangeVisibilityOfRoute(bool toHide)
 	for (auto it : CubePath3)
 	{
 		it->SetActorHiddenInGame(toHide);
-	}*/
+
+	}
+}
+
+void ARouteExample::SetQuest()
+{
+	// On the starting planet a quest for the last one of the route?
+	Planets[2]->Quest->TargetName = Planets[0]->Name;
+	// when we have more quests randomize the contents out of a set of templates
+
 }
