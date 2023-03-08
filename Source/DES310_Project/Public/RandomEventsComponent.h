@@ -32,7 +32,13 @@ public:
 
 
 	UPROPERTY(VisibleAnywhere)
-	TArray<UGameEvents*> EventsList;
+	TArray<UGameEvents*> RandomEventsList;
+
+	UPROPERTY(VisibleAnywhere)
+	TArray<UGameEvents*> StoryEventsList;
+
+	UPROPERTY(VisibleAnywhere)
+	TArray<UGameEvents*> CombatEventsList;
 
 	ASpaceshipCharacter* Player;
 
@@ -60,14 +66,17 @@ public:
 
 	// returns the event that is supposed to happen
 	// returns null if no event is to happen
-	UGameEvents* RollForEvent(int32 ChanceOfEventInThisRoute, float deltaTime);
+	UGameEvents* RollForEvent(int32 ChanceOfEventInThisRoute, float deltaTime, int CombatChance, int StoryChance, int RandomChance);
+
+	UGameEvents* RollEventFromArray(TArray<UGameEvents*>& eventsList);
 
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	void SetEventHasFiredOnThisRoute(bool RouteStatus) { EventHasFiredOnThisRoute = RouteStatus; };
 
-	bool AnyEventsPossible();
+	bool AnyEventsPossible(TArray<UGameEvents*>& eventsList);
+	void ResetEvents();
 
 	UFUNCTION()
 	void EventFired();

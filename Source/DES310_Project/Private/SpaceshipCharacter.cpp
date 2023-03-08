@@ -12,6 +12,7 @@
 #include "RandomEventsComponent.h"
 #include "Planet.h"
 #include "RouteExample.h"
+#include "StatsComponent.h"
 
 // Sets default values
 ASpaceshipCharacter::ASpaceshipCharacter()
@@ -37,7 +38,6 @@ ASpaceshipCharacter::ASpaceshipCharacter()
 
 	// messing around with lag
 	CameraBoom->bEnableCameraLag = true;
-	CameraBoom->CameraLagSpeed = 200.0f;
 
 	// create camera component
 	TopDownCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
@@ -53,6 +53,8 @@ ASpaceshipCharacter::ASpaceshipCharacter()
 	// create player inventory
 	PlayerInventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
 	GetCharacterMovement()->GravityScale = 0.0f;
+
+	StatsPlayerComponent = CreateDefaultSubobject<UStatsComponent>(TEXT("Stats"));
 }
 
 // Called when the game starts or when spawned
@@ -70,6 +72,30 @@ void ASpaceshipCharacter::BeginPlay()
 	CompleteQuestDelegate.AddUniqueDynamic(this, &ASpaceshipCharacter::CompleteQuest);
 	StartQuestDelegate.AddUniqueDynamic(this, &ASpaceshipCharacter::StartQuest);
 
+	
+	if (!StatsPlayerComponent)
+	{
+		GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Red, TEXT("Stats Problem"));
+	}
+
+	ApplyInventoryToStats();
+}
+
+void ASpaceshipCharacter::ApplyInventoryToStats()
+{
+	ApplyItemToStats(PlayerInventoryComponent->GetEquippedShield());
+	ApplyItemToStats(PlayerInventoryComponent->GetEquippedBlaster());
+	ApplyItemToStats(PlayerInventoryComponent->GetEquippedHull());
+	ApplyItemToStats(PlayerInventoryComponent->GetEquippedEngine());
+
+}
+
+void ASpaceshipCharacter::ApplyItemToStats(UItem* item)
+{
+	StatsPlayerComponent->Shields = item->Modifiers.ShieldBonus * StatsPlayerComponent->BaseShields;
+	StatsPlayerComponent->Speed = item->Modifiers.ShieldBonus * StatsPlayerComponent->BaseSpeed;
+	StatsPlayerComponent->HullIntegrity = item->Modifiers.ShieldBonus * StatsPlayerComponent->BaseHullIntegrity;
+	StatsPlayerComponent->ATKPower = item->Modifiers.ShieldBonus * StatsPlayerComponent->BaseATKPower;
 }
 
 // Called every frame
@@ -84,11 +110,19 @@ void ASpaceshipCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	// bind action
 	PlayerInputComponent->BindAction("Mouse Click", IE_Pressed, this, &ASpaceshipCharacter::MouseClick);
+	PlayerInputComponent->BindAction("Reset Game", IE_Pressed, this, &ASpaceshipCharacter::ResetGame);
 }
 
 void ASpaceshipCharacter::MouseClick()
 {
-	Selected = true;
+	// only do this if the state is selecting
+	if(IsInSelectScreen)
+		Selected = true;
+}
+
+void ASpaceshipCharacter::ResetGame()
+{
+	UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
 }
 
 void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -135,6 +169,7 @@ void ASpaceshipCharacter::WasQuestCompleted(FString planetName)
 void ASpaceshipCharacter::CompleteQuest()
 {
 	GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("Quest Completed"));
-	Credits += LastCompletedQuest->CreditsGained;
+	StatsPlayerComponent->IncreaseCurrency(LastCompletedQuest->CreditsGained);
+	StatsPlayerComponent->XPSystem(LastCompletedQuest->XPGained);
 	ActiveQuest = nullptr;
 }

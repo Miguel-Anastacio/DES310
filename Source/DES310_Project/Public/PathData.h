@@ -28,7 +28,10 @@ public:
 	int Max = 0; // Could probably just use Stops.Num
 	bool AtFirstPlanet = true;
 	
-	UPROPERTY(BlueprintReadOnly) int EventChance = 10;
+	UPROPERTY(BlueprintReadOnly) int EventChance = 40;
+	UPROPERTY(BlueprintReadOnly) int CombatEventChance = 33;
+	UPROPERTY(BlueprintReadOnly) int StoryEventChance = 33;
+	UPROPERTY(BlueprintReadOnly) int RandomEventChance = 33;
 	UPROPERTY(BlueprintReadOnly) int StoryQuestChance = 10;
 	UPROPERTY(BlueprintReadOnly) int RandomQuestChance = 10;
 
