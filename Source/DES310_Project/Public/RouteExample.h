@@ -17,6 +17,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "PathData.h"
 #include "AudioManager.h"
+#include "Enemy.h"
+#include "Bullet_CPP.h"
 /*#include "BaseState.h"
 #include "FightingState.h"
 #include "MovingState.h"
@@ -34,6 +36,7 @@ enum PlayerStates
 	Selecting,
 	Fighting,
 	Event
+
 };
 
 
@@ -146,7 +149,6 @@ public:
 	UPROPERTY(VisibleAnywhere) UPathData* RouteData;
 
 
-
 	UPROPERTY(EditAnywhere) float RouteTickRate = 2;
 	UPROPERTY(EditAnywhere) float CameraRate = 2;
 	UPROPERTY(EditAnywhere) float SpinRate = 2;
@@ -202,6 +204,16 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)FPathClickedDelegate PathClickedDelegate;
 	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)FCheckpointTransitionDelegate CheckpointTransitionDelegate;
 
+	UPROPERTY(VisibleAnywhere, Category = Camera)
+		UCameraComponent* FightCamera;
+
+	UPROPERTY(EditAnywhere) TSubclassOf<class AEnemy> MyEnemy;
+	UPROPERTY(EditAnywhere) TSubclassOf<class ABullet_CPP> MyBullet;
+	UPROPERTY() AEnemy* AEnemyActor;
+	UPROPERTY() ABullet_CPP* ABulletActor;
+
+	float FireRate = 0.5;
+
 	UFUNCTION(BlueprintCallable)
 	void StartGame();
 	// used to hide the route when the player transitions to orbiting
@@ -212,4 +224,7 @@ public:
 	std::vector<int> indexOfPlanetsInUse;
 
 	void SetQuest();
+
+	void FightScene();
+	void CombatReset();
 };
