@@ -123,13 +123,17 @@ public:
 	UPROPERTY(EditAnywhere, Category = Camera) USpringArmComponent* CameraBoom;
 	UPROPERTY(EditAnywhere, Category = Camera) float CameraTransitionSpeed = 5;
 	UPROPERTY(EditAnywhere, Category = Camera) float CameraDistance = 20000;
-
-	UPROPERTY(EditAnywhere, Category = Route) float PlayerMovementSpeed = 10;
+	UPROPERTY(EditAnywhere, Category = Camera) float CameraLerpSpeed = 0.1;
+	
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = Route) float PlayerMovementSpeed = 10;
 	UPROPERTY(EditAnywhere, Category = Route) FVector2D PathStartEndPercent = FVector2D(0.1,0.9);
 	UPROPERTY(EditAnywhere, Category = Route) int OverallPaths = 3;
 	UPROPERTY(EditAnywhere, Category = Route) float PathHeightOffset = 20;
+	UPROPERTY(EditAnywhere, Category = Route) float SinWaveAmplitude = 50;
+	UPROPERTY(EditAnywhere, Category = Route) float PlanetScaling = 1;
 	
 	UPROPERTY(EditAnywhere, Category = BpActors) TArray<TSubclassOf<class APlanet>> PlanetBP;
+	UPROPERTY(EditAnywhere, Category = BpActors) TArray<TSubclassOf<class APlanet>> SpaceStationBP;
 	UPROPERTY(EditAnywhere, Category = BpActors) TSubclassOf<class APath> PathBP;
 
 	UPROPERTY(EditAnywhere, Category = Poisson) FVector2D Dimensions = FVector2D(300, 300);
