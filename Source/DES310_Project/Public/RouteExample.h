@@ -216,17 +216,6 @@ public:
 	UPROPERTY() ABullet_CPP* ABulletActor;
 
 	float FireRate = 0.5;
-
-	UPROPERTY(VisibleAnywhere, Category = Camera)
-		UCameraComponent* FightCamera;
-
-	UPROPERTY(EditAnywhere) TSubclassOf<class AEnemy> MyEnemy;
-	UPROPERTY(EditAnywhere) TSubclassOf<class ABullet_CPP> MyBullet;
-	UPROPERTY() AEnemy* AEnemyActor;
-	UPROPERTY() ABullet_CPP* ABulletActor;
-
-	float FireRate = 0.5;
-
 	UFUNCTION(BlueprintCallable)
 	void StartGame();
 	// used to hide the route when the player transitions to orbiting
