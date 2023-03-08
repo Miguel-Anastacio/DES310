@@ -68,6 +68,9 @@ ARouteExample::ARouteExample()
 	Camera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	Camera->bUsePawnControlRotation = false;
 
+	FightCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Fight Camera"));
+	FightCamera->SetupAttachment(RootComponent);
+
 	RouteData = CreateDefaultSubobject<UPathData>(TEXT("Route Data"));
 	
 	CameraBoom->SetWorldRotation(FRotator(-90, 180, 0));
@@ -94,6 +97,7 @@ void ARouteExample::BeginPlay()
 	PlayerController->SetShowMouseCursor(true);
 
 	CameraBoom->TargetArmLength = CameraBoom->TargetArmLength * this->GetActorScale().Length(); // TODO change to use Highest x/y/z instead of the pythag
+	FightCamera->SetWorldLocation(Camera->GetComponentLocation());
 
 	/*
 	for (int i = 0; i < PlanetsBP.Num(); i++)
@@ -147,10 +151,11 @@ void ARouteExample::Tick(float DeltaTime)
 	case PlayerStates::Moving:
 		StateName = "Moving";
 		MoveAlongPath(RouteData, DeltaTime);
-		// passing the current path is cleaner
+// passing the current path is cleaner
 		// pass the values for now 
 		if (EventsComponent->RollForEvent(RouteData->EventChance, DeltaTime, RouteData->CombatEventChance, RouteData->StoryEventChance, RouteData->RandomEventChance))
-			PlayerState = Event;
+			SwapState(Fighting);
+
 		break;
 	case PlayerStates::Orbiting: OrbitPlanet(RouteData, DeltaTime);
 		StateName = "Orbiting";
@@ -160,6 +165,11 @@ void ARouteExample::Tick(float DeltaTime)
 		break;
 	case PlayerStates::Event:
 		StateName = "Event";
+		break;
+	case PlayerStates::Fighting: FightScene();
+		StateName = "Fighting";
+		break;
+	default:
 		break;
 	}
 
@@ -709,7 +719,6 @@ void ARouteExample::SelectPath()
 	float Path1Distance = 10000000000000000; // TODO maybe do a distance test with the first element but i cba
 	float Path2Distance = 10000000000000000;
 
-	DrawDebugLine(GetWorld(), LookPosition, LookPosition + LookDirection * 100, FColor::Emerald, false, 2, 1, 1);
 	bool WhichPath = false; // TODO if we stick to 2 paths this is fine but could be improved
 
 	for (auto path : CubePath1)
@@ -1087,5 +1096,78 @@ void ARouteExample::SetQuest()
 	// On the starting planet a quest for the last one of the route?
 	Planets[2]->Quest->TargetName = Planets[1]->Name;
 	// when we have more quests randomize the contents out of a set of templates
+
+}
+
+void ARouteExample::FightScene() {
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple, TEXT("FIGHT SCENE HIT"));
+	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.Owner = this;
+
+	if (!FightCamera->IsActive())
+	{
+		player->TopDownCamera->SetActive(false);
+		FightCamera->SetActive(true);
+
+		player->SetActorLocation(FightCamera->GetComponentLocation() + FVector(600, -300, 0));
+
+
+	}
+
+	if (!AEnemyActor)
+	{
+		FRotator Rotation(0.0f, 0.0f, 0.0f);
+		FActorSpawnParameters SpawnInfo;
+		SpawnInfo.Owner = this;
+
+		AEnemyActor = GetWorld()->SpawnActor<AEnemy>(MyEnemy, GetTransform(), SpawnInfo);
+
+		AEnemyActor->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
+		FVector ActorSize, ActorOrigin;
+		AEnemyActor->GetActorBounds(false, ActorOrigin, ActorSize, false);
+		AEnemyActor->SetActorLocation(player->GetActorLocation() + FVector(0, 600, -0.75 * ActorSize.Z));
+	}
+
+	FireRate -= GetWorld()->DeltaTimeSeconds;
+
+	if (FireRate <= 0.f && !IsValid(ABulletActor))
+	{
+		FRotator Rotation(0.0f, 0.0f, 0.0f);
+		FActorSpawnParameters SpawnInfo;
+		SpawnInfo.Owner = this;
+
+		ABulletActor = GetWorld()->SpawnActor<ABullet_CPP>(MyBullet, GetTransform(), SpawnInfo);
+
+		ABulletActor->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
+
+
+		ABulletActor->SetActorLocation(player->GetActorLocation() + FVector(0, 80, 0));
+		ABulletActor->BulletMesh->SetPhysicsLinearVelocity(FVector(0.f, 150.f, 0.f));
+
+		FireRate = 0.5;
+
+		if (!IsValid(AEnemyActor))
+		{
+			CombatReset();
+		}
+
+	}
+
+
+
+}
+
+void ARouteExample::CombatReset() {
+
+	SwapState(PreviousState);
+	Camera->SetActive(true);
+	FightCamera->SetActive(false);
+	AEnemyActor->Destroy();
+	ABulletActor->Destroy();
+	AEnemyActor = nullptr;
+	ABulletActor = nullptr;
 
 }
