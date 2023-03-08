@@ -16,6 +16,7 @@
 
 class APlanet;
 class UInventoryComponent;
+class UStatsComponent;
 class URandomEventsComponent;
 class ARouteExample;
 
@@ -39,6 +40,7 @@ class DES310_PROJECT_API ASpaceshipCharacter : public ACharacter
 public:
 
 	bool Selected = false;
+	bool IsInSelectScreen = false;
 
 
 	UPROPERTY(VisibleAnywhere, Category = Camera)
@@ -59,6 +61,8 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	UInventoryComponent* PlayerInventoryComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UStatsComponent* StatsPlayerComponent;
 
 	// designer can set the frequency of the roll for event
 	UPROPERTY(EditAnywhere)
@@ -94,6 +98,8 @@ public:
 		return PlayerInventoryComponent;
 	}
 
+	UFUNCTION() void ApplyInventoryToStats();
+	UFUNCTION() void ApplyItemToStats(UItem* item);
 
 
 	// Called every frame

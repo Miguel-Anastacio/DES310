@@ -5,6 +5,7 @@
 
 #include "RandomEventsComponent.h"
 #include "SpaceshipCharacter.h"
+#include "StatsComponent.h"
 #include "RouteExample.h"
 
 // Sets default values for this component's properties
@@ -175,7 +176,8 @@ void URandomEventsComponent::HandleEvent(UEventOption* OptionPicked)
 	route->MovingTransitionDelegate.Broadcast();
 	// depnding on the effects of the option
 	// change the players stats 
-	Player->Credits += OptionPicked->CreditsGained;
+	Player->StatsPlayerComponent->IncreaseCurrency(OptionPicked->CreditsGained);
+	Player->StatsPlayerComponent->XPSystem(OptionPicked->XPGained);
 
 	if(route)
 		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Handling Event"));

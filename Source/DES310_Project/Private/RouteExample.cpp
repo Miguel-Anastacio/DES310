@@ -930,6 +930,8 @@ void ARouteExample::SwapToMoving()
 
 void ARouteExample::SwapToSelecting()
 {
+	ASpaceshipCharacter* Charac = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	Charac->IsInSelectScreen = true;
 	PlayerController->SetViewTargetWithBlend(GetRootComponent()->GetAttachmentRootActor(), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
 	SwapState(Selecting);
 	// if leaving planet

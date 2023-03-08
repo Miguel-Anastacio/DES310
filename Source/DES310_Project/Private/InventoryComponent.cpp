@@ -4,7 +4,7 @@
 	Author: MIGUEL ANASTACIO 15/02/2023
 */
 
-#include "InventoryComponent.h"
+#include "SpaceshipCharacter.h"
 
 // Sets default values for this component's properties
 UInventoryComponent::UInventoryComponent()
@@ -112,7 +112,12 @@ bool UInventoryComponent::SwapShipParts(PartType type, UItem* newItem)
 			break;
 		}
 	}
-
+	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(GetOwner());
+	if (player)
+	{
+		player->ApplyItemToStats(newItem);
+	}
+	
 	if (result)
 	{
 		RemoveItem(PreviousItem->Name);
