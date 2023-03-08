@@ -709,7 +709,6 @@ void ARouteExample::SelectPath()
 	float Path1Distance = 10000000000000000; // TODO maybe do a distance test with the first element but i cba
 	float Path2Distance = 10000000000000000;
 
-	DrawDebugLine(GetWorld(), LookPosition, LookPosition + LookDirection * 100, FColor::Emerald, false, 2, 1, 1);
 	bool WhichPath = false; // TODO if we stick to 2 paths this is fine but could be improved
 
 	for (auto path : CubePath1)
@@ -1027,10 +1026,20 @@ void ARouteExample::LeaveOrbit()
 	//Leaving Space Station - No need to select or generate route
 	//Leaving Last Planet - Need Camera Transition and to regrenerate a route
 	//Leaving First Planet - No Route so need to generate and then select
+
+
+	for (auto it : Planets)
+	{
+		it->CurrentPlanet = false;
+	}
+
+	ChangeVisibilityOfRoute(false);
+
+
 	
 	if(RouteData->Max == 0) // First Planet
 	{
-	
+
 		SelectTransitionDelegate.Broadcast();
 	}
 	else if(RouteData->Max == RouteData->Index) // Last Planet
@@ -1079,7 +1088,7 @@ void ARouteExample::ChangeVisibilityOfRoute(bool toHide)
 	{
 		it->SetActorHiddenInGame(toHide);
 
-	}*/
+	}
 }
 
 void ARouteExample::SetQuest()
