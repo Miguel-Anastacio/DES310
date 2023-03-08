@@ -529,7 +529,7 @@ void ARouteExample::Generate()
 	{
 
 		SpawnTransfrom.SetRotation(FQuat4d(0, 0, 0, 1.f));
-		SpawnTransfrom.SetScale3D(FVector(10, 10, 10));
+		SpawnTransfrom.SetScale3D(FVector(PlanetScaling, PlanetScaling, PlanetScaling));
 		SpawnTransfrom.SetLocation(FVector(astar.begin.position.X - Dimensions.X / 2, astar.begin.position.Y - Dimensions.Y / 2, 0));
 
 		Planets.Add(CreateBasicSphere(SpawnTransfrom * WorldLocation));
@@ -738,14 +738,14 @@ void ARouteExample::SelectPath()
 		{
 			if (cube)
 			{
-				cube->SetActorScale3D(FVector(2, 2, 2));
+				cube->SetActorScale3D(FVector(4, 4, 4));
 			}
 		}
 		for (auto cube : CubePath2)
 		{
 			if (cube)
 			{
-				cube->SetActorScale3D(FVector(1, 1, 1));
+				cube->SetActorScale3D(FVector(2, 2, 2));
 			}
 		}
 
@@ -753,7 +753,7 @@ void ARouteExample::SelectPath()
 		{
 			if (cube)
 			{
-				cube->SetActorScale3D(FVector(1, 1, 1));
+				cube->SetActorScale3D(FVector(2, 2, 2));
 			}
 		}
 		CurrentSpline = SplineComponent1;
@@ -767,14 +767,14 @@ void ARouteExample::SelectPath()
 		{
 			if (cube)
 			{
-				cube->SetActorScale3D(FVector(2, 2, 2));
+				cube->SetActorScale3D(FVector(4, 4, 4));
 			}
 		}
 		for (auto cube : CubePath3)
 		{
 			if (cube)
 			{
-				cube->SetActorScale3D(FVector(2, 2, 2));
+				cube->SetActorScale3D(FVector(4, 4, 4));
 			}
 		}
 
@@ -782,7 +782,7 @@ void ARouteExample::SelectPath()
 		{
 			if (cube)
 			{
-				cube->SetActorScale3D(FVector(1, 1, 1));
+				cube->SetActorScale3D(FVector(2, 2, 2));
 			}
 		}
 		CurrentSpline = SplineComponent2;
@@ -796,6 +796,30 @@ void ARouteExample::SelectPath()
 
 	if (Charac->Selected)
 	{
+
+		for (auto cube : CubePath2)
+		{
+			if (cube)
+			{
+				cube->SetActorScale3D(FVector(1, 1, 1));
+			}
+		}
+		for (auto cube : CubePath3)
+		{
+			if (cube)
+			{
+				cube->SetActorScale3D(FVector(1, 1, 1));
+			}
+		}
+
+		for (auto cube : CubePath1)
+		{
+			if (cube)
+			{
+				cube->SetActorScale3D(FVector(1, 1, 1));
+			}
+		}
+
 		
 		Charac->Selected = false; // TODO change this back once the player clicks on the ui and move everything inside this if statement so scaling isnt changing all the time
 		timer = 0;
@@ -906,10 +930,10 @@ void ARouteExample::SwapToMoving()
 	//Make the Camera Face the direction we are moving
 	float SplineLength = RouteData->Splines[RouteData->Index]->GetSplineLength();
 	FVector StartPoint = RouteData->Splines[RouteData->Index]->GetLocationAtDistanceAlongSpline(0, ESplineCoordinateSpace::Type::World);
-	FVector EndPoint = RouteData->Splines[RouteData->Index]->GetLocationAtDistanceAlongSpline(SplineLength, ESplineCoordinateSpace::Type::World);
+	FVector EndPoint = RouteData->Splines[RouteData->Index]->GetLocationAtDistanceAlongSpline(SplineLength, ESplineCoordinateSpace::Type::World) - FVector(0,0,-50);
 	
 	Charac->CameraBoom->SetWorldRotation(UKismetMathLibrary::FindLookAtRotation(EndPoint, StartPoint));
-
+	//Charac->CameraBoom->AddWorldRotation(FRotator(0,0,15));
 	
 	
 	/*if (RouteData->Index >= RouteData->Max)
@@ -1046,7 +1070,7 @@ void ARouteExample::ChangeVisibilityOfRoute(bool toHide)
 	{
 		it->SetActorHiddenInGame(toHide);
 
-	}
+	}*/
 }
 
 void ARouteExample::SetQuest()
