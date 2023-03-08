@@ -1180,6 +1180,7 @@ void ARouteExample::CombatReset() {
 
 	MovingTransitionDelegate.Broadcast();
 	//SwapState(PreviousState);
+
 	Camera->SetActive(true);
 	FightCamera->SetActive(false);
 	AEnemyActor->Destroy();
