@@ -61,4 +61,5 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Item)
 	float Price = 10.0f;
+
 };
