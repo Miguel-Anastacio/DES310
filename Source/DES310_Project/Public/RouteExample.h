@@ -17,6 +17,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "PathData.h"
 #include "AudioManager.h"
+#include "Enemy.h"
+#include "Bullet_CPP.h"
 /*#include "BaseState.h"
 #include "FightingState.h"
 #include "MovingState.h"
@@ -34,6 +36,7 @@ enum PlayerStates
 	Selecting,
 	Fighting,
 	Event
+
 };
 
 
@@ -46,6 +49,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FMovingTransitionDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSelectingTransitionDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCheckpointTransitionDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FBeginOrbitTransitionDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCombatTransitionDelegate);
 
 // delegate to notify UI when user presses on a route
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPathClickedDelegate, UPathData*, CurrentPath);
@@ -146,7 +150,6 @@ public:
 	UPROPERTY(VisibleAnywhere) UPathData* RouteData;
 
 
-
 	UPROPERTY(EditAnywhere) float RouteTickRate = 2;
 	UPROPERTY(EditAnywhere) float CameraRate = 2;
 	UPROPERTY(EditAnywhere) float SpinRate = 2;
@@ -182,7 +185,7 @@ public:
 
 	UStaticMesh* CubeMesh;
 	UStaticMesh* SphereMesh;
-
+	UFUNCTION(BlueprintCallable)
 	void SwapState(PlayerStates State);
 
 
@@ -190,6 +193,7 @@ public:
 	UFUNCTION() void BeginToOrbiting();
 	UFUNCTION() void SwapToMoving();
 	UFUNCTION() void SwapToSelecting();
+	UFUNCTION() void SwapToCombat();
 	
 	UFUNCTION(BlueprintCallable) void GetPathSelected(UPathData* path);
 	UFUNCTION(BlueprintCallable) void LeaveOrbit();
@@ -201,6 +205,17 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)	FSelectingTransitionDelegate SelectTransitionDelegate;
 	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)FPathClickedDelegate PathClickedDelegate;
 	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)FCheckpointTransitionDelegate CheckpointTransitionDelegate;
+	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable )FCombatTransitionDelegate CombatTransitionDelegate;
+
+	UPROPERTY(VisibleAnywhere, Category = Camera)
+		UCameraComponent* FightCamera;
+
+	UPROPERTY(EditAnywhere) TSubclassOf<class AEnemy> MyEnemy;
+	UPROPERTY(EditAnywhere) TSubclassOf<class ABullet_CPP> MyBullet;
+	UPROPERTY() AEnemy* AEnemyActor;
+	UPROPERTY() ABullet_CPP* ABulletActor;
+
+	float FireRate = 0.5;
 
 	UFUNCTION(BlueprintCallable)
 	void StartGame();
@@ -212,4 +227,7 @@ public:
 	std::vector<int> indexOfPlanetsInUse;
 
 	void SetQuest();
+
+	void FightScene();
+	void CombatReset();
 };
