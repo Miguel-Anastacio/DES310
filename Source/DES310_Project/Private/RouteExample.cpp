@@ -97,7 +97,8 @@ void ARouteExample::BeginPlay()
 	PlayerController->SetShowMouseCursor(true);
 
 	CameraBoom->TargetArmLength = CameraBoom->TargetArmLength * this->GetActorScale().Length(); // TODO change to use Highest x/y/z instead of the pythag
-	FightCamera->SetWorldLocation(Camera->GetComponentLocation());
+	FightCamera->SetWorldLocation(FVector(0, 0, 3000.f));
+	FightCamera->SetActive(false);
 
 	/*
 	for (int i = 0; i < PlanetsBP.Num(); i++)
@@ -940,9 +941,9 @@ void ARouteExample::SwapToMoving()
 {
 
 	SwapState(Moving);
-	PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
 	ASpaceshipCharacter* Charac = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-
+	Charac->TopDownCamera->SetActive(true);
+	PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
 	
 	//Make the Camera Face the direction we are moving
 	float SplineLength = RouteData->Splines[RouteData->Index]->GetSplineLength();
@@ -987,6 +988,7 @@ void ARouteExample::SwapToSelecting()
 {
 	ASpaceshipCharacter* Charac = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	Charac->IsInSelectScreen = true;
+	Camera->SetActive(true);
 	PlayerController->SetViewTargetWithBlend(GetRootComponent()->GetAttachmentRootActor(), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
 	SwapState(Selecting);
 	// if leaving planet
@@ -1039,17 +1041,20 @@ void ARouteExample::LeaveOrbit()
 	
 	if(RouteData->Max == 0) // First Planet
 	{
-	
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("First Planet")));
 		SelectTransitionDelegate.Broadcast();
 	}
 	else if(RouteData->Max == RouteData->Index) // Last Planet
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: %i"), RouteData->Max));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Last Planet")));
+		
+		//UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetViewTargetWithBlend(this, CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
 		Generate();
 		SelectTransitionDelegate.Broadcast();
 	}
 	else // Space Station
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Spacestation")));
 		MovingTransitionDelegate.Broadcast();
 	}
 	
@@ -1066,6 +1071,9 @@ void ARouteExample::StartGame()
 
 	PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	PlayerController->SetShowMouseCursor(true);
+
+	FightCamera->SetWorldLocation(FVector(0, 0, 3000.0));
+	
 }
 
 void ARouteExample::ChangeVisibilityOfRoute(bool toHide)
@@ -1088,7 +1096,7 @@ void ARouteExample::ChangeVisibilityOfRoute(bool toHide)
 	{
 		it->SetActorHiddenInGame(toHide);
 
-	}*/
+	}
 }
 
 void ARouteExample::SetQuest()
@@ -1100,21 +1108,22 @@ void ARouteExample::SetQuest()
 }
 
 void ARouteExample::FightScene() {
-
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple, TEXT("FIGHT SCENE HIT"));
+	
 	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	
 	FActorSpawnParameters SpawnParameters;
 	SpawnParameters.Owner = this;
-
+	
 	if (!FightCamera->IsActive())
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 2.5f, FColor::Red, TEXT("Camera swap"));
 		player->TopDownCamera->SetActive(false);
+		Camera->SetActive(false);
 		FightCamera->SetActive(true);
-
+		UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetViewTargetWithBlend(this, CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
 		player->SetActorLocation(FightCamera->GetComponentLocation() + FVector(600, -300, 0));
 
-
+		player->SetActorScale3D(FVector(2.f));
 	}
 
 	if (!AEnemyActor)
@@ -1128,46 +1137,69 @@ void ARouteExample::FightScene() {
 		AEnemyActor->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
 		FVector ActorSize, ActorOrigin;
 		AEnemyActor->GetActorBounds(false, ActorOrigin, ActorSize, false);
-		AEnemyActor->SetActorLocation(player->GetActorLocation() + FVector(0, 600, -0.75 * ActorSize.Z));
+		AEnemyActor->SetActorLocation(player->GetActorLocation() + FVector(300, 600, 500));
+		AEnemyActor->SetActorRotation(FRotator(UKismetMathLibrary::FindLookAtRotation(player->GetActorLocation(), AEnemyActor->GetActorLocation())));
+		
+		FVector Direction = FVector(player->GetActorLocation() - AEnemyActor->GetActorLocation());
+		Direction.Z = 0;
+		FRotator Rot = UKismetMathLibrary::FindLookAtRotation(AEnemyActor->GetActorLocation(), player->GetActorLocation());
+			
+		player->SetActorRotation(Rot);
 	}
 
 	FireRate -= GetWorld()->DeltaTimeSeconds;
 
-	if (FireRate <= 0.f && !IsValid(ABulletActor))
+	if (FireRate <= 0.f && IsValid(AEnemyActor))
 	{
 		FRotator Rotation(0.0f, 0.0f, 0.0f);
 		FActorSpawnParameters SpawnInfo;
 		SpawnInfo.Owner = this;
 
 		ABulletActor = GetWorld()->SpawnActor<ABullet_CPP>(MyBullet, GetTransform(), SpawnInfo);
-
 		ABulletActor->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
 
+		ABulletActor->SetActorLocation(player->GetActorLocation() - (player->GetActorForwardVector()*ppVec.Y));
+		ABulletActor->BulletMesh->SetPhysicsLinearVelocity(player->GetActorForwardVector()*-ppVec.X);
 
-		ABulletActor->SetActorLocation(player->GetActorLocation() + FVector(0, 80, 0));
-		ABulletActor->BulletMesh->SetPhysicsLinearVelocity(FVector(0.f, 150.f, 0.f));
+		FRotator Rot = UKismetMathLibrary::FindLookAtRotation(AEnemyActor->GetActorLocation(), player->GetActorLocation());
+		
+		ABulletActor->SetActorRotation(Rot);
 
-		FireRate = 0.5;
+		BulletsFired.Add(ABulletActor);
 
-		if (!IsValid(AEnemyActor))
-		{
-			CombatReset();
-		}
+		FireRate = 1.5;
 
 	}
 
-
+	if (!IsValid(AEnemyActor))
+	{
+		CombatReset(player);
+		// player->TopDownCamera->SetActive(true);
+		// UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetViewTargetWithBlend(this, CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
+	}
 
 }
 
-void ARouteExample::CombatReset() {
-
-	SwapState(PreviousState);
-	Camera->SetActive(true);
+void ARouteExample::CombatReset(ASpaceshipCharacter* Player) {
+	
 	FightCamera->SetActive(false);
+	Player->TopDownCamera->SetActive(true);
+
+	PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0),CameraTransitionSpeed,EViewTargetBlendFunction::VTBlend_Linear);
 	AEnemyActor->Destroy();
+	
+	for(int i = 0; i < BulletsFired.Num()-1; i++)
+	{
+
+		BulletsFired[i]->Destroy();
+		
+	}
+	BulletsFired.Empty();
 	ABulletActor->Destroy();
+	
 	AEnemyActor = nullptr;
 	ABulletActor = nullptr;
 
+
+	SwapState(PreviousState);
 }

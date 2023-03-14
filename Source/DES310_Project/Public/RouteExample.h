@@ -153,7 +153,7 @@ public:
 	UPROPERTY(EditAnywhere) float CameraRate = 2;
 	UPROPERTY(EditAnywhere) float SpinRate = 2;
 
-
+	UPROPERTY(EditAnywhere, Category = Fight) FVector ppVec = FVector(0,150,0);
 
 	TArray<TArray<APath*>> Hello;
 
@@ -211,6 +211,7 @@ public:
 	UPROPERTY(EditAnywhere) TSubclassOf<class ABullet_CPP> MyBullet;
 	UPROPERTY() AEnemy* AEnemyActor;
 	UPROPERTY() ABullet_CPP* ABulletActor;
+	UPROPERTY(EditAnywhere) TArray<ABullet_CPP*> BulletsFired;
 
 	float FireRate = 0.5;
 
@@ -226,5 +227,5 @@ public:
 	void SetQuest();
 
 	void FightScene();
-	void CombatReset();
+	void CombatReset(ASpaceshipCharacter* Player);
 };

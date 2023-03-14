@@ -38,6 +38,7 @@ UGameEvents* URandomEventsComponent::RollForEvent(int32 ChanceOfEventInThisRoute
 			else if(typeOfEventRoll < CombatChance + StoryChance + RandomChance && typeOfEventRoll >= CombatChance + StoryChance)
 				RollEventFromArray(RandomEventsList);
 
+			EventTimer = 0;
 			return CurrentEvent;
 		}
 	}
