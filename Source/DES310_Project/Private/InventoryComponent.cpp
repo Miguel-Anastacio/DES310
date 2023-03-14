@@ -90,23 +90,35 @@ bool UInventoryComponent::SwapShipParts(PartType type, UItem* newItem)
 		{
 		case SHIELD:
 			PreviousItem = ShieldSlot;
-			ShieldSlot = newItem;
-			result = true;
+			if (PreviousItem->Name != newItem->Name)
+			{
+				ShieldSlot = newItem;
+				result = true;
+			}
 			break;
 		case HULL:
 			PreviousItem = HullSlot;
-			HullSlot = newItem;
-			result = true;
+			if (PreviousItem->Name != newItem->Name)
+			{
+				HullSlot = newItem;
+				result = true;
+			}
 			break;
 		case BLASTER:
 			PreviousItem = BlasterSlot;
-			BlasterSlot = newItem;
-			result = true;
+			if (PreviousItem->Name != newItem->Name)
+			{
+				BlasterSlot = newItem;
+				result = true;
+			}
 			break;
 		case ENGINE:
 			PreviousItem = EngineSlot;
-			EngineSlot = newItem;
-			result = true;
+			if (PreviousItem->Name != newItem->Name)
+			{
+				EngineSlot = newItem;
+				result = true;
+			}
 			break;
 		default:
 			break;

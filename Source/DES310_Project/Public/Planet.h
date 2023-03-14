@@ -40,6 +40,10 @@ public:
 	UPROPERTY(Category = Mesh, EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UStaticMeshComponent> PlanetMeshComponent;
 
+	UPROPERTY(EditAnywhere, Category = Type)
+	bool IsCheckpoint = false;
+
+
 	UPROPERTY(Category = Rotation, EditAnywhere)
 	FRotator RotationPerFrame;
 	

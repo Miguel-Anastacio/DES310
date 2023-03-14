@@ -72,12 +72,10 @@ void APlanet::BeginPlay()
 	UObject* object = nullptr;
 	if(QuestTemplate)
 		object = QuestTemplate->GetDefaultObject();
-	else
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Error casting from template"));
+		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("QUEST - Error casting from template"));
 	if(object)
 		Quest = Cast<UQuest>(object);
-	else
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Error casting to object"));
+		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("QUEST - Error casting to object"));
 }
 
 // Called every frame
