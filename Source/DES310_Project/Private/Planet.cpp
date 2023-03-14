@@ -5,6 +5,8 @@
 */
 #include "Planet.h"
 #include "SpaceshipCharacter.h"
+#include "Animation/AnimInstanceProxy.h"
+
 APlanet::APlanet()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -18,6 +20,9 @@ APlanet::APlanet()
 	SphereCollisionComponent->InitSphereRadius(20.0f);
 	SphereCollisionComponent->SetGenerateOverlapEvents(true);*/
 
+	PointLight = CreateDefaultSubobject<UPointLightComponent>(TEXT("Point"));
+	PointLight->SetupAttachment(RootComponent);
+	
 	PlanetMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Planet Mesh"));
 	PlanetMeshComponent->SetWorldLocation(FVector(0, 0, 0));
 	if (PlanetMeshComponent)
@@ -59,18 +64,18 @@ void APlanet::BeginPlay()
 	SpawnTransform.SetLocation(GetActorLocation());
 
 	CameraBoom->TargetArmLength = CameraBoom->TargetArmLength * this->GetActorScale().Length();
+	PointLight->SourceRadius = this->GetActorScale().X; // TODO set to use average or the max
 
+	
 	VendorActor = GetWorld()->SpawnActor<AVendor>(Vendor, SpawnTransform, SpawnParams);
 
 	UObject* object = nullptr;
 	if(QuestTemplate)
 		object = QuestTemplate->GetDefaultObject();
-	else
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Error casting from template"));
+		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("QUEST - Error casting from template"));
 	if(object)
 		Quest = Cast<UQuest>(object);
-	else
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("Error casting to object"));
+		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("QUEST - Error casting to object"));
 }
 
 // Called every frame

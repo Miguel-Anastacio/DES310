@@ -6,7 +6,6 @@
 
 #include "RouteExample.h"
 
-#include "DetailLayoutBuilder.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "SpaceshipCharacter.h"
 #include "Components/AudioComponent.h"
@@ -119,6 +118,7 @@ void ARouteExample::BeginPlay()
 	CheckpointTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToOrbiting);
 	MovingTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToMoving);
 	SelectTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToSelecting);
+	CombatTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToCombat);
 	PlayerState = Event;
 	//PlayerState = Selecting;
 	//SelectTransitionDelegate.Broadcast();
@@ -155,7 +155,9 @@ void ARouteExample::Tick(float DeltaTime)
 // passing the current path is cleaner
 		// pass the values for now 
 		if (EventsComponent->RollForEvent(RouteData->EventChance, DeltaTime, RouteData->CombatEventChance, RouteData->StoryEventChance, RouteData->RandomEventChance))
-			SwapState(Fighting);
+		{
+			PlayerState = Event;
+		}
 
 		break;
 	case PlayerStates::Orbiting: OrbitPlanet(RouteData, DeltaTime);
@@ -239,7 +241,12 @@ APlanet* ARouteExample::CreateBasicSphere(FTransform transform)
 
 	}
 	indexOfPlanetsInUse.push_back(planetIndex);
-	APlanet* APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[planetIndex], transform, SpawnParams);
+	APlanet* APlanetActor = nullptr;
+	// index 0 is the checkpoint always?
+	if(planetIndex == 0)
+		APlanetActor = GetWorld()->SpawnActor<APlanet>(SpaceStationBP[planetIndex], transform, SpawnParams);
+	else
+		APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[planetIndex], transform, SpawnParams);
 
 	//if (PlanetIndex.Num() < 1)
 	//{
@@ -683,21 +690,20 @@ bool ARouteExample::MoveAlongPath(UPathData* PathData , float DeltaTime)
 		splineTimer = PathStartEndPercent.X;
 		PlayerController->SetViewTargetWithBlend(PathData->Stops[PathData->Index], CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
 		// with the checkpoint I would imagine it would be something like this
-		/*
-		if(Stop is checkPoint)
-			CheckpointTransitionDelegate.Broadcast()
+		
+		if (PathData->Stops[PathData->Index]->IsCheckpoint)
+		{
+			PathData->Stops[PathData->Index]->CurrentPlanet = true;
+			CheckpointTransitionDelegate.Broadcast();
+		}
 		else
+		{
 			// update the current planet
 			// this bool in the planet class is used by the vendor UI
 			PathData->Stops[PathData->Index]->CurrentPlanet = true;
 			OrbitTransitionDelegate.Broadcast();
+		}
 		
-		*/
-
-		// update the current planet
-		// this bool in the planet class is used by the vendor UI
-		PathData->Stops[PathData->Index]->CurrentPlanet = true;
-		OrbitTransitionDelegate.Broadcast();
 	}
 
 	return false; // The Movement is still in progress
@@ -838,7 +844,9 @@ void ARouteExample::SelectPath()
 			}
 		}
 
-		
+		RouteData->Reset();
+
+
 		Charac->Selected = false; // TODO change this back once the player clicks on the ui and move everything inside this if statement so scaling isnt changing all the time
 		timer = 0;
 		if (WhichPath)
@@ -942,8 +950,10 @@ void ARouteExample::SwapToMoving()
 
 	SwapState(Moving);
 	ASpaceshipCharacter* Charac = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+
 	Charac->TopDownCamera->SetActive(true);
 	PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
+
 	
 	//Make the Camera Face the direction we are moving
 	float SplineLength = RouteData->Splines[RouteData->Index]->GetSplineLength();
@@ -1007,6 +1017,10 @@ void ARouteExample::SwapToSelecting()
 
 }
 
+void ARouteExample::SwapToCombat()
+{
+}
+
 
 void ARouteExample::SwapState(PlayerStates State)
 {
@@ -1038,18 +1052,34 @@ void ARouteExample::LeaveOrbit()
 	//Leaving Space Station - No need to select or generate route
 	//Leaving Last Planet - Need Camera Transition and to regrenerate a route
 	//Leaving First Planet - No Route so need to generate and then select
+
+
+	for (auto it : Planets)
+	{
+		it->CurrentPlanet = false;
+	}
+
+	ChangeVisibilityOfRoute(false);
+
+
 	
 	if(RouteData->Max == 0) // First Planet
 	{
+
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("First Planet")));
+
 		SelectTransitionDelegate.Broadcast();
 	}
 	else if(RouteData->Max == RouteData->Index) // Last Planet
 	{
+
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Last Planet")));
 		
 		//UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetViewTargetWithBlend(this, CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
-		Generate();
+
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: %i"), RouteData->Max));
+		//Generate();
+
 		SelectTransitionDelegate.Broadcast();
 	}
 	else // Space Station
@@ -1180,8 +1210,14 @@ void ARouteExample::FightScene() {
 
 }
 
+
 void ARouteExample::CombatReset(ASpaceshipCharacter* Player) {
-	
+
+
+	//MovingTransitionDelegate.Broadcast();
+	//SwapState(PreviousState);
+
+
 	FightCamera->SetActive(false);
 	Player->TopDownCamera->SetActive(true);
 

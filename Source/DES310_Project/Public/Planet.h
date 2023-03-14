@@ -11,6 +11,7 @@
 #include "Components/SphereComponent.h"
 #include "Vendor.h"
 #include "Quest.h"
+#include "Components/PointLightComponent.h"
 #include "Planet.generated.h"
 
 
@@ -32,9 +33,16 @@ public:
 	UPROPERTY(EditAnywhere, Category = Camera)
 	UCameraComponent* FocusPlanetCamera;
 
+	UPROPERTY(EditAnywhere, Category = Light)
+	UPointLightComponent* PointLight;
+
 	/** Static Mesh Comp, Set In BP Default Properties */
 	UPROPERTY(Category = Mesh, EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UStaticMeshComponent> PlanetMeshComponent;
+
+	UPROPERTY(EditAnywhere, Category = Type)
+	bool IsCheckpoint = false;
+
 
 	UPROPERTY(Category = Rotation, EditAnywhere)
 	FRotator RotationPerFrame;

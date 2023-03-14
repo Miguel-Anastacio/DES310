@@ -49,6 +49,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FMovingTransitionDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSelectingTransitionDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCheckpointTransitionDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FBeginOrbitTransitionDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCombatTransitionDelegate);
 
 // delegate to notify UI when user presses on a route
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPathClickedDelegate, UPathData*, CurrentPath);
@@ -123,7 +124,7 @@ public:
 	std::vector<int> PlanetIndex;
 	
 	UPROPERTY(EditAnywhere, Category = Camera) UCameraComponent* Camera;
-	UPROPERTY(EditAnywhere, Category = Camera) USpringArmComponent* CameraBoom;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera) USpringArmComponent* CameraBoom;
 	UPROPERTY(EditAnywhere, Category = Camera) float CameraTransitionSpeed = 5;
 	UPROPERTY(EditAnywhere, Category = Camera) float CameraDistance = 20000;
 	UPROPERTY(EditAnywhere, Category = Camera) float CameraLerpSpeed = 0.1;
@@ -184,7 +185,7 @@ public:
 
 	UStaticMesh* CubeMesh;
 	UStaticMesh* SphereMesh;
-
+	UFUNCTION(BlueprintCallable)
 	void SwapState(PlayerStates State);
 
 
@@ -192,6 +193,7 @@ public:
 	UFUNCTION() void BeginToOrbiting();
 	UFUNCTION() void SwapToMoving();
 	UFUNCTION() void SwapToSelecting();
+	UFUNCTION() void SwapToCombat();
 	
 	UFUNCTION(BlueprintCallable) void GetPathSelected(UPathData* path);
 	UFUNCTION(BlueprintCallable) void LeaveOrbit();
@@ -203,6 +205,7 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)	FSelectingTransitionDelegate SelectTransitionDelegate;
 	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)FPathClickedDelegate PathClickedDelegate;
 	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)FCheckpointTransitionDelegate CheckpointTransitionDelegate;
+	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable )FCombatTransitionDelegate CombatTransitionDelegate;
 
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 		UCameraComponent* FightCamera;
@@ -214,7 +217,6 @@ public:
 	UPROPERTY(EditAnywhere) TArray<ABullet_CPP*> BulletsFired;
 
 	float FireRate = 0.5;
-
 	UFUNCTION(BlueprintCallable)
 	void StartGame();
 	// used to hide the route when the player transitions to orbiting

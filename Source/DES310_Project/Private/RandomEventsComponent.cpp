@@ -175,6 +175,8 @@ void URandomEventsComponent::HandleEvent(UEventOption* OptionPicked)
 	EventIsDisplayed = false;
 	CurrentEvent = nullptr;
 	route->MovingTransitionDelegate.Broadcast();
+	//route->SwapState(Fighting);
+	//route->CheckpointTransitionDelegate.Broadcast();
 	// depnding on the effects of the option
 	// change the players stats 
 	Player->StatsPlayerComponent->IncreaseCurrency(OptionPicked->CreditsGained);
