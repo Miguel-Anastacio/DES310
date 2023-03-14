@@ -114,7 +114,7 @@ void ARouteExample::BeginPlay()
 	BeginOrbitTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::BeginToOrbiting);
 	// transition to checkpoint is the same as to orbiting for now
 	// the different delegate is just to bind different functionality in blueprint
-	CheckpointTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToCombat);
+	CheckpointTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToOrbiting);
 	MovingTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToMoving);
 	SelectTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToSelecting);
 	CombatTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToCombat);
@@ -240,7 +240,12 @@ APlanet* ARouteExample::CreateBasicSphere(FTransform transform)
 
 	}
 	indexOfPlanetsInUse.push_back(planetIndex);
-	APlanet* APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[planetIndex], transform, SpawnParams);
+	APlanet* APlanetActor = nullptr;
+	// index 0 is the checkpoint always?
+	if(planetIndex == 0)
+		APlanetActor = GetWorld()->SpawnActor<APlanet>(SpaceStationBP[planetIndex], transform, SpawnParams);
+	else
+		APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[planetIndex], transform, SpawnParams);
 
 	//if (PlanetIndex.Num() < 1)
 	//{
@@ -684,21 +689,20 @@ bool ARouteExample::MoveAlongPath(UPathData* PathData , float DeltaTime)
 		splineTimer = PathStartEndPercent.X;
 		PlayerController->SetViewTargetWithBlend(PathData->Stops[PathData->Index], CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
 		// with the checkpoint I would imagine it would be something like this
-		/*
-		if(Stop is checkPoint)
-			CheckpointTransitionDelegate.Broadcast()
+		
+		if (PathData->Stops[PathData->Index]->IsCheckpoint)
+		{
+			PathData->Stops[PathData->Index]->CurrentPlanet = true;
+			CheckpointTransitionDelegate.Broadcast();
+		}
 		else
+		{
 			// update the current planet
 			// this bool in the planet class is used by the vendor UI
 			PathData->Stops[PathData->Index]->CurrentPlanet = true;
 			OrbitTransitionDelegate.Broadcast();
+		}
 		
-		*/
-
-		// update the current planet
-		// this bool in the planet class is used by the vendor UI
-		PathData->Stops[PathData->Index]->CurrentPlanet = true;
-		OrbitTransitionDelegate.Broadcast();
 	}
 
 	return false; // The Movement is still in progress
@@ -839,7 +843,9 @@ void ARouteExample::SelectPath()
 			}
 		}
 
-		
+		RouteData->Reset();
+
+
 		Charac->Selected = false; // TODO change this back once the player clicks on the ui and move everything inside this if statement so scaling isnt changing all the time
 		timer = 0;
 		if (WhichPath)
@@ -944,6 +950,7 @@ void ARouteExample::SwapToMoving()
 	SwapState(Moving);
 	PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
 	ASpaceshipCharacter* Charac = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	
 
 	
 	//Make the Camera Face the direction we are moving
