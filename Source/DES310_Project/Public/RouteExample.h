@@ -124,7 +124,7 @@ public:
 	std::vector<int> PlanetIndex;
 	
 	UPROPERTY(EditAnywhere, Category = Camera) UCameraComponent* Camera;
-	UPROPERTY(EditAnywhere, Category = Camera) USpringArmComponent* CameraBoom;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera) USpringArmComponent* CameraBoom;
 	UPROPERTY(EditAnywhere, Category = Camera) float CameraTransitionSpeed = 5;
 	UPROPERTY(EditAnywhere, Category = Camera) float CameraDistance = 20000;
 	UPROPERTY(EditAnywhere, Category = Camera) float CameraLerpSpeed = 0.1;
