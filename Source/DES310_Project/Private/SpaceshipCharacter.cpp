@@ -45,10 +45,15 @@ ASpaceshipCharacter::ASpaceshipCharacter()
 	TopDownCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	// declare trigger capsule
+	
 	TriggerBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Trigger Box"));
 	TriggerBox->InitBoxExtent(FVector(100.0f, 100.0f, 100.0f));
 	TriggerBox->SetCollisionProfileName(TEXT("Trigger"));
 	TriggerBox->SetupAttachment(GetMesh());
+	
+	// declare static player mesh
+	PlayerMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	PlayerMesh->SetupAttachment(RootComponent);
 
 	// create player inventory
 	PlayerInventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
@@ -68,7 +73,6 @@ void ASpaceshipCharacter::BeginPlay()
 
 	TargetLocation = GetActorLocation();
 
-	TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ASpaceshipCharacter::OnOverlapBegin);
 	CompleteQuestDelegate.AddUniqueDynamic(this, &ASpaceshipCharacter::CompleteQuest);
 	StartQuestDelegate.AddUniqueDynamic(this, &ASpaceshipCharacter::StartQuest);
 
@@ -160,6 +164,8 @@ void ASpaceshipCharacter::WasQuestCompleted(FString planetName)
 		if (ActiveQuest->TargetName == planetName)
 		{
 			LastCompletedQuest = ActiveQuest;
+			StatsPlayerComponent->IncreaseCurrency(LastCompletedQuest->CreditsGained);
+			StatsPlayerComponent->XPSystem(LastCompletedQuest->XPGained);
 			CompleteQuestDelegate.Broadcast();
 		}
 	
@@ -169,7 +175,5 @@ void ASpaceshipCharacter::WasQuestCompleted(FString planetName)
 void ASpaceshipCharacter::CompleteQuest()
 {
 	GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("Quest Completed"));
-	StatsPlayerComponent->IncreaseCurrency(LastCompletedQuest->CreditsGained);
-	StatsPlayerComponent->XPSystem(LastCompletedQuest->XPGained);
 	ActiveQuest = nullptr;
 }

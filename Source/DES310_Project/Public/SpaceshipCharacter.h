@@ -49,9 +49,13 @@ public:
 	UPROPERTY(EditAnywhere, Category = Camera)
 	USpringArmComponent* CameraBoom;
 
+
 	// for some reason the default capsule component does not work
 	UPROPERTY(VisibleAnywhere, Category = "Trigger Box")
 	UBoxComponent* TriggerBox;
+
+	UPROPERTY(EditAnywhere, Category = "Player Mesh")
+	UStaticMeshComponent* PlayerMesh;
 	
 	// variable to store a reference to the player controller
 	// prevents casting every time we need to use it
