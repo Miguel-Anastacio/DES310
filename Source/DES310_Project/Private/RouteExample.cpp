@@ -958,7 +958,7 @@ void ARouteExample::SwapToMoving()
 	FVector StartPoint = RouteData->Splines[RouteData->Index]->GetLocationAtDistanceAlongSpline(0, ESplineCoordinateSpace::Type::World);
 	FVector EndPoint = RouteData->Splines[RouteData->Index]->GetLocationAtDistanceAlongSpline(SplineLength, ESplineCoordinateSpace::Type::World) - FVector(0,0,-50);
 	
-	Charac->CameraBoom->SetWorldRotation(UKismetMathLibrary::FindLookAtRotation(EndPoint, StartPoint));
+	Charac->CameraBoom->SetWorldRotation(UKismetMathLibrary::FindLookAtRotation(EndPoint, StartPoint) + TempAngler);
 	//Charac->CameraBoom->AddWorldRotation(FRotator(0,0,15));
 	
 	

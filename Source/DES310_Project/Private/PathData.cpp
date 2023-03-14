@@ -18,7 +18,6 @@ void UPathData::Reset()
 
 	RouteName = "Undefined";
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple,  FString::Printf( TEXT("Cringeeeeeeeeeeeeeeeeeeeeee")));
 
 	
 }

@@ -90,6 +90,7 @@ public:
 
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite) AAudioManager* AudioManager;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite) FRotator TempAngler = FRotator(0,-30,0);
 	
 	//States for now will be do with just if statements but could possibly be deligated to their own classes
 	bool MoveAlongPath(UPathData* PathData, float DeltaTime);

@@ -5,7 +5,7 @@
 
 #include "VertexEdge.h"
 
-#include "EnvironmentQuery/EnvQueryTypes.h"
+
 
 VertexEdge::VertexEdge()
 {
