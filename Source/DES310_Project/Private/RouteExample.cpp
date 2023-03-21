@@ -105,7 +105,7 @@ void ARouteExample::BeginPlay()
 		PlanetIndex.push_back();
 	}*/
 
-
+	SuperTempTimer = 0;
 	
 	AudioManager->AmbientSoundComponent->Play();
 	
@@ -139,6 +139,8 @@ void ARouteExample::Tick(float DeltaTime)
 		//Generate();
 	}
 
+
+	
 	cameraTimer += DeltaTime;
 	if (cameraTimer >= CameraRate)
 	{
@@ -153,10 +155,19 @@ void ARouteExample::Tick(float DeltaTime)
 		StateName = "Moving";
 		MoveAlongPath(RouteData, DeltaTime);
 // passing the current path is cleaner
-		// pass the values for now 
+		// pass the values for now
+		SuperTempTimer += DeltaTime;
 		if (EventsComponent->RollForEvent(RouteData->EventChance, DeltaTime, RouteData->CombatEventChance, RouteData->StoryEventChance, RouteData->RandomEventChance))
 		{
 			PlayerState = Event;
+		}
+		else if (SuperTempTimer > CombatTick)
+		{
+			if(FMath::RandRange(0,100) < CombatChance)
+			{
+				SuperTempTimer = 0;
+				SwapState(Fighting);
+			}
 		}
 
 		break;
@@ -284,10 +295,13 @@ void ARouteExample::Generate()
 	CurrentSpline = NULL;
 	CurrentPlanet = NULL;
 
-	RouteData->Splines.Empty();
-	RouteData->Stops.Empty();
-	RouteData->Index = 0;
-	RouteData->Max = 0;
+	if(RouteData)
+	{
+		RouteData->Splines.Empty();
+		RouteData->Stops.Empty();
+		RouteData->Index = 0;
+		RouteData->Max = 0;
+	}
 
 	SplineComponent1->ClearSplinePoints();
 	SplineComponent2->ClearSplinePoints();
@@ -1035,6 +1049,25 @@ void ARouteExample::SwapState(PlayerStates State)
 	{
 		AudioManager->ThrusterSoundComponent->Play();
 	}
+
+	if (PlayerState == Fighting)
+	{
+		AudioManager->BattleSoundComponent->Play();
+	}
+	else if(PreviousState == Fighting)
+	{
+		AudioManager->BattleSoundComponent->Stop();
+	}
+
+	if (PlayerState == Moving)
+	{
+		AudioManager->AmbientSoundComponent->Play();
+	}
+	else if(PreviousState == Moving)
+	{
+		AudioManager->AmbientSoundComponent->Stop();
+	}
+	
 }
 
 void ARouteExample::GetPathSelected(UPathData* path)
@@ -1167,7 +1200,7 @@ void ARouteExample::FightScene() {
 		AEnemyActor->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
 		FVector ActorSize, ActorOrigin;
 		AEnemyActor->GetActorBounds(false, ActorOrigin, ActorSize, false);
-		AEnemyActor->SetActorLocation(player->GetActorLocation() + FVector(300, 600, 500));
+		AEnemyActor->SetActorLocation(player->GetActorLocation() + TempEnemyPosition);
 		AEnemyActor->SetActorRotation(FRotator(UKismetMathLibrary::FindLookAtRotation(player->GetActorLocation(), AEnemyActor->GetActorLocation())));
 		
 		FVector Direction = FVector(player->GetActorLocation() - AEnemyActor->GetActorLocation());
@@ -1237,5 +1270,5 @@ void ARouteExample::CombatReset(ASpaceshipCharacter* Player) {
 	ABulletActor = nullptr;
 
 
-	SwapState(PreviousState);
+	SwapState(Moving);
 }
