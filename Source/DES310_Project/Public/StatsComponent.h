@@ -29,13 +29,13 @@ public:
 	UPROPERTY(EditAnywhere) int XPToNext;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly) int CurrentCurrency;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly) int Speed;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly) int BaseSpeed;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) int BaseSpeed;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly) float Shields;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly) float BaseShields;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) float BaseShields;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly) int HullIntegrity;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly) int BaseHullIntegrity;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly) int ATKPower;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly) int BaseATKPower;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) int BaseHullIntegrity;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) int ATKPower;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) int BaseATKPower;
 
 protected:
 	UPROPERTY(EditAnywhere) int SpeedIncrement;
