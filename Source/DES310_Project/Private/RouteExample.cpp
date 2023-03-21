@@ -1186,7 +1186,7 @@ void ARouteExample::FightScene() {
 		UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetViewTargetWithBlend(this, CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
 		player->SetActorLocation(FightCamera->GetComponentLocation() + FVector(600, -300, 0));
 
-		player->SetActorScale3D(FVector(2.f));
+		//player->SetActorScale3D(FVector(2.f));
 	}
 
 	if (!AEnemyActor)
@@ -1259,12 +1259,12 @@ void ARouteExample::CombatReset(ASpaceshipCharacter* Player) {
 	
 	for(int i = 0; i < BulletsFired.Num()-1; i++)
 	{
-
-		BulletsFired[i]->Destroy();
+		if(BulletsFired[i])
+			BulletsFired[i]->Destroy();
 		
 	}
 	BulletsFired.Empty();
-	ABulletActor->Destroy();
+	//ABulletActor->Destroy();
 	
 	AEnemyActor = nullptr;
 	ABulletActor = nullptr;
