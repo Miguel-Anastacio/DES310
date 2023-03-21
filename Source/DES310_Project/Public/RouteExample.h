@@ -91,6 +91,7 @@ public:
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite) AAudioManager* AudioManager;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite) FRotator TempAngler = FRotator(0,-30,0);
+	UPROPERTY(EditAnywhere,BlueprintReadWrite) FVector TempEnemyPosition = FVector(300, 600, 500);
 	
 	//States for now will be do with just if statements but could possibly be deligated to their own classes
 	bool MoveAlongPath(UPathData* PathData, float DeltaTime);
@@ -147,6 +148,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = Poisson) int RejectionRate = 30;
 	UPROPERTY(EditAnywhere, Category = Poisson) int PathsWanted = 6;
 
+	UPROPERTY(EditAnywhere) float CombatTick = 5;
+	UPROPERTY(EditAnywhere) float CombatChance= 30;
+	float SuperTempTimer = 0;
 
 	UPROPERTY(VisibleAnywhere) UPathData* RouteData;
 
