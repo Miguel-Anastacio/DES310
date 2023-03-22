@@ -115,6 +115,7 @@ void ASpaceshipCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	// bind action
 	PlayerInputComponent->BindAction("Mouse Click", IE_Pressed, this, &ASpaceshipCharacter::MouseClick);
 	PlayerInputComponent->BindAction("Reset Game", IE_Pressed, this, &ASpaceshipCharacter::ResetGame);
+
 }
 
 void ASpaceshipCharacter::MouseClick()
@@ -123,6 +124,8 @@ void ASpaceshipCharacter::MouseClick()
 	if(IsInSelectScreen)
 		Selected = true;
 }
+
+
 
 void ASpaceshipCharacter::ResetGame()
 {

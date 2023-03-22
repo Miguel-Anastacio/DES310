@@ -6,7 +6,6 @@
 
 #include "RouteExample.h"
 
-#include "Editor.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "SpaceshipCharacter.h"
 #include "Components/AudioComponent.h"
@@ -219,13 +218,13 @@ APath* ARouteExample::CreateBasicCube(FTransform transform)
 
 }
 
-APlanet* ARouteExample::CreateBasicSphere(FTransform transform)
+APlanet* ARouteExample::CreatePlanetMainRoute(FTransform transform)
 {
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
 
-	/*int planetIndex =  0;
+	int planetIndex =  0;
 	bool foundUnique = false;
 	if (indexOfPlanetsInUse.size() > 0)
 	{
@@ -256,7 +255,7 @@ APlanet* ARouteExample::CreateBasicSphere(FTransform transform)
 		APlanetActor = GetWorld()->SpawnActor<APlanet>(SpaceStationBP[planetIndex], transform, SpawnParams);
 	else
 		APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[planetIndex], transform, SpawnParams);
-		*/
+		
 
 	//if (PlanetIndex.Num() < 1)
 	//{
@@ -274,10 +273,10 @@ APlanet* ARouteExample::CreateBasicSphere(FTransform transform)
 
 	//arr.RemoveAt(numChosen);
 
-
+	/*
 	APlanet* APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[FMath::RandRange(0, PlanetBP.Num() - 1)], transform, SpawnParams);
 	APlanetActor->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
-
+	*/
 	return APlanetActor;
 }
 
@@ -593,11 +592,11 @@ void ARouteExample::Generate()
 		SpawnTransfrom.SetScale3D(FVector(PlanetScaling, PlanetScaling, PlanetScaling));
 		SpawnTransfrom.SetLocation(FVector(astar.begin.position.X - Dimensions.X / 2, astar.begin.position.Y - Dimensions.Y / 2, 0));
 
-		Planets.Add(CreateBasicSphere(SpawnTransfrom * WorldLocation));
+		Planets.Add(CreatePlanetMainRoute(SpawnTransfrom * WorldLocation));
 		SpawnTransfrom.SetLocation(FVector(astar.end.position.X - Dimensions.X / 2, astar.end.position.Y - Dimensions.Y / 2, 0));
-		Planets.Add(CreateBasicSphere(SpawnTransfrom * WorldLocation));
+		Planets.Add(CreatePlanetMainRoute(SpawnTransfrom * WorldLocation));
 		SpawnTransfrom.SetLocation(FVector(checkPoint.X - Dimensions.X / 2, checkPoint.Y - Dimensions.Y / 2 , 0));
-		Planets.Add(CreateBasicSphere(SpawnTransfrom * WorldLocation));
+		Planets.Add(CreatePlanetMainRoute(SpawnTransfrom * WorldLocation));
 	}
 
 	GenerateDetails();
