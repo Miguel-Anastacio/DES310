@@ -248,7 +248,20 @@ APlanet* ARouteExample::CreatePlanetMainRoute(FTransform transform)
 
 
 	}
-	indexOfPlanetsInUse.push_back(planetIndex);
+
+
+	
+
+	if(planetIndex == PlanetBP.Num() - 1 || planetIndex == PlanetBP.Num() - 2)
+	{
+		indexOfPlanetsInUse.push_back(PlanetBP.Num() - 1);
+		indexOfPlanetsInUse.push_back( PlanetBP.Num() - 2);
+	}
+	else
+	{
+		indexOfPlanetsInUse.push_back(planetIndex);
+	}
+	
 	APlanet* APlanetActor = nullptr;
 	// index 0 is the checkpoint always?
 	if(planetIndex == 0)
@@ -273,10 +286,11 @@ APlanet* ARouteExample::CreatePlanetMainRoute(FTransform transform)
 
 	//arr.RemoveAt(numChosen);
 
-	/*
-	APlanet* APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[FMath::RandRange(0, PlanetBP.Num() - 1)], transform, SpawnParams);
+
+	//APlanet* APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[FMath::RandRange(0, PlanetBP.Num() - 1)], transform, SpawnParams);
+
 	APlanetActor->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
-	*/
+
 	return APlanetActor;
 }
 
@@ -691,8 +705,8 @@ void ARouteExample::GenerateDetails()
 			SpawnTransfrom.SetScale3D(FVector(PlanetScaling, PlanetScaling, PlanetScaling));
 			SpawnTransfrom.SetLocation(RandomPosition);
 
-			Details.Add(CreatePlanet(SpawnTransfrom * GetRootComponent()->GetComponentTransform(),RandomPlanetIndex));
-			//Details.Add(CreateBasicSphere(SpawnTransfrom * GetRootComponent()->GetComponentTransform()));
+			//Details.Add(CreatePlanet(SpawnTransfrom * GetRootComponent()->GetComponentTransform(),RandomPlanetIndex));
+			Details.Add(CreateBasicSphere(SpawnTransfrom * GetRootComponent()->GetComponentTransform()));
 
 			break;
 		}
@@ -1264,6 +1278,15 @@ void ARouteExample::ChangeVisibilityOfRoute(bool toHide)
 void ARouteExample::SetQuest()
 {
 	// On the starting planet a quest for the last one of the route?
+	if(!Planets[2])
+		return;
+
+	if(!Planets[2]->Quest)
+		return;
+
+	if(Planets[1])
+		return;
+		
 	Planets[2]->Quest->TargetName = Planets[1]->Name;
 	// when we have more quests randomize the contents out of a set of templates
 
