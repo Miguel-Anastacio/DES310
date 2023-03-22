@@ -123,17 +123,19 @@ bool UInventoryComponent::SwapShipParts(PartType type, UItem* newItem)
 		default:
 			break;
 		}
-	}
-	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(GetOwner());
-	if (player)
-	{
-		player->ApplyItemToStats(newItem);
-	}
-	
-	if (result)
-	{
-		RemoveItem(PreviousItem->Name);
-		Items.Add(newItem);
+
+
+		ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(GetOwner());
+		if (player)
+		{
+			player->ApplyItemToStats(newItem);
+		}
+
+		if (result)
+		{
+			RemoveItem(PreviousItem->Name);
+			Items.Add(newItem);
+		}
 	}
 
 	return result;

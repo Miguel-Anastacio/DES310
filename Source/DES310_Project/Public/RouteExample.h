@@ -19,7 +19,6 @@
 #include "AudioManager.h"
 #include "Enemy.h"
 #include "Bullet_CPP.h"
-#include "EditorViewportClient.h"
 /*#include "BaseState.h"
 #include "FightingState.h"
 #include "MovingState.h"
@@ -79,7 +78,7 @@ public:
 	void GenerateDetails();
 	void ClearRouteData();
 	APath* CreateBasicCube(FTransform transform);
-	APlanet* CreateBasicSphere(FTransform transform);
+	APlanet* CreatePlanetMainRoute(FTransform transform);
 	APlanet* CreatePlanet(FTransform transform, int i);
 	
 	void SwitchCamera();
