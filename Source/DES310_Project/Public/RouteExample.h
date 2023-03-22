@@ -19,6 +19,7 @@
 #include "AudioManager.h"
 #include "Enemy.h"
 #include "Bullet_CPP.h"
+#include "EditorViewportClient.h"
 /*#include "BaseState.h"
 #include "FightingState.h"
 #include "MovingState.h"
@@ -26,7 +27,11 @@
 #include "OrbitingState.h"*/
 #include "RandomEventsComponent.h"
 #include "Sound/SoundCue.h"
+
+
 #include "RouteExample.generated.h"
+
+
 
 UENUM(BlueprintType)
 enum PlayerStates
@@ -71,10 +76,12 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	void Generate();
+	void GenerateDetails();
 	void ClearRouteData();
 	APath* CreateBasicCube(FTransform transform);
 	APlanet* CreateBasicSphere(FTransform transform);
-
+	APlanet* CreatePlanet(FTransform transform, int i);
+	
 	void SwitchCamera();
 
 	//State Variables
@@ -147,7 +154,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = Poisson) float DisplayRadius = 60; // Can be Deleted
 	UPROPERTY(EditAnywhere, Category = Poisson) int RejectionRate = 30;
 	UPROPERTY(EditAnywhere, Category = Poisson) int PathsWanted = 6;
+	UPROPERTY(EditAnywhere, Category = Poisson) int DetailsWanted = 6;
+	UPROPERTY(EditAnywhere, Category = Poisson) int DetailRejectionRate = 10;
+	UPROPERTY(EditAnywhere, Category = Poisson) float DetailMinDistance = 1000;
 
+
+	
 	UPROPERTY(EditAnywhere) float CombatTick = 5;
 	UPROPERTY(EditAnywhere) float CombatChance= 30;
 	float SuperTempTimer = 0;
@@ -175,6 +187,8 @@ public:
 	TArray<FVector2D> Path3;
 
 	TArray<APlanet*> Planets;
+	TArray<APlanet*> Details;
+
 
 	PlayerStates PlayerState;
 	PlayerStates PreviousState;

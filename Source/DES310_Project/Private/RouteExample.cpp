@@ -6,6 +6,7 @@
 
 #include "RouteExample.h"
 
+#include "Editor.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "SpaceshipCharacter.h"
 #include "Components/AudioComponent.h"
@@ -129,9 +130,6 @@ void ARouteExample::BeginPlay()
 void ARouteExample::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-
-	
 	timer += DeltaTime;
 	if (timer >= RouteTickRate)
 	{
@@ -227,7 +225,7 @@ APlanet* ARouteExample::CreateBasicSphere(FTransform transform)
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
 
-	int planetIndex =  0;
+	/*int planetIndex =  0;
 	bool foundUnique = false;
 	if (indexOfPlanetsInUse.size() > 0)
 	{
@@ -258,6 +256,7 @@ APlanet* ARouteExample::CreateBasicSphere(FTransform transform)
 		APlanetActor = GetWorld()->SpawnActor<APlanet>(SpaceStationBP[planetIndex], transform, SpawnParams);
 	else
 		APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[planetIndex], transform, SpawnParams);
+		*/
 
 	//if (PlanetIndex.Num() < 1)
 	//{
@@ -276,14 +275,24 @@ APlanet* ARouteExample::CreateBasicSphere(FTransform transform)
 	//arr.RemoveAt(numChosen);
 
 
-	//APlanet* APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[FMath::RandRange(0, PlanetBP.Num() - 1)], transform, SpawnParams);
-
-
+	APlanet* APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[FMath::RandRange(0, PlanetBP.Num() - 1)], transform, SpawnParams);
 	APlanetActor->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
 
 	return APlanetActor;
 }
 
+APlanet* ARouteExample::CreatePlanet(FTransform transform, int i)
+{
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+
+	i = FMath::Clamp(i,0,PlanetBP.Num() - 1);
+	
+	APlanet* APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[FMath::RandRange(0, PlanetBP.Num() - 1)], transform, SpawnParams);
+	APlanetActor->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
+
+	return APlanetActor;
+}
 
 
 void ARouteExample::Generate()
@@ -334,14 +343,18 @@ void ARouteExample::Generate()
 		CubePath->Destroy();
 	}
 	CubePath3.Empty();
+
+	for (auto& CubePath : Details)
+	{
+		CubePath->Destroy();
+	}
+	Details.Empty();
 	
 	if (GetWorld())
 		FlushPersistentDebugLines(GetWorld());
 
 	FVector2D Max(Dimensions.X / 2, Dimensions.Y + PointRadius);
 	FVector2D Min(Dimensions.X / 2, 0 - PointRadius);
-
-
 
 	TArray<FVector2D> vect = PoissonDiscSampling::PoissonDiscGenerator(PointRadius, FVector2D((int)Dimensions.X, (int)Dimensions.Y), RejectionRate);
 	vect.Add(Max);
@@ -504,12 +517,14 @@ void ARouteExample::Generate()
 		}
 	}
 
-
+	FRotator PathRotation;
+	if( Path1.Num() > 2)// Might Be an unnessary check
+		PathRotation = UKismetMathLibrary::FindLookAtRotation(FVector(Path1[0].X,Path1[0].Y,0),FVector(Path1[Path1.Num() - 1].X,Path1[Path1.Num() - 1].Y,0));
 
 	for (int i = 0; i < Path1.Num(); i++)
 	{
 		FTransform SpawnTransfrom;
-		SpawnTransfrom.SetRotation(FQuat4d(0, 0, 0, 1.f));
+		SpawnTransfrom.SetRotation(PathRotation.Quaternion());
 		SpawnTransfrom.SetScale3D(FVector(1, 1, 1));
 		SpawnTransfrom.SetLocation(FVector( Path1[i].X - Dimensions.X / 2, Path1[i].Y - Dimensions.Y / 2, UKismetMathLibrary::Sin(i) * SinWaveAmplitude));
 
@@ -525,10 +540,13 @@ void ARouteExample::Generate()
 		CameraSplineComponent1->AddSplinePoint(SpawnTransfrom.GetLocation(), ESplineCoordinateSpace::Type::World, true);
 	}
 
+	if( Path2.Num() > 2)// Might Be an unnessary check
+		PathRotation = UKismetMathLibrary::FindLookAtRotation(FVector(Path2[0].X,Path2[0].Y,0),FVector(Path2[Path2.Num() - 1].X,Path2[Path2.Num() - 1].Y,0));
+	
 	for (int i = 0; i < Path2.Num(); i++)
 	{
 		FTransform SpawnTransfrom;
-		SpawnTransfrom.SetRotation(FQuat4d(0, 0, 0, 1.f));
+		SpawnTransfrom.SetRotation(PathRotation.Quaternion());
 		SpawnTransfrom.SetScale3D(FVector(1, 1, 1));
 		SpawnTransfrom.SetLocation(FVector( Path2[i].X - Dimensions.X / 2, Path2[i].Y - Dimensions.Y / 2, UKismetMathLibrary::Sin(i) * SinWaveAmplitude));
 
@@ -544,10 +562,13 @@ void ARouteExample::Generate()
 		CameraSplineComponent2->AddSplinePoint(SpawnTransfrom.GetLocation(), ESplineCoordinateSpace::Type::World, true);
 	}
 
+	if( Path3.Num() > 2)// Might Be an unnessary check
+		PathRotation = UKismetMathLibrary::FindLookAtRotation(FVector(Path3[0].X,Path3[0].Y,0),FVector(Path3[Path3.Num() - 1].X,Path3[Path3.Num() - 1].Y,0));
+
 	for (int i = 0; i < Path3.Num(); i++)
 	{
 		FTransform SpawnTransfrom;
-		SpawnTransfrom.SetRotation(FQuat4d(0, 0, 0, 1.f));
+		SpawnTransfrom.SetRotation(PathRotation.Quaternion());
 		SpawnTransfrom.SetScale3D(FVector(1, 1, 1));
 		SpawnTransfrom.SetLocation(FVector( Path3[i].X - Dimensions.X / 2, Path3[i].Y - Dimensions.Y / 2,UKismetMathLibrary::Sin(i) * SinWaveAmplitude));
 
@@ -579,6 +600,8 @@ void ARouteExample::Generate()
 		Planets.Add(CreateBasicSphere(SpawnTransfrom * WorldLocation));
 	}
 
+	GenerateDetails();
+	
 	//for (auto point : astar.points)
 	//{
 	//	if(point.blocked)
@@ -610,10 +633,82 @@ void ARouteExample::Generate()
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Spline Count: %i,%i,%i"),SplineComponent1->GetNumberOfSplinePoints(),SplineComponent2->GetNumberOfSplinePoints(),SplineComponent3->GetNumberOfSplinePoints()));
 }
 
+void ARouteExample::GenerateDetails()
+{
+	for(int i = 0; i< DetailsWanted; i++)
+	{
+		for(int j = 0; j < DetailRejectionRate; j++)
+		{
+			int RandomPlanetIndex = FMath::RandRange(0,Planets.Num() - 1);
+			FVector Origin;
+			FVector Radius; // Planets are uniformly sized so only need the raidus of 1 dimension
+			Planets[RandomPlanetIndex]->GetActorBounds(true,Origin,Radius);
+
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Silver, FString::Printf(TEXT("Planet Dimensions %s"), *Radius.ToString()));
+
+	
+			//DrawDebugBox(GetWorld(), FVector((Planets[0]->GetActorLocation().X - Planets[1]->GetActorLocation().X) * 0.25,0,0), FVector((Planets[0]->GetActorLocation().X - Planets[1]->GetActorLocation().X) * 0.75,(Planets[2]->GetActorLocation().Y - Planets[1]->GetActorLocation().Y) / 2,0), FColor::Purple, true, -1, 0, 10);
+
+			FVector RandomPosition = UKismetMathLibrary::RandomPointInBoundingBox(FVector((Planets[0]->GetActorLocation().X - Planets[1]->GetActorLocation().X) * 0.25,0,0),FVector((Planets[0]->GetActorLocation().X - Planets[1]->GetActorLocation().X) * 0.75,(Planets[2]->GetActorLocation().Y - Planets[1]->GetActorLocation().Y) / 2,0));
+		
+			FVector ClosestPoint1 = SplineComponent1->FindLocationClosestToWorldLocation(RandomPosition, ESplineCoordinateSpace::World);
+			FVector ClosestPoint2 = SplineComponent2->FindLocationClosestToWorldLocation(RandomPosition, ESplineCoordinateSpace::World);
+			FVector ClosestPoint3 = SplineComponent3->FindLocationClosestToWorldLocation(RandomPosition, ESplineCoordinateSpace::World);
+
+	
+			FColor Color = FColor::Green;
+
+			
+			if(FVector::Distance(ClosestPoint1,RandomPosition) < DetailMinDistance + Radius.X || FVector::Distance(ClosestPoint2,RandomPosition)  < DetailMinDistance + Radius.X || FVector::Distance(ClosestPoint3,RandomPosition)  < DetailMinDistance + Radius.X)
+			{
+				Color = FColor::Red;
+				/*
+				DrawDebugLine(GetWorld(),ClosestPoint1,RandomPosition,Color, true,-1,0,50);
+				DrawDebugLine(GetWorld(),ClosestPoint2,RandomPosition, Color, true,-1,0,50);
+				DrawDebugLine(GetWorld(),ClosestPoint3,RandomPosition, Color, true,-1,0,50);
+				*/
+
+				continue;
+			}
+
+			/*DrawDebugLine(GetWorld(),ClosestPoint1,RandomPosition,Color, true,-1,0,50);
+			DrawDebugLine(GetWorld(),ClosestPoint2,RandomPosition, Color, true,-1,0,50);
+			DrawDebugLine(GetWorld(),ClosestPoint3,RandomPosition, Color, true,-1,0,50);*/
+
+
+			bool failed = false;
+			for(auto detail : Details)
+			{
+				if(FVector::Distance(RandomPosition,detail->GetActorLocation()) < DetailMinDistance + Radius.X){
+					failed = true;
+				}
+			}
+
+			if(failed)
+				continue;
+			
+			FTransform SpawnTransfrom;
+			SpawnTransfrom.SetRotation(FQuat4d(0, 0, 0, 1.f));
+			SpawnTransfrom.SetScale3D(FVector(PlanetScaling, PlanetScaling, PlanetScaling));
+			SpawnTransfrom.SetLocation(RandomPosition);
+
+			Details.Add(CreatePlanet(SpawnTransfrom * GetRootComponent()->GetComponentTransform(),RandomPlanetIndex));
+			//Details.Add(CreateBasicSphere(SpawnTransfrom * GetRootComponent()->GetComponentTransform()));
+
+			break;
+		}
+	}
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Silver, FString::Printf(TEXT("%i Details"), Details.Num()));
+
+}
+
+
 void ARouteExample::ClearRouteData()
 {
-	
 
+	
+	
 }
 
 void  ARouteExample::SwitchCamera()
@@ -1158,8 +1253,13 @@ void ARouteExample::ChangeVisibilityOfRoute(bool toHide)
 	for (auto it : CubePath3)
 	{
 		it->SetActorHiddenInGame(toHide);
-
 	}
+
+	for (auto it : Details)
+	{
+		it->SetActorHiddenInGame(toHide);
+	}
+
 }
 
 void ARouteExample::SetQuest()
