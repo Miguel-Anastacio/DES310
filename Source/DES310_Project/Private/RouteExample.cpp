@@ -253,10 +253,10 @@ APlanet* ARouteExample::CreateBasicSphere(FTransform transform)
 
 	
 
-	if(planetIndex == 7 || planetIndex == 6)
+	if(planetIndex == PlanetBP.Num() - 1 || planetIndex == PlanetBP.Num() - 2)
 	{
-		indexOfPlanetsInUse.push_back(7);
-		indexOfPlanetsInUse.push_back(6);
+		indexOfPlanetsInUse.push_back(PlanetBP.Num() - 1);
+		indexOfPlanetsInUse.push_back( PlanetBP.Num() - 2);
 	}
 	else
 	{
