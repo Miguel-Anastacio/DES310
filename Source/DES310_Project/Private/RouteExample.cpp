@@ -250,8 +250,6 @@ APlanet* ARouteExample::CreatePlanetMainRoute(FTransform transform)
 	}
 
 
-	
-
 	if(planetIndex == PlanetBP.Num() - 1 || planetIndex == PlanetBP.Num() - 2)
 	{
 		indexOfPlanetsInUse.push_back(PlanetBP.Num() - 1);
@@ -706,7 +704,7 @@ void ARouteExample::GenerateDetails()
 			SpawnTransfrom.SetLocation(RandomPosition);
 
 			//Details.Add(CreatePlanet(SpawnTransfrom * GetRootComponent()->GetComponentTransform(),RandomPlanetIndex));
-			Details.Add(CreateBasicSphere(SpawnTransfrom * GetRootComponent()->GetComponentTransform()));
+			Details.Add(CreatePlanetMainRoute(SpawnTransfrom * GetRootComponent()->GetComponentTransform()));
 
 			break;
 		}
@@ -1284,7 +1282,7 @@ void ARouteExample::SetQuest()
 	if(!Planets[2]->Quest)
 		return;
 
-	if(Planets[1])
+	if(!Planets[1])
 		return;
 		
 	Planets[2]->Quest->TargetName = Planets[1]->Name;
