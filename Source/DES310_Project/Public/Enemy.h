@@ -22,6 +22,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* CubeMesh;
 
+	void SetDamageTakenPerShot(float dmg) { DamageTakenPerShot = dmg; };
+	void SetPlayerLocation(FVector location) { PlayerLocation = location; };
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -32,13 +35,28 @@ protected:
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	//UStatsComponent* EnemyStats;
 
+	UPROPERTY() ABullet_CPP* ABulletActor;
+	UPROPERTY(EditAnywhere) TSubclassOf<class ABullet_CPP> MyBullet;
+	UPROPERTY(VisibleAnywhere) TArray<ABullet_CPP*> BulletsFired;
+
+	UPROPERTY(EditAnywhere, Category = Fight) float BulletSpawnOffset = -150.f;
+	UPROPERTY(EditAnywhere, Category = Fight) float BulletSpeed = 100.f;
+
 	UFUNCTION()
 	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	UPROPERTY()
-	int HitsReceived;
+	UPROPERTY(BlueprintReadOnly) float Health;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) float InitialHealth;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) float FireRate;
+
+	float DamageTakenPerShot;
+
+	FVector PlayerLocation;
+
 public:	
 	// Called every frame
+	void Attack();
+	void ResetEnemy();
 	virtual void Tick(float DeltaTime) override;
 
 };

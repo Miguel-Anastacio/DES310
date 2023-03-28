@@ -43,6 +43,14 @@ void UStatsComponent::Init(int StarterLevel, int Currency)
 	
 }
 
+void UStatsComponent::InitAllBaseStats(int hull, int classSpeed, float shields, float attackPower)
+{
+	BaseHullIntegrity = hull;
+	BaseATKPower = attackPower;
+	BaseSpeed = classSpeed;
+	BaseShields = shields;
+}
+
 // Called when the game starts
 void UStatsComponent::BeginPlay()
 {
@@ -82,12 +90,11 @@ void UStatsComponent::XPSystem(int GainedXP)
 		{
 			break;
 		}
-
+		GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("XP System"));
 		// catch the overflow amount
 		CarryOverXP = XPToNext * -1;
 		GainedXP -= (GainedXP - CarryOverXP);
-		CurrentReputation++;
-
+		LevelUpStats();
 		// calculate next level xp
 		XPToNext = CalcNextLevel();
 
@@ -108,7 +115,8 @@ void UStatsComponent::LevelUpStats()
 	BaseSpeed += SpeedIncrement;
 	BaseShields += ShieldIncrement ;
 	BaseHullIntegrity += HullIntegrityIncrement;
-	ATKPower += ATKPowerIncrement;
+	BaseATKPower += ATKPowerIncrement;
+	UE_LOG(LogTemp, Warning, TEXT("level Up Stats"));
 }
 
 void UStatsComponent::IncreaseCurrency(int Amount)

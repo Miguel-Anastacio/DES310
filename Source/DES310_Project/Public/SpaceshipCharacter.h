@@ -102,9 +102,10 @@ public:
 		return PlayerInventoryComponent;
 	}
 
-	UFUNCTION() void ApplyInventoryToStats();
+	UFUNCTION(BlueprintCallable) void ApplyInventoryToStats();
 	UFUNCTION() void ApplyItemToStats(UItem* item);
 
+	UFUNCTION(BlueprintCallable) void UpdatePlayerStats(int xpGained);
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

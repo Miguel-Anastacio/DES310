@@ -1,8 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Enemy.h"
-
+#include "Enemy.h"
+// Fill out your copyright notice in the Description page of Project Settings.
+#include "Kismet/KismetMathLibrary.h"
 // Sets default values
 AEnemy::AEnemy()
 {
@@ -35,7 +34,6 @@ AEnemy::AEnemy()
 
 	//EnemyCube->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::OnOverlapBegin);
 
-	HitsReceived = 0;
 }
 
 // Called when the game starts or when spawned
@@ -44,29 +42,76 @@ void AEnemy::BeginPlay()
 	Super::BeginPlay();
 	EnemyCube->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::OnOverlapBegin);
 	CubeMesh->SetEnableGravity(false);
+	Health = InitialHealth;
 	
+}
+
+void AEnemy::Attack()
+{
+	if (FireRate <= 0.f)
+	{
+		FRotator Rotation(0.0f, 0.0f, 0.0f);
+		FActorSpawnParameters SpawnInfo;
+		SpawnInfo.Owner = this;
+		FVector SpawnLocation = GetActorLocation() - (GetActorForwardVector() * BulletSpawnOffset);
+
+		if(MyBullet)
+			ABulletActor = GetWorld()->SpawnActor<ABullet_CPP>(MyBullet, SpawnLocation, GetActorRotation(), SpawnInfo);
+		else
+			GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Red, TEXT("My bullet is null"));
+		if (ABulletActor)
+		{
+			ABulletActor->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
+
+			ABulletActor->SetActorLocation(GetActorLocation() - (GetActorForwardVector() * BulletSpawnOffset));
+			ABulletActor->BulletMesh->SetPhysicsLinearVelocity(GetActorForwardVector() * BulletSpeed);
+
+			FRotator Rot = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), PlayerLocation);
+
+			ABulletActor->SetActorRotation(Rot);
+
+			BulletsFired.Add(ABulletActor);
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Red, TEXT("Problem with bullet"));
+		}
+		FireRate = 1.5;
+
+	}
+}
+
+void AEnemy::ResetEnemy()
+{
+	Health = InitialHealth;
+	for (int i = 0; i < BulletsFired.Num(); i++)
+	{
+		if (BulletsFired[i])
+			BulletsFired[i]->Destroy();
+
+	}
+	BulletsFired.Empty();
 }
 
 // Called every frame
 void AEnemy::Tick(float DeltaTime)
 {
+	FireRate -= DeltaTime;
 	Super::Tick(DeltaTime);
 
 }
 
 void AEnemy::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-
 	ABullet_CPP* BulletOBJ = Cast<ABullet_CPP>(OtherActor);
 
 	if (BulletOBJ) 
 	{
-
-		HitsReceived++;
+		Health -= DamageTakenPerShot;
 		BulletOBJ->Destroy();
 		BulletOBJ = nullptr;
 
-		if(HitsReceived == 3)
+		if(Health <= 0)
 		{
 			this->Destroy();
 		}

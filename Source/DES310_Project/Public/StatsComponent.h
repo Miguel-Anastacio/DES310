@@ -64,4 +64,10 @@ public:
 
 	UFUNCTION()
 	void Init(int StarterLevel = 1, int Currency = 500);
+
+	UFUNCTION(BlueprintCallable)
+		void InitAllBaseStats(int hull, int classSpeed, float classShields, float attackPower);
+
+
+
 };

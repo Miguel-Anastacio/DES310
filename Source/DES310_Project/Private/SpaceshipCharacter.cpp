@@ -91,7 +91,6 @@ void ASpaceshipCharacter::ApplyInventoryToStats()
 	ApplyItemToStats(PlayerInventoryComponent->GetEquippedBlaster());
 	ApplyItemToStats(PlayerInventoryComponent->GetEquippedHull());
 	ApplyItemToStats(PlayerInventoryComponent->GetEquippedEngine());
-
 }
 
 void ASpaceshipCharacter::ApplyItemToStats(UItem* item)
@@ -100,6 +99,12 @@ void ASpaceshipCharacter::ApplyItemToStats(UItem* item)
 	StatsPlayerComponent->Speed = item->Modifiers.ShieldBonus * StatsPlayerComponent->BaseSpeed;
 	StatsPlayerComponent->HullIntegrity = item->Modifiers.ShieldBonus * StatsPlayerComponent->BaseHullIntegrity;
 	StatsPlayerComponent->ATKPower = item->Modifiers.ShieldBonus * StatsPlayerComponent->BaseATKPower;
+}
+
+void ASpaceshipCharacter::UpdatePlayerStats(int xpGained)
+{
+	StatsPlayerComponent->XPSystem(xpGained);
+	ApplyInventoryToStats();
 }
 
 // Called every frame
@@ -115,7 +120,6 @@ void ASpaceshipCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	// bind action
 	PlayerInputComponent->BindAction("Mouse Click", IE_Pressed, this, &ASpaceshipCharacter::MouseClick);
 	PlayerInputComponent->BindAction("Reset Game", IE_Pressed, this, &ASpaceshipCharacter::ResetGame);
-
 }
 
 void ASpaceshipCharacter::MouseClick()
@@ -168,7 +172,9 @@ void ASpaceshipCharacter::WasQuestCompleted(FString planetName)
 		{
 			LastCompletedQuest = ActiveQuest;
 			StatsPlayerComponent->IncreaseCurrency(LastCompletedQuest->CreditsGained);
+			GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("XP"));
 			StatsPlayerComponent->XPSystem(LastCompletedQuest->XPGained);
+			ApplyInventoryToStats();
 			CompleteQuestDelegate.Broadcast();
 		}
 	
@@ -177,6 +183,7 @@ void ASpaceshipCharacter::WasQuestCompleted(FString planetName)
 
 void ASpaceshipCharacter::CompleteQuest()
 {
+	GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("XP"));
 	GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("Quest Completed"));
 	ActiveQuest = nullptr;
 }
