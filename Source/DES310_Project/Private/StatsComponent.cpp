@@ -51,6 +51,26 @@ void UStatsComponent::InitAllBaseStats(int hull, int classSpeed, float shields, 
 	BaseShields = shields;
 }
 
+void UStatsComponent::UpdateCurrentStats(float newHull, float newShields)
+{
+	CurrentHullIntegrity = HullIntegrity;
+	CurrentShields = Shields;
+}
+
+void UStatsComponent::SetStatsBasedOnLevel(int level)
+{
+	// this is used only the enemy
+	// he doesn't have items
+	Shields = level * ShieldIncrement;
+	HullIntegrity = level * HullIntegrityIncrement;
+	Speed = level * SpeedIncrement;
+	ATKPower = level * ATKPowerIncrement;
+
+	CurrentHullIntegrity = HullIntegrity;
+	CurrentShields = Shields;
+
+}
+
 // Called when the game starts
 void UStatsComponent::BeginPlay()
 {
@@ -90,7 +110,6 @@ void UStatsComponent::XPSystem(int GainedXP)
 		{
 			break;
 		}
-		GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("XP System"));
 		// catch the overflow amount
 		CarryOverXP = XPToNext * -1;
 		GainedXP -= (GainedXP - CarryOverXP);
@@ -116,7 +135,6 @@ void UStatsComponent::LevelUpStats()
 	BaseShields += ShieldIncrement ;
 	BaseHullIntegrity += HullIntegrityIncrement;
 	BaseATKPower += ATKPowerIncrement;
-	UE_LOG(LogTemp, Warning, TEXT("level Up Stats"));
 }
 
 void UStatsComponent::IncreaseCurrency(int Amount)

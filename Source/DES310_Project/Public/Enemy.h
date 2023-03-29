@@ -8,6 +8,7 @@
 #include "Bullet_CPP.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Actor.h"
+#include "StatsComponent.h"
 #include "Enemy.generated.h"
 
 UCLASS()
@@ -21,8 +22,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* CubeMesh;
-
-	void SetDamageTakenPerShot(float dmg) { DamageTakenPerShot = dmg; };
 	void SetPlayerLocation(FVector location) { PlayerLocation = location; };
 
 protected:
@@ -32,8 +31,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UBoxComponent* EnemyCube;
 
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	//UStatsComponent* EnemyStats;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UStatsComponent* EnemyStats;
 
 	UPROPERTY() ABullet_CPP* ABulletActor;
 	UPROPERTY(EditAnywhere) TSubclassOf<class ABullet_CPP> MyBullet;
@@ -49,7 +48,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly) float InitialHealth;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly) float FireRate;
 
-	float DamageTakenPerShot;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) float MinLevelOffset;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) float MaxLevelOffset;
+
 
 	FVector PlayerLocation;
 
@@ -57,6 +58,9 @@ public:
 	// Called every frame
 	void Attack();
 	void ResetEnemy();
+	UStatsComponent* GetEnemyStats() { return EnemyStats; };
+	void SetEnemyLevel(int playerLevel);
+
 	virtual void Tick(float DeltaTime) override;
 
 };

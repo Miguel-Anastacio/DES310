@@ -29,6 +29,7 @@ enum PlayerCurrentState
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FQuestCompletedDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDamageTakenDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FQuestStartedDelegate, UQuest*, NewQuest);
 
 UCLASS()
@@ -138,6 +139,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Custom Events", BlueprintCallable)
 		FQuestStartedDelegate StartQuestDelegate;
+
+	UPROPERTY(BlueprintAssignable, Category = "Custom Events", BlueprintCallable)
+		FDamageTakenDelegate DamageTakenDelegate;
 
 protected:
 

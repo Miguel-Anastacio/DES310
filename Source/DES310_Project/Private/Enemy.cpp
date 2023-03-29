@@ -1,5 +1,6 @@
 #include "Enemy.h"
 #include "Enemy.h"
+#include "Enemy.h"
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "Kismet/KismetMathLibrary.h"
 // Sets default values
@@ -24,6 +25,8 @@ AEnemy::AEnemy()
 		CubeMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -40.0f));
 		CubeMesh->SetWorldScale3D(FVector(0.8f));
 	}
+
+	EnemyStats = CreateDefaultSubobject<UStatsComponent>(TEXT("Enemy Stats"));
 
 	// declare trigger capsule
 	/*TriggerCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Trigger Capsule"));
@@ -93,6 +96,20 @@ void AEnemy::ResetEnemy()
 	BulletsFired.Empty();
 }
 
+void AEnemy::SetEnemyLevel(int playerLevel)
+{
+	int minLevel = playerLevel - MinLevelOffset;
+	int maxLevel = playerLevel + MaxLevelOffset;
+	if (minLevel < 1)
+		minLevel = 1;
+
+	if(maxLevel > MAX_LEVEL)
+		maxLevel = MAX_LEVEL;
+	int EnemyLevel = FMath::RandRange(minLevel, maxLevel);
+	EnemyStats->SetStatsBasedOnLevel(EnemyLevel);
+
+}
+
 // Called every frame
 void AEnemy::Tick(float DeltaTime)
 {
@@ -107,11 +124,29 @@ void AEnemy::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AAc
 
 	if (BulletOBJ) 
 	{
-		Health -= DamageTakenPerShot;
+		EnemyStats->CurrentHullIntegrity -= EnemyStats->DamageTakenPerHit;
 		BulletOBJ->Destroy();
 		BulletOBJ = nullptr;
+		float overflowDamage = 0.f;
+		if (EnemyStats->CurrentShields > 0)
+		{
+			EnemyStats->CurrentShields -= EnemyStats->DamageTakenPerHit;
+			if (EnemyStats->CurrentShields < 0)
+			{
+				overflowDamage = abs(EnemyStats->CurrentShields);
+				EnemyStats->CurrentHullIntegrity -= overflowDamage;
+				EnemyStats->CurrentShields = 0;
+			}
+		}
+		else
+		{
+			EnemyStats->CurrentHullIntegrity -= EnemyStats->DamageTakenPerHit;
+			if (EnemyStats->CurrentHullIntegrity < 0)
+				EnemyStats->CurrentHullIntegrity = 0;
+		}
 
-		if(Health <= 0)
+
+		if(EnemyStats->CurrentHullIntegrity <= 0)
 		{
 			this->Destroy();
 		}

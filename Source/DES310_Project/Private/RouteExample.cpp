@@ -1328,8 +1328,11 @@ void ARouteExample::FightScene() {
 		AEnemyActor->SetActorRotation(FRotator(UKismetMathLibrary::FindLookAtRotation(player->GetActorLocation(), AEnemyActor->GetActorLocation())));
 
 		AEnemyActor->SetPlayerLocation(GetActorLocation());
-		AEnemyActor->SetDamageTakenPerShot(player->StatsPlayerComponent->ATKPower);
+		AEnemyActor->SetEnemyLevel(player->StatsPlayerComponent->CurrentReputation);
+		AEnemyActor->GetEnemyStats()->DamageTakenPerHit = player->StatsPlayerComponent->ATKPower;
 		
+		player->StatsPlayerComponent->DamageTakenPerHit = AEnemyActor->GetEnemyStats()->ATKPower;
+
 		FVector Direction = FVector(player->GetActorLocation() - AEnemyActor->GetActorLocation());
 		Direction.Z = 0;
 		FRotator Rot = UKismetMathLibrary::FindLookAtRotation(AEnemyActor->GetActorLocation(), player->GetActorLocation());
