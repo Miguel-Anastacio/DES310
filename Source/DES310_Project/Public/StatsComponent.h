@@ -9,7 +9,7 @@
 #include "Components/ActorComponent.h"
 #include "StatsComponent.generated.h"
 
-#define MAX_LEVEL 40
+#define MAX_LEVEL 50
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), Blueprintable)
 class DES310_PROJECT_API UStatsComponent : public UActorComponent
@@ -32,11 +32,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) int BaseSpeed;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly) float Shields;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) float BaseShields;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) float CurrentShields;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly) int HullIntegrity;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) int BaseHullIntegrity;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) int CurrentHullIntegrity;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) int ATKPower;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) int BaseATKPower;
 
+	UPROPERTY(EditAnywhere) float DamageTakenPerHit = 50;
 protected:
 	UPROPERTY(EditAnywhere) int SpeedIncrement;
 	UPROPERTY(EditAnywhere) float ShieldIncrement;
@@ -64,4 +67,13 @@ public:
 
 	UFUNCTION()
 	void Init(int StarterLevel = 1, int Currency = 500);
+
+	UFUNCTION(BlueprintCallable)
+		void InitAllBaseStats(int hull, int classSpeed, float classShields, float attackPower);
+	UFUNCTION(BlueprintCallable)
+		void UpdateCurrentStats(float newHull, float newShields);
+
+	void SetStatsBasedOnLevel(int level);
+
+
 };

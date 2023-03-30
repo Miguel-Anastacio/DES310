@@ -54,6 +54,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSelectingTransitionDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCheckpointTransitionDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FBeginOrbitTransitionDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCombatTransitionDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCombatOverTransitionDelegate);
 
 // delegate to notify UI when user presses on a route
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPathClickedDelegate, UPathData*, CurrentPath);
@@ -224,6 +225,7 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)FPathClickedDelegate PathClickedDelegate;
 	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)FCheckpointTransitionDelegate CheckpointTransitionDelegate;
 	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable )FCombatTransitionDelegate CombatTransitionDelegate;
+	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable )FCombatTransitionDelegate CombatOverTransitionDelegate;
 
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 		UCameraComponent* FightCamera;

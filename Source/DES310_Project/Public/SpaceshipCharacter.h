@@ -29,6 +29,7 @@ enum PlayerCurrentState
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FQuestCompletedDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDamageTakenDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FQuestStartedDelegate, UQuest*, NewQuest);
 
 UCLASS()
@@ -102,9 +103,10 @@ public:
 		return PlayerInventoryComponent;
 	}
 
-	UFUNCTION() void ApplyInventoryToStats();
+	UFUNCTION(BlueprintCallable) void ApplyInventoryToStats();
 	UFUNCTION() void ApplyItemToStats(UItem* item);
 
+	UFUNCTION(BlueprintCallable) void UpdatePlayerStats(int xpGained);
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -137,6 +139,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Custom Events", BlueprintCallable)
 		FQuestStartedDelegate StartQuestDelegate;
+
+	UPROPERTY(BlueprintAssignable, Category = "Custom Events", BlueprintCallable)
+		FDamageTakenDelegate DamageTakenDelegate;
 
 protected:
 

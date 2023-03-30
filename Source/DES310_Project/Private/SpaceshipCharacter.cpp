@@ -13,6 +13,7 @@
 #include "Planet.h"
 #include "RouteExample.h"
 #include "StatsComponent.h"
+#include "Bullet_CPP.h"
 
 // Sets default values
 ASpaceshipCharacter::ASpaceshipCharacter()
@@ -75,14 +76,14 @@ void ASpaceshipCharacter::BeginPlay()
 
 	CompleteQuestDelegate.AddUniqueDynamic(this, &ASpaceshipCharacter::CompleteQuest);
 	StartQuestDelegate.AddUniqueDynamic(this, &ASpaceshipCharacter::StartQuest);
-
+	TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ASpaceshipCharacter::OnOverlapBegin);
 	
 	if (!StatsPlayerComponent)
 	{
 		GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Red, TEXT("Stats Problem"));
 	}
-
 	ApplyInventoryToStats();
+	StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
 }
 
 void ASpaceshipCharacter::ApplyInventoryToStats()
@@ -91,15 +92,21 @@ void ASpaceshipCharacter::ApplyInventoryToStats()
 	ApplyItemToStats(PlayerInventoryComponent->GetEquippedBlaster());
 	ApplyItemToStats(PlayerInventoryComponent->GetEquippedHull());
 	ApplyItemToStats(PlayerInventoryComponent->GetEquippedEngine());
-
 }
 
 void ASpaceshipCharacter::ApplyItemToStats(UItem* item)
 {
 	StatsPlayerComponent->Shields = item->Modifiers.ShieldBonus * StatsPlayerComponent->BaseShields;
-	StatsPlayerComponent->Speed = item->Modifiers.ShieldBonus * StatsPlayerComponent->BaseSpeed;
-	StatsPlayerComponent->HullIntegrity = item->Modifiers.ShieldBonus * StatsPlayerComponent->BaseHullIntegrity;
-	StatsPlayerComponent->ATKPower = item->Modifiers.ShieldBonus * StatsPlayerComponent->BaseATKPower;
+	StatsPlayerComponent->Speed = item->Modifiers.SpeedBonus * StatsPlayerComponent->BaseSpeed;
+	StatsPlayerComponent->HullIntegrity = item->Modifiers.HealthBonus * StatsPlayerComponent->BaseHullIntegrity;
+	StatsPlayerComponent->ATKPower = item->Modifiers.DamageBonus * StatsPlayerComponent->BaseATKPower;
+}
+
+void ASpaceshipCharacter::UpdatePlayerStats(int xpGained)
+{
+	StatsPlayerComponent->XPSystem(xpGained);
+	ApplyInventoryToStats();
+	StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
 }
 
 // Called every frame
@@ -115,7 +122,6 @@ void ASpaceshipCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	// bind action
 	PlayerInputComponent->BindAction("Mouse Click", IE_Pressed, this, &ASpaceshipCharacter::MouseClick);
 	PlayerInputComponent->BindAction("Reset Game", IE_Pressed, this, &ASpaceshipCharacter::ResetGame);
-
 }
 
 void ASpaceshipCharacter::MouseClick()
@@ -134,7 +140,38 @@ void ASpaceshipCharacter::ResetGame()
 
 void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	ABullet_CPP* BulletOBJ = Cast<ABullet_CPP>(OtherActor);
+	GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("Overlap Detected"));
+	if (BulletOBJ)
+	{
+		BulletOBJ->Destroy();
+		float overflowDamage;
+		// take damage
+		if (StatsPlayerComponent->CurrentShields > 0)
+		{
+			StatsPlayerComponent->CurrentShields -= StatsPlayerComponent->DamageTakenPerHit;
+			if (StatsPlayerComponent->CurrentShields < 0)
+			{
+				overflowDamage = abs(StatsPlayerComponent->CurrentShields);
+				StatsPlayerComponent->CurrentHullIntegrity -= overflowDamage;
+				GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("Taking Hull Damage"));
+				StatsPlayerComponent->CurrentShields = 0;
+			}
+		}
+		else
+		{
+			StatsPlayerComponent->CurrentHullIntegrity -= StatsPlayerComponent->DamageTakenPerHit;
+			if (StatsPlayerComponent->CurrentHullIntegrity < 0)
+				StatsPlayerComponent->CurrentHullIntegrity = 0;
+				
+			GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("Taking Hull Damage"));
+		}
 
+		
+
+		DamageTakenDelegate.Broadcast();
+
+	}
 }
 
 
@@ -168,7 +205,9 @@ void ASpaceshipCharacter::WasQuestCompleted(FString planetName)
 		{
 			LastCompletedQuest = ActiveQuest;
 			StatsPlayerComponent->IncreaseCurrency(LastCompletedQuest->CreditsGained);
+			GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("XP"));
 			StatsPlayerComponent->XPSystem(LastCompletedQuest->XPGained);
+			ApplyInventoryToStats();
 			CompleteQuestDelegate.Broadcast();
 		}
 	
@@ -177,6 +216,7 @@ void ASpaceshipCharacter::WasQuestCompleted(FString planetName)
 
 void ASpaceshipCharacter::CompleteQuest()
 {
+	GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("XP"));
 	GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("Quest Completed"));
 	ActiveQuest = nullptr;
 }
