@@ -1071,6 +1071,7 @@ void ARouteExample::SwapToMoving()
 
 	SwapState(Moving);
 	ASpaceshipCharacter* Charac = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	Charac->SetHidden(false);
 
 	Charac->TopDownCamera->SetActive(true);
 	PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);

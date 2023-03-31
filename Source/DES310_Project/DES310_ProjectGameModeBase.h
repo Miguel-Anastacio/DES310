@@ -18,5 +18,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Classes)
 	TSubclassOf< class APawn> PlayerPawnClass;
 	ADES310_ProjectGameModeBase();
+	UFUNCTION(BlueprintCallable)
+	void SetPlayer(TSubclassOf< class APawn> PlayerBP);
+	APawn* Player;
+
 
 };
