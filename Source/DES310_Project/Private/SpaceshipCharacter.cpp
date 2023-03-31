@@ -167,8 +167,6 @@ void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 			GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("Taking Hull Damage"));
 		}
 
-		
-
 		DamageTakenDelegate.Broadcast();
 
 	}

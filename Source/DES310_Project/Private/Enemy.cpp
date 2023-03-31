@@ -69,7 +69,7 @@ void AEnemy::Attack()
 			ABulletActor->SetActorLocation(GetActorLocation() - (GetActorForwardVector() * BulletSpawnOffset));
 			ABulletActor->BulletMesh->SetPhysicsLinearVelocity(GetActorForwardVector() * BulletSpeed);
 
-			FRotator Rot = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), PlayerLocation);
+			FRotator Rot = UKismetMathLibrary::FindLookAtRotation( PlayerLocation, GetActorLocation());
 
 			ABulletActor->SetActorRotation(Rot);
 

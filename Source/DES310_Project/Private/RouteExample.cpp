@@ -1328,7 +1328,7 @@ void ARouteExample::FightScene() {
 		AEnemyActor->SetActorLocation(player->GetActorLocation() + TempEnemyPosition);
 		AEnemyActor->SetActorRotation(FRotator(UKismetMathLibrary::FindLookAtRotation(player->GetActorLocation(), AEnemyActor->GetActorLocation())));
 
-		AEnemyActor->SetPlayerLocation(GetActorLocation());
+		AEnemyActor->SetPlayerLocation(player->GetActorLocation());
 		AEnemyActor->SetEnemyLevel(player->StatsPlayerComponent->CurrentReputation);
 		AEnemyActor->GetEnemyStats()->DamageTakenPerHit = player->StatsPlayerComponent->ATKPower;
 		
@@ -1351,6 +1351,7 @@ void ARouteExample::FightScene() {
 
 		ABulletActor = GetWorld()->SpawnActor<ABullet_CPP>(MyBullet, GetTransform(), SpawnInfo);
 		ABulletActor->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
+	
 
 		ABulletActor->SetActorLocation(player->GetActorLocation() - (player->GetActorForwardVector()*ppVec.Y));
 		ABulletActor->BulletMesh->SetPhysicsLinearVelocity(player->GetActorForwardVector()*-ppVec.X);
@@ -1405,7 +1406,6 @@ void ARouteExample::CombatReset(ASpaceshipCharacter* Player) {
 	
 	AEnemyActor = nullptr;
 	ABulletActor = nullptr;
-
 
 	SwapState(Event);
 }
