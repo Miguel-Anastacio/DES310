@@ -1348,15 +1348,14 @@ void ARouteExample::FightScene() {
 		FActorSpawnParameters SpawnInfo;
 		SpawnInfo.Owner = this;
 
-		ABulletActor = GetWorld()->SpawnActor<ABullet_CPP>(MyBullet, GetTransform(), SpawnInfo);
-		ABulletActor->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
-
-		ABulletActor->SetActorLocation(player->GetActorLocation() - (player->GetActorForwardVector()*ppVec.Y));
-		ABulletActor->BulletMesh->SetPhysicsLinearVelocity(player->GetActorForwardVector()*-ppVec.X);
-
-		FRotator Rot = UKismetMathLibrary::FindLookAtRotation(AEnemyActor->GetActorLocation(), player->GetActorLocation());
+		FTransform BulletTransform;
+		BulletTransform.SetTranslation(player->GetActorLocation() - (player->GetActorForwardVector()*ppVec.Y));
+		BulletTransform.SetRotation(UKismetMathLibrary::FindLookAtRotation(AEnemyActor->GetActorLocation(), player->GetActorLocation()).Quaternion());
+		BulletTransform.SetScale3D(GetTransform().GetScale3D());
 		
-		ABulletActor->SetActorRotation(Rot);
+		ABulletActor = GetWorld()->SpawnActor<ABullet_CPP>(MyBullet, BulletTransform, SpawnInfo);
+		ABulletActor->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
+		ABulletActor->BulletMesh->SetPhysicsLinearVelocity(player->GetActorForwardVector()*-ppVec.X);
 
 		BulletsFired.Add(ABulletActor);
 

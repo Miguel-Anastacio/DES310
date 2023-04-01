@@ -56,23 +56,20 @@ void AEnemy::Attack()
 		FRotator Rotation(0.0f, 0.0f, 0.0f);
 		FActorSpawnParameters SpawnInfo;
 		SpawnInfo.Owner = this;
-		FVector SpawnLocation = GetActorLocation() - (GetActorForwardVector() * BulletSpawnOffset);
+
+		FTransform BulletTransform;
+		BulletTransform.SetTranslation(GetActorLocation() - (GetActorForwardVector() * BulletSpawnOffset));
+		BulletTransform.SetRotation(GetActorForwardVector().ToOrientationQuat());
+		BulletTransform.SetScale3D(GetTransform().GetScale3D());
 
 		if(MyBullet)
-			ABulletActor = GetWorld()->SpawnActor<ABullet_CPP>(MyBullet, SpawnLocation, GetActorRotation(), SpawnInfo);
+			ABulletActor = GetWorld()->SpawnActor<ABullet_CPP>(MyBullet, BulletTransform, SpawnInfo);
 		else
 			GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Red, TEXT("My bullet is null"));
 		if (ABulletActor)
 		{
 			ABulletActor->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
-
-			ABulletActor->SetActorLocation(GetActorLocation() - (GetActorForwardVector() * BulletSpawnOffset));
 			ABulletActor->BulletMesh->SetPhysicsLinearVelocity(GetActorForwardVector() * BulletSpeed);
-
-			FRotator Rot = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), PlayerLocation);
-
-			ABulletActor->SetActorRotation(Rot);
-
 			BulletsFired.Add(ABulletActor);
 		}
 		else
