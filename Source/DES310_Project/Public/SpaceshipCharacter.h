@@ -12,6 +12,7 @@
 #include "InventoryComponent.h"
 #include "Quest.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Components/PrimitiveComponent.h"
 #include "SpaceshipCharacter.generated.h"
 
 class APlanet;
@@ -57,6 +58,20 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Player Mesh")
 	UStaticMeshComponent* PlayerMesh;
+
+	UPROPERTY(EditAnywhere, Category = "Deflection Device")
+	UStaticMeshComponent* DeflectionMesh;
+
+	UPROPERTY(VisibleAnywhere, Category = "Trigger Box")
+	UBoxComponent* DeflectionTriggerBox;
+
+	//Shield Variables
+	bool isShielding = false;
+	float shieldingCharge = 100;
+
+	bool isDeflecting = false;
+	int deflectCharges = 5;
+
 	
 	// variable to store a reference to the player controller
 	// prevents casting every time we need to use it
@@ -118,6 +133,10 @@ public:
 	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp,
 						int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	UFUNCTION()
+	void OnDeflectOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp,
+					int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 	// change camera 
 	void MoveCameraTo(AActor* Actors);
 
@@ -156,4 +175,7 @@ protected:
 
 	void MouseClick();
 	void ResetGame();
+	void ShieldPressed();
+	void ShieldReleased();
+	void DeflectPressed();
 };

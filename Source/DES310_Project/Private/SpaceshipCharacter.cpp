@@ -46,16 +46,23 @@ ASpaceshipCharacter::ASpaceshipCharacter()
 	TopDownCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	// declare trigger capsule
-	
 	TriggerBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Trigger Box"));
 	TriggerBox->InitBoxExtent(FVector(100.0f, 100.0f, 100.0f));
 	TriggerBox->SetCollisionProfileName(TEXT("Trigger"));
 	TriggerBox->SetupAttachment(GetMesh());
-	
+
 	// declare static player mesh
 	PlayerMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	PlayerMesh->SetupAttachment(RootComponent);
 
+	DeflectionMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Deflection Mesh"));
+	DeflectionMesh->SetupAttachment(RootComponent);
+
+	DeflectionTriggerBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Deflection Trigger Box"));
+	DeflectionTriggerBox->InitBoxExtent(FVector(100.0f, 100.0f, 100.0f));
+	DeflectionTriggerBox->SetCollisionProfileName(TEXT("Trigger"));
+	DeflectionTriggerBox->SetupAttachment(DeflectionMesh);
+	
 	// create player inventory
 	PlayerInventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
 	GetCharacterMovement()->GravityScale = 0.0f;
@@ -72,11 +79,14 @@ void ASpaceshipCharacter::BeginPlay()
 	if (PlayerController)
 		PlayerController->bShowMouseCursor = true;
 
+	//DeflectionMesh->SetVisibility(false);
+	
 	TargetLocation = GetActorLocation();
 
 	CompleteQuestDelegate.AddUniqueDynamic(this, &ASpaceshipCharacter::CompleteQuest);
 	StartQuestDelegate.AddUniqueDynamic(this, &ASpaceshipCharacter::StartQuest);
 	TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ASpaceshipCharacter::OnOverlapBegin);
+	DeflectionTriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ASpaceshipCharacter::OnDeflectOverlapBegin);
 	
 	if (!StatsPlayerComponent)
 	{
@@ -122,6 +132,11 @@ void ASpaceshipCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	// bind action
 	PlayerInputComponent->BindAction("Mouse Click", IE_Pressed, this, &ASpaceshipCharacter::MouseClick);
 	PlayerInputComponent->BindAction("Reset Game", IE_Pressed, this, &ASpaceshipCharacter::ResetGame);
+
+	PlayerInputComponent->BindAction("Shield", IE_Pressed, this, &ASpaceshipCharacter::ShieldPressed);
+	PlayerInputComponent->BindAction("Shield", IE_Released, this, &ASpaceshipCharacter::ShieldReleased);
+	
+	PlayerInputComponent->BindAction("Deflect", IE_Pressed, this, &ASpaceshipCharacter::DeflectPressed);
 }
 
 void ASpaceshipCharacter::MouseClick()
@@ -131,11 +146,35 @@ void ASpaceshipCharacter::MouseClick()
 		Selected = true;
 }
 
-
-
 void ASpaceshipCharacter::ResetGame()
 {
 	UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
+}
+
+void ASpaceshipCharacter::ShieldPressed()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green,	TEXT("Shielding"));
+	
+	if(shieldingCharge <= 0)
+		return;
+	
+	isShielding = true;
+}
+
+void ASpaceshipCharacter::ShieldReleased()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green,	TEXT("Not Shielding"));
+	isShielding = false;
+}
+
+void ASpaceshipCharacter::DeflectPressed()
+{
+	if(deflectCharges <= 0)
+		return;
+	
+	isDeflecting = true;
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green,	TEXT("Deflecting"));
+
 }
 
 void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -171,6 +210,20 @@ void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 
 		DamageTakenDelegate.Broadcast();
 
+	}
+}
+
+void ASpaceshipCharacter::OnDeflectOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("Deflect Hit"));
+	
+	if(OtherActor->ActorHasTag("EnemyBullet") || OtherActor->ActorHasTag("Bullet"))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("Deflecting Bullet"));
+
+		ABullet_CPP* Bullet = Cast<ABullet_CPP>(OtherActor);
+		Bullet->BulletMesh->AddForce(Bullet->BulletMesh->GetComponentVelocity() * -8); // Reverse the Velocity, only works if the bullets velocity isn't being changed
 	}
 }
 

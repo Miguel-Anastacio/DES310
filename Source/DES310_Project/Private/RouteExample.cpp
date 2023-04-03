@@ -5,6 +5,9 @@
 
 
 #include "RouteExample.h"
+
+#include <string>
+
 #include "Kismet/KismetMathLibrary.h"
 #include "SpaceshipCharacter.h"
 #include "StatsComponent.h"
@@ -123,6 +126,8 @@ void ARouteExample::BeginPlay()
 	//PlayerState = Selecting;
 	//SelectTransitionDelegate.Broadcast();
 	PathClickedDelegate.AddUniqueDynamic(this, &ARouteExample::GetPathSelected);
+
+
 }
 
 // Called every frame
@@ -135,8 +140,7 @@ void ARouteExample::Tick(float DeltaTime)
 		timer = 0;
 		//Generate();
 	}
-
-
+	
 	
 	cameraTimer += DeltaTime;
 	if (cameraTimer >= CameraRate)
@@ -178,7 +182,7 @@ void ARouteExample::Tick(float DeltaTime)
 	case PlayerStates::Event:
 		StateName = "Event";
 		break;
-	case PlayerStates::Fighting: FightScene();
+	case PlayerStates::Fighting: FightScene(DeltaTime);
 		StateName = "Fighting";
 		break;
 	default:
@@ -1292,9 +1296,23 @@ void ARouteExample::SetQuest()
 
 }
 
-void ARouteExample::FightScene() {
+void ARouteExample::FightScene(float DeltaTime) {
+
+
 	
 	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+
+	FVector Origin;
+	FVector Radius;
+	player->GetActorBounds(true,Origin,Radius);
+	
+
+
+	
+	if(player->isShielding)
+	{
+		DrawDebugSphere(GetWorld(), player->GetActorLocation(), (Radius.X + Radius.Y + Radius.Z)/3, 26, FColor(0,20,181), false, 0.1, 0, 2);
+	}
 	
 	FActorSpawnParameters SpawnParameters;
 	SpawnParameters.Owner = this;
@@ -1313,6 +1331,7 @@ void ARouteExample::FightScene() {
 
 	}
 
+	
 	if (!AEnemyActor)
 	{
 		FRotator Rotation(0.0f, 0.0f, 0.0f);
@@ -1340,31 +1359,97 @@ void ARouteExample::FightScene() {
 		player->SetActorRotation(Rot);
 	}
 
-	FireRate -= GetWorld()->DeltaTimeSeconds;
-
-	if (FireRate <= 0.f && IsValid(AEnemyActor))
+	
+	
+	/*for(auto Bullet : BulletsFired)
 	{
-		FRotator Rotation(0.0f, 0.0f, 0.0f);
+		/*FVector Velocity = ABulletActor->BulletMesh->GetComponentVelocity();
+		float Speed = Velocity.Length();
+		float DesiredSpeed = 150;
+		float Difference = DesiredSpeed - Speed;
+		Difference /= DesiredSpeed;#1#
+
+		FVector Displacement =  AEnemyActor->GetActorLocation() - Bullet->BulletMesh->GetComponentLocation();
+		Displacement.Normalize();
+
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("%s"), *Displacement.ToString()));
+
+		
+		FVector Velocity = FMath::Lerp(Bullet->BulletMesh->GetComponentVelocity(), Displacement * ppVec.X, 1 * DeltaTime);
+		//Bullet->BulletMesh->AddForce(Displacement * ppVec.X);
+		Bullet->BulletMesh->SetPhysicsLinearVelocity(Velocity);
+		Bullet->BulletMesh->SetWorldRotation(UKismetMathLibrary::FindLookAtRotation(FVector(0,0,0), ABulletActor->BulletMesh->GetComponentVelocity()));
+	}*/
+	
+	FireRateTimer -= GetWorld()->DeltaTimeSeconds;
+
+	if (FireRateTimer <= 0.f && IsValid(AEnemyActor))
+	{
+		AudioManager->ShootSoundComponent->Play();
+		
 		FActorSpawnParameters SpawnInfo;
 		SpawnInfo.Owner = this;
 
 		FTransform BulletTransform;
 		BulletTransform.SetTranslation(player->GetActorLocation() - (player->GetActorForwardVector()*ppVec.Y));
-		BulletTransform.SetRotation(UKismetMathLibrary::FindLookAtRotation(AEnemyActor->GetActorLocation(), player->GetActorLocation()).Quaternion());
+		BulletTransform.SetRotation(player->GetActorForwardVector().ToOrientationQuat());
 		BulletTransform.SetScale3D(GetTransform().GetScale3D());
 		
 		ABulletActor = GetWorld()->SpawnActor<ABullet_CPP>(MyBullet, BulletTransform, SpawnInfo);
 		ABulletActor->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
-		ABulletActor->BulletMesh->SetPhysicsLinearVelocity(player->GetActorForwardVector()*-ppVec.X);
 
+		//ABulletActor->BulletMesh->SetPhysicsLinearVelocity(player->GetActorForwardVector()*-ppVec.X);
+
+		FVector ForwardVector = FVector(-1,0,0);
+		FVector RightVector = FVector(0,1,0);
+		FVector UpVector = FVector(0,0,1);
+
+		FRotator Rotation = player->GetActorRotation();
+	
+		RightVector = Rotation.RotateVector(RightVector);
+		UpVector = Rotation.RotateVector(UpVector);
+		ForwardVector = Rotation.RotateVector(ForwardVector);
+
+		FVector NorthVector = ForwardVector.RotateAngleAxis(BulletAngleRange,UpVector);
+		FVector SouthVector = ForwardVector.RotateAngleAxis(-BulletAngleRange,UpVector);
+		FVector WestVector = ForwardVector.RotateAngleAxis(BulletAngleRange,RightVector);
+		FVector EastVector = ForwardVector.RotateAngleAxis(-BulletAngleRange,RightVector);
+
+		/*
+		DrawDebugLine(GetWorld(), player->GetActorLocation(), player->GetActorLocation() + NorthVector * 1000, FColor::Emerald, false, 20, 0, 10);
+		DrawDebugLine(GetWorld(), player->GetActorLocation(), player->GetActorLocation() + SouthVector * 1000, FColor::Emerald, false, 20, 0, 10);
+		DrawDebugLine(GetWorld(), player->GetActorLocation(), player->GetActorLocation() + WestVector * 1000, FColor::Emerald, false, 20, 0, 10);
+		DrawDebugLine(GetWorld(), player->GetActorLocation(), player->GetActorLocation() + EastVector * 1000, FColor::Emerald, false, 20, 0, 10);
+		*/
+
+
+		float XPercent = FMath::RandRange(0.f,1.f);
+		float YPercent = FMath::RandRange(0.f,1.f);
+		
+		FVector HorizontalVector = FMath::Lerp(EastVector,WestVector,XPercent);
+		FVector VerticalVector = FMath::Lerp(NorthVector,SouthVector,YPercent);
+		FVector Direction = FMath::Lerp(HorizontalVector,VerticalVector,0.5);
+
+		//DrawDebugLine(GetWorld(), player->GetActorLocation(), player->GetActorLocation() + Direction * 1000, FColor::Red, false, 20, 0, 10);
+		ABulletActor->ProjectileMovement->Activate(true);
+		ABulletActor->ProjectileMovement->InitialSpeed = ppVec.X;
+		ABulletActor->ProjectileMovement->MaxSpeed = ppVec.X * 2;
+		ABulletActor->ProjectileMovement->HomingTargetComponent = AEnemyActor->GetRootComponent();
+		ABulletActor->ProjectileMovement->bIsHomingProjectile = true;
+		ABulletActor->ProjectileMovement->Velocity = Direction * ppVec.X;
+		
+		//ABulletActor->BulletMesh->SetPhysicsLinearVelocity(Direction * ppVec.X); // In the Documentation it says its better to use AddForce
+		//ABulletActor->BulletMesh->SetWorldRotation(UKismetMathLibrary::FindLookAtRotation(FVector(0,0,0), ABulletActor->BulletMesh->GetComponentVelocity()));
+		//UKismetMathLibrary::FindLookAtRotation(FVector(0,0,0), ABulletActor->BulletMesh->GetComponentVelocity()) May Be A Better way to make the bullet face the velocity
+		
 		BulletsFired.Add(ABulletActor);
 
-		FireRate = 1.5;
+		FireRateTimer = FireRate;
 	}
 
 	if (AEnemyActor)
 	{
-		AEnemyActor->Attack();
+		//AEnemyActor->Attack();
 	}
 
 	if (!IsValid(AEnemyActor))
