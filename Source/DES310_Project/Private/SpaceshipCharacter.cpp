@@ -14,6 +14,7 @@
 #include "RouteExample.h"
 #include "StatsComponent.h"
 #include "Bullet_CPP.h"
+#include "AbilityComponent.h"
 
 // Sets default values
 ASpaceshipCharacter::ASpaceshipCharacter()
@@ -61,6 +62,8 @@ ASpaceshipCharacter::ASpaceshipCharacter()
 	GetCharacterMovement()->GravityScale = 0.0f;
 
 	StatsPlayerComponent = CreateDefaultSubobject<UStatsComponent>(TEXT("Stats"));
+
+	AbilitiesComponent = CreateDefaultSubobject<UAbilityComponent>(TEXT("Abilities"));
 }
 
 // Called when the game starts or when spawned
@@ -146,28 +149,34 @@ void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 	{
 		BulletOBJ->Destroy();
 		float overflowDamage;
-		// take damage
-		if (StatsPlayerComponent->CurrentShields > 0)
+
+
+		if (!StatsPlayerComponent->DodgeAttack())
 		{
-			StatsPlayerComponent->CurrentShields -= StatsPlayerComponent->DamageTakenPerHit;
-			if (StatsPlayerComponent->CurrentShields < 0)
+			// take damage
+			if (StatsPlayerComponent->CurrentShields > 0)
 			{
-				overflowDamage = abs(StatsPlayerComponent->CurrentShields);
-				StatsPlayerComponent->CurrentHullIntegrity -= overflowDamage;
-				GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("Taking Hull Damage"));
-				StatsPlayerComponent->CurrentShields = 0;
+				StatsPlayerComponent->CurrentShields -= StatsPlayerComponent->DamageTakenPerHit;
+				if (StatsPlayerComponent->CurrentShields < 0)
+				{
+					overflowDamage = abs(StatsPlayerComponent->CurrentShields);
+					StatsPlayerComponent->CurrentHullIntegrity -= overflowDamage;
+					StatsPlayerComponent->CurrentShields = 0;
+				}
 			}
+			else
+			{
+				StatsPlayerComponent->CurrentHullIntegrity -= StatsPlayerComponent->DamageTakenPerHit;
+				if (StatsPlayerComponent->CurrentHullIntegrity < 0)
+					StatsPlayerComponent->CurrentHullIntegrity = 0;
+			}
+
+			DamageTakenDelegate.Broadcast();
 		}
 		else
 		{
-			StatsPlayerComponent->CurrentHullIntegrity -= StatsPlayerComponent->DamageTakenPerHit;
-			if (StatsPlayerComponent->CurrentHullIntegrity < 0)
-				StatsPlayerComponent->CurrentHullIntegrity = 0;
-				
-			GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("Taking Hull Damage"));
+			DodgeDamageDelegate.Broadcast();
 		}
-
-		DamageTakenDelegate.Broadcast();
 
 	}
 }

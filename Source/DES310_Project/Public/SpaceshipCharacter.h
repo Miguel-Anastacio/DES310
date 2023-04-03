@@ -15,10 +15,10 @@
 #include "SpaceshipCharacter.generated.h"
 
 class APlanet;
-class UInventoryComponent;
 class UStatsComponent;
 class URandomEventsComponent;
 class ARouteExample;
+class UAbilityComponent;
 
 UENUM(BlueprintType)
 enum PlayerCurrentState
@@ -30,6 +30,7 @@ enum PlayerCurrentState
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FQuestCompletedDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDamageTakenDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDodgeDamageDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FQuestStartedDelegate, UQuest*, NewQuest);
 
 UCLASS()
@@ -83,6 +84,10 @@ public:
 	UQuest* LastCompletedQuest = nullptr;
 	UPROPERTY(BlueprintReadWrite)
 	int Credits = 100.0f;
+
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UAbilityComponent* AbilitiesComponent;
 
 	// Sets default values for this character's properties
 	ASpaceshipCharacter();
@@ -142,6 +147,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Custom Events", BlueprintCallable)
 		FDamageTakenDelegate DamageTakenDelegate;
+
+	UPROPERTY(BlueprintAssignable, Category = "Custom Events", BlueprintCallable)
+		FDodgeDamageDelegate DodgeDamageDelegate;
 
 protected:
 

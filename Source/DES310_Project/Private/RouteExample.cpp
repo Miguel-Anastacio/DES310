@@ -1391,7 +1391,7 @@ void ARouteExample::CombatReset(ASpaceshipCharacter* Player) {
 	FightCamera->SetActive(false);
 	Player->TopDownCamera->SetActive(true);
 
-	PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0),0,EViewTargetBlendFunction::VTBlend_Linear);
+	PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(), CameraTransitionSpeed),0,EViewTargetBlendFunction::VTBlend_Linear);
 	AEnemyActor->ResetEnemy();
 	AEnemyActor->Destroy();
 	
