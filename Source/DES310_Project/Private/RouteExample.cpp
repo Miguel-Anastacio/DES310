@@ -5,6 +5,9 @@
 
 
 #include "RouteExample.h"
+
+#include <string>
+
 #include "Kismet/KismetMathLibrary.h"
 #include "SpaceshipCharacter.h"
 #include "StatsComponent.h"
@@ -108,8 +111,9 @@ void ARouteExample::BeginPlay()
 	SuperTempTimer = 0;
 	
 	AudioManager->AmbientSoundComponent->Play();
+	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	player->AudioManager = AudioManager;
 	
-
 
 	OrbitTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToOrbiting);
 	BeginOrbitTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::BeginToOrbiting);
@@ -123,6 +127,8 @@ void ARouteExample::BeginPlay()
 	//PlayerState = Selecting;
 	//SelectTransitionDelegate.Broadcast();
 	PathClickedDelegate.AddUniqueDynamic(this, &ARouteExample::GetPathSelected);
+
+
 }
 
 // Called every frame
@@ -135,8 +141,7 @@ void ARouteExample::Tick(float DeltaTime)
 		timer = 0;
 		//Generate();
 	}
-
-
+	
 	
 	cameraTimer += DeltaTime;
 	if (cameraTimer >= CameraRate)
@@ -178,7 +183,7 @@ void ARouteExample::Tick(float DeltaTime)
 	case PlayerStates::Event:
 		StateName = "Event";
 		break;
-	case PlayerStates::Fighting: FightScene();
+	case PlayerStates::Fighting: FightScene(DeltaTime);
 		StateName = "Fighting";
 		break;
 	default:
@@ -1292,9 +1297,16 @@ void ARouteExample::SetQuest()
 
 }
 
-void ARouteExample::FightScene() {
+void ARouteExample::FightScene(float DeltaTime) {
+
+
 	
 	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+
+	FVector Origin;
+	FVector Radius;
+	player->GetActorBounds(true,Origin,Radius);
+	
 	
 	FActorSpawnParameters SpawnParameters;
 	SpawnParameters.Owner = this;
@@ -1313,6 +1325,7 @@ void ARouteExample::FightScene() {
 
 	}
 
+	
 	if (!AEnemyActor)
 	{
 		FRotator Rotation(0.0f, 0.0f, 0.0f);
@@ -1329,9 +1342,9 @@ void ARouteExample::FightScene() {
 
 		AEnemyActor->SetPlayerLocation(GetActorLocation());
 		AEnemyActor->SetEnemyLevel(player->StatsPlayerComponent->CurrentReputation);
-		AEnemyActor->GetEnemyStats()->DamageTakenPerHit = player->StatsPlayerComponent->ATKPower;
+		AEnemyActor->GetEnemyStats()->DamageTakenPerHit = player->StatsPlayerComponent->ATKPower / 10;
 		
-		player->StatsPlayerComponent->DamageTakenPerHit = AEnemyActor->GetEnemyStats()->ATKPower;
+		player->StatsPlayerComponent->DamageTakenPerHit = AEnemyActor->GetEnemyStats()->ATKPower / 10;
 
 		FVector Direction = FVector(player->GetActorLocation() - AEnemyActor->GetActorLocation());
 		Direction.Z = 0;
@@ -1340,27 +1353,16 @@ void ARouteExample::FightScene() {
 		player->SetActorRotation(Rot);
 	}
 
-	FireRate -= GetWorld()->DeltaTimeSeconds;
 
-	if (FireRate <= 0.f && IsValid(AEnemyActor))
+	AEnemyActor->SetActorLocation(player->GetActorLocation() + TempEnemyPosition + FVector(cos(timer) * 30,cos(timer) * 30,sin(timer) * 30));
+	AEnemyActor->SetActorRotation(FRotator(UKismetMathLibrary::FindLookAtRotation(player->GetActorLocation(), AEnemyActor->GetActorLocation())));
+
+	player->SetActorLocation(FightCamera->GetComponentLocation() + FVector(600, -300, 0) + FVector(cos(timer + 53.1) * 30,cos(timer+ 3.1) * 30,sin(timer+  543.1) * 30));
+	player->SetActorRotation(FRotator(UKismetMathLibrary::FindLookAtRotation(AEnemyActor->GetActorLocation(), player->GetActorLocation())));
+
+	if(player)
 	{
-		FRotator Rotation(0.0f, 0.0f, 0.0f);
-		FActorSpawnParameters SpawnInfo;
-		SpawnInfo.Owner = this;
-
-		ABulletActor = GetWorld()->SpawnActor<ABullet_CPP>(MyBullet, GetTransform(), SpawnInfo);
-		ABulletActor->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
-
-		ABulletActor->SetActorLocation(player->GetActorLocation() - (player->GetActorForwardVector()*ppVec.Y));
-		ABulletActor->BulletMesh->SetPhysicsLinearVelocity(player->GetActorForwardVector()*-ppVec.X);
-
-		FRotator Rot = UKismetMathLibrary::FindLookAtRotation(AEnemyActor->GetActorLocation(), player->GetActorLocation());
-		
-		ABulletActor->SetActorRotation(Rot);
-
-		BulletsFired.Add(ABulletActor);
-
-		FireRate = 1.5;
+		player->Attack(DeltaTime,AEnemyActor);
 	}
 
 	if (AEnemyActor)
@@ -1381,10 +1383,8 @@ void ARouteExample::FightScene() {
 
 void ARouteExample::CombatReset(ASpaceshipCharacter* Player) {
 
-
 	//MovingTransitionDelegate.Broadcast();
 	//SwapState(PreviousState);
-
 
 	FightCamera->SetActive(false);
 	Player->TopDownCamera->SetActive(true);
@@ -1393,18 +1393,9 @@ void ARouteExample::CombatReset(ASpaceshipCharacter* Player) {
 	AEnemyActor->ResetEnemy();
 	AEnemyActor->Destroy();
 	
-	for(int i = 0; i < BulletsFired.Num(); i++)
-	{
-		if(BulletsFired[i])
-			BulletsFired[i]->Destroy();
-		
-	}
-	BulletsFired.Empty();
-	//ABulletActor->Destroy();
+	Player->ResetCombat();
 	
 	AEnemyActor = nullptr;
-	ABulletActor = nullptr;
-
 
 	SwapState(Event);
 }

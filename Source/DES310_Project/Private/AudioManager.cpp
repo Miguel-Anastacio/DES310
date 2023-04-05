@@ -12,6 +12,8 @@ AAudioManager::AAudioManager()
 	AmbientSoundComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Ambient Audio Component"));
 	BattleSoundComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Battle Audio Component"));
 	ThrusterSoundComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Thruster Audio Component"));
+	AlarmSoundComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Alarm Audio Component"));
+	ShootSoundComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Shoot Audio Component"));
 
 }
 
@@ -31,6 +33,14 @@ void AAudioManager::BeginPlay()
 		
 	if(SoundCues[2]){
 		ThrusterSoundComponent->SetSound(SoundCues[2]);
+	}
+
+	if(SoundCues[3]){
+		AlarmSoundComponent->SetSound(SoundCues[3]);
+	}
+
+	if(SoundCues[4]){
+		ShootSoundComponent->SetSound(SoundCues[4]);
 	}
 	
 	
