@@ -19,17 +19,17 @@ public:
 	ABullet_CPP();
 
 	//https://youtu.be/f26KyGr6y8w?t=205
-	UPROPERTY(EditAnywhere, BlueprintReadWrite) USceneComponent* Root;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) UStaticMeshComponent* BulletMesh;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) UProjectileMovementComponent* ProjectileMovement;
+
+	float TimeAlive = 0;
 	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UBoxComponent* BulletCollision;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite)UBoxComponent* BulletCollision;
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -37,4 +37,6 @@ public:
 	UFUNCTION()
 	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	FVector GetRandomDirectionAroundForward(FRotator Rotation,float Range);
+	
 };

@@ -2,7 +2,11 @@
 #include "Enemy.h"
 #include "Enemy.h"
 // Fill out your copyright notice in the Description page of Project Settings.
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "SpaceshipCharacter.h"
+
+
 // Sets default values
 AEnemy::AEnemy()
 {
@@ -51,9 +55,20 @@ void AEnemy::BeginPlay()
 
 void AEnemy::Attack()
 {
+
+	for(int i = 0; i < BulletsFired.Num(); i++)
+	{
+		if(BulletsFired[i])
+		{
+			if(BulletsFired[i]->TimeAlive > 2.f)
+			{
+				BulletsFired[i]->Destroy();
+			}
+		}
+	}
+	
 	if (FireRate <= 0.f)
 	{
-		FRotator Rotation(0.0f, 0.0f, 0.0f);
 		FActorSpawnParameters SpawnInfo;
 		SpawnInfo.Owner = this;
 
@@ -69,7 +84,45 @@ void AEnemy::Attack()
 		if (ABulletActor)
 		{
 			ABulletActor->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
-			ABulletActor->BulletMesh->SetPhysicsLinearVelocity(GetActorForwardVector() * BulletSpeed);
+
+			FVector ForwardVector = FVector(-1,0,0);
+			FVector RightVector = FVector(0,1,0);
+			FVector UpVector = FVector(0,0,1);
+
+			FRotator Rotation = GetActorRotation();
+	
+			RightVector = Rotation.RotateVector(RightVector);
+			UpVector = Rotation.RotateVector(UpVector);
+			ForwardVector = Rotation.RotateVector(ForwardVector);
+
+			FVector NorthVector = ForwardVector.RotateAngleAxis(0,UpVector);
+			FVector SouthVector = ForwardVector.RotateAngleAxis(-0,UpVector);
+			FVector WestVector = ForwardVector.RotateAngleAxis(0,RightVector);
+			FVector EastVector = ForwardVector.RotateAngleAxis(-0,RightVector);
+
+			/*DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + NorthVector * 1000, FColor::Emerald, false, 20, 0, 10);
+			DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + SouthVector * 1000, FColor::Emerald, false, 20, 0, 10);
+			DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + WestVector * 1000, FColor::Emerald, false, 20, 0, 10);
+			DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + EastVector * 1000, FColor::Emerald, false, 20, 0, 10);*/
+			
+			float XPercent = FMath::RandRange(0.f,1.f);
+			float YPercent = FMath::RandRange(0.f,1.f);
+		
+			FVector HorizontalVector = FMath::Lerp(EastVector,WestVector,XPercent);
+			FVector VerticalVector = FMath::Lerp(NorthVector,SouthVector,YPercent);
+			FVector Direction = FMath::Lerp(HorizontalVector,VerticalVector,0.5);
+			//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + Direction * 1000, FColor::Red, false, 20, 0, 10);
+			ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+			
+			ABulletActor->ProjectileMovement->Activate(true);
+			ABulletActor->ProjectileMovement->InitialSpeed = BulletSpeed;
+			ABulletActor->ProjectileMovement->MaxSpeed = BulletSpeed * 2;
+			ABulletActor->ProjectileMovement->HomingTargetComponent = player->GetRootComponent();
+			ABulletActor->ProjectileMovement->HomingAccelerationMagnitude = 2000;
+			ABulletActor->ProjectileMovement->bIsHomingProjectile = true;
+			ABulletActor->ProjectileMovement->Velocity = Direction * BulletSpeed;
+
+			
 			BulletsFired.Add(ABulletActor);
 		}
 		else

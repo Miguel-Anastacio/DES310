@@ -98,7 +98,6 @@ public:
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite) AAudioManager* AudioManager;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite) FRotator TempAngler = FRotator(0,-30,0);
-	UPROPERTY(EditAnywhere,BlueprintReadWrite) FVector TempEnemyPosition = FVector(300, 600, 500);
 	
 	//States for now will be do with just if statements but could possibly be deligated to their own classes
 	bool MoveAlongPath(UPathData* PathData, float DeltaTime);
@@ -167,13 +166,13 @@ public:
 	UPROPERTY(VisibleAnywhere) UPathData* RouteData;
 
 
-	UPROPERTY(EditAnywhere) float RouteTickRate = 2;
+	UPROPERTY(EditAnywhere) float RouteTickRate = 200000000;
 	UPROPERTY(EditAnywhere) float CameraRate = 2;
 	UPROPERTY(EditAnywhere) float SpinRate = 2;
 
 	UPROPERTY(EditAnywhere, Category = Fight) FVector ppVec = FVector(0,150,0);
-	UPROPERTY(EditAnywhere, Category = Fight) float BulletAngleRange = 60;
-	UPROPERTY(EditAnywhere, Category = Fight) float FireRate = 1.5f;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = Fight) FVector TempEnemyPosition = FVector(300, 600, 500);
+	UPROPERTY(EditAnywhere, Category = Fight) float HomingStrength = 2000.f;
 
 	
 	TArray<TArray<APath*>> Hello;
@@ -233,15 +232,10 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 		UCameraComponent* FightCamera;
 
+	UPROPERTY() AEnemy* AEnemyActor; // Could be turned into a array and have multiple enemies
 	UPROPERTY(EditAnywhere) TSubclassOf<class AEnemy> MyEnemy;
-	UPROPERTY(EditAnywhere) TSubclassOf<class ABullet_CPP> MyBullet;
-	UPROPERTY(EditAnywhere) TSubclassOf<class ABullet_CPP> EnemyBullet;
 
-	UPROPERTY() AEnemy* AEnemyActor;
-	UPROPERTY() ABullet_CPP* ABulletActor;
-	UPROPERTY(EditAnywhere) TArray<ABullet_CPP*> BulletsFired;
-
-	float FireRateTimer = 0.5;
+	
 	UFUNCTION(BlueprintCallable)
 	void StartGame();
 	// used to hide the route when the player transitions to orbiting
