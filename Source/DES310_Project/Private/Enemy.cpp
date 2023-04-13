@@ -67,7 +67,7 @@ void AEnemy::Attack()
 		}
 	}
 	
-	if (FireRate <= 0.f)
+	if (FireRateTimer <= 0.f)
 	{
 		FActorSpawnParameters SpawnInfo;
 		SpawnInfo.Owner = this;
@@ -95,10 +95,10 @@ void AEnemy::Attack()
 			UpVector = Rotation.RotateVector(UpVector);
 			ForwardVector = Rotation.RotateVector(ForwardVector);
 
-			FVector NorthVector = ForwardVector.RotateAngleAxis(0,UpVector);
-			FVector SouthVector = ForwardVector.RotateAngleAxis(-0,UpVector);
-			FVector WestVector = ForwardVector.RotateAngleAxis(0,RightVector);
-			FVector EastVector = ForwardVector.RotateAngleAxis(-0,RightVector);
+			FVector NorthVector = ForwardVector.RotateAngleAxis(BulletAngleRange,UpVector);
+			FVector SouthVector = ForwardVector.RotateAngleAxis(-BulletAngleRange,UpVector);
+			FVector WestVector = ForwardVector.RotateAngleAxis(BulletAngleRange,RightVector);
+			FVector EastVector = ForwardVector.RotateAngleAxis(-BulletAngleRange,RightVector);
 
 			/*DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + NorthVector * 1000, FColor::Emerald, false, 20, 0, 10);
 			DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + SouthVector * 1000, FColor::Emerald, false, 20, 0, 10);
@@ -116,9 +116,9 @@ void AEnemy::Attack()
 			
 			ABulletActor->ProjectileMovement->Activate(true);
 			ABulletActor->ProjectileMovement->InitialSpeed = BulletSpeed;
-			ABulletActor->ProjectileMovement->MaxSpeed = BulletSpeed * 2;
+			ABulletActor->ProjectileMovement->MaxSpeed = BulletSpeed;
 			ABulletActor->ProjectileMovement->HomingTargetComponent = player->GetRootComponent();
-			ABulletActor->ProjectileMovement->HomingAccelerationMagnitude = 2000;
+			ABulletActor->ProjectileMovement->HomingAccelerationMagnitude = BulletSpeed * HomingStrength;
 			ABulletActor->ProjectileMovement->bIsHomingProjectile = true;
 			ABulletActor->ProjectileMovement->Velocity = Direction * BulletSpeed;
 
@@ -129,7 +129,7 @@ void AEnemy::Attack()
 		{
 			GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Red, TEXT("Problem with bullet"));
 		}
-		FireRate = 1.5;
+		FireRateTimer = FireRate;
 
 	}
 }
@@ -163,7 +163,7 @@ void AEnemy::SetEnemyLevel(int playerLevel)
 // Called every frame
 void AEnemy::Tick(float DeltaTime)
 {
-	FireRate -= DeltaTime;
+	FireRateTimer -= DeltaTime;
 	Super::Tick(DeltaTime);
 
 }

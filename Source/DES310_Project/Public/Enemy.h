@@ -38,15 +38,19 @@ protected:
 	UPROPERTY(EditAnywhere) TSubclassOf<class ABullet_CPP> MyBullet;
 	UPROPERTY(VisibleAnywhere) TArray<ABullet_CPP*> BulletsFired;
 
+	UPROPERTY(EditAnywhere, Category = Fight)float BulletAngleRange = 60;
+
+	UPROPERTY(EditAnywhere, Category = Fight)float HomingStrength = 1.f;
+	UPROPERTY(EditAnywhere, Category = Fight)float FireRate = 1.5f;
+
 	UPROPERTY(EditAnywhere, Category = Fight) float BulletSpawnOffset = -150.f;
 	UPROPERTY(EditAnywhere, Category = Fight) float BulletSpeed = 1000.f;
 
-	UFUNCTION()
-	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION() void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UPROPERTY(BlueprintReadOnly) float Health;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly) float InitialHealth;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly) float FireRate;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly) float FireRateTimer;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly) float MinLevelOffset;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly) float MaxLevelOffset;
