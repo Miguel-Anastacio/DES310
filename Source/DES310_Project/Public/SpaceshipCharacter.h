@@ -55,7 +55,7 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Trigger Box") UBoxComponent* DeflectionTriggerBox;
 
 	UPROPERTY(EditAnywhere, Category = "Deflection Device") UStaticMeshComponent* ShieldMesh;
-	UPROPERTY(VisibleAnywhere, Category = "Trigger Box") UBoxComponent* ShieldTriggerBox;
+	//UPROPERTY(VisibleAnywhere, Category = "Trigger Box") UBoxComponent* ShieldTriggerBox; No collision interaction, so trigger is unneeded
 	
 	//Shield Variables
 	bool isShielding = false;

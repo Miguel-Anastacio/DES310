@@ -20,7 +20,7 @@ void ASpaceSkyBox::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if(RandomizeSkyBox)
+	if(!RandomizeSkyBox)
 		return;
 	
 	Material = SkyMesh->GetMaterial(0);
@@ -28,9 +28,19 @@ void ASpaceSkyBox::BeginPlay()
 
 	float RandomFloat = FMath::RandRange(0.0,1.0);
 	DynamicMaterial->SetScalarParameterValue(FName(TEXT("Hue-slide")),RandomFloat);
-	DynamicMaterial->SetScalarParameterValue(FName(TEXT("power")),0.45);
-	DynamicMaterial->SetScalarParameterValue(FName(TEXT("Scene Brightness")),0.6);
-	DynamicMaterial->SetScalarParameterValue(FName(TEXT("starBrightness")),0.2);
+	if(RandomizeEverything)
+	{
+		DynamicMaterial->SetScalarParameterValue(FName(TEXT("power")),FMath::RandRange(0.0,1.0));
+		DynamicMaterial->SetScalarParameterValue(FName(TEXT("Scene Brightness")),FMath::RandRange(0.0,1.0));
+		DynamicMaterial->SetScalarParameterValue(FName(TEXT("starBrightness")),FMath::RandRange(0.0,1.0));
+	}
+	else
+	{
+		DynamicMaterial->SetScalarParameterValue(FName(TEXT("power")),0.45);
+		DynamicMaterial->SetScalarParameterValue(FName(TEXT("Scene Brightness")),0.6);
+		DynamicMaterial->SetScalarParameterValue(FName(TEXT("starBrightness")),0.2);
+	}
+
 
 	SkyMesh->SetMaterial(0,DynamicMaterial);
 

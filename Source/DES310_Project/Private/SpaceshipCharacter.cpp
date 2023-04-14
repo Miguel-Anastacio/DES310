@@ -66,10 +66,10 @@ ASpaceshipCharacter::ASpaceshipCharacter()
 	ShieldMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Shield Mesh"));
 	ShieldMesh->SetupAttachment(RootComponent);
 	
-	ShieldTriggerBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Shield Trigger Box"));
+	/*ShieldTriggerBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Shield Trigger Box"));
 	ShieldTriggerBox->InitBoxExtent(FVector(100.0f, 100.0f, 100.0f));
 	ShieldTriggerBox->SetCollisionProfileName(TEXT("Shield Trigger"));
-	ShieldTriggerBox->SetupAttachment(ShieldMesh);
+	ShieldTriggerBox->SetupAttachment(ShieldMesh);*/
 	
 	// create player inventory
 	PlayerInventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
@@ -174,6 +174,7 @@ void ASpaceshipCharacter::ResetCombat()
 	}
 	Bullets.Empty();
 
+	AudioManager->AlarmSoundComponent->Stop();
 	isAttacking = false;
 }
 
@@ -210,6 +211,10 @@ void ASpaceshipCharacter::BeginPlay()
 	DeflectionTriggerBox->SetActive(false);
 	DeflectionTriggerBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	DeflectionTriggerBox->SetVisibility(false);
+
+	ShieldMesh->SetVisibility(false);
+	ShieldMesh->SetCollisionEnabled( ECollisionEnabled::NoCollision);
+
 }
 
 void ASpaceshipCharacter::ApplyInventoryToStats()
@@ -258,6 +263,8 @@ void ASpaceshipCharacter::Tick(float DeltaTime)
 		{
 			isShielding = false;
 			ShieldMesh->SetVisibility(isShielding);
+			ShieldMesh->SetActive(isShielding);
+			ShieldMesh->SetCollisionEnabled( ECollisionEnabled::NoCollision);
 		}
 	}
 	
@@ -278,8 +285,7 @@ void ASpaceshipCharacter::Tick(float DeltaTime)
 			DeflectionTriggerBox->SetVisibility(false);
 
 			DeflectionTimer = 0;
-
-
+			
 		}
 	}
 }
@@ -323,7 +329,10 @@ void ASpaceshipCharacter::ShieldPressed()
 		return;
 	
 	isShielding = true;
+
 	ShieldMesh->SetVisibility(isShielding);
+	ShieldMesh->SetActive(isShielding);
+	ShieldMesh->SetCollisionEnabled( ECollisionEnabled::QueryAndPhysics);
 
 }
 
@@ -332,6 +341,8 @@ void ASpaceshipCharacter::ShieldReleased()
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green,	TEXT("Not Shielding"));
 	isShielding = false;
 	ShieldMesh->SetVisibility(isShielding);
+	ShieldMesh->SetActive(isShielding);
+	ShieldMesh->SetCollisionEnabled( ECollisionEnabled::NoCollision);
 }
 
 void ASpaceshipCharacter::DeflectPressed()
@@ -401,6 +412,16 @@ void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 			StatsPlayerComponent->CurrentHullIntegrity -= StatsPlayerComponent->DamageTakenPerHit;
 			if (StatsPlayerComponent->CurrentHullIntegrity < 0)
 				StatsPlayerComponent->CurrentHullIntegrity = 0;
+
+			if((StatsPlayerComponent->CurrentHullIntegrity/StatsPlayerComponent->BaseHullIntegrity) < 0.3)
+			{
+				if(!AudioManager->AlarmSoundComponent->IsPlaying())
+					AudioManager->AlarmSoundComponent->Play();
+			}
+			else
+			{
+				AudioManager->AlarmSoundComponent->Stop();
+			}
 				
 			GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("Taking Hull Damage"));
 		}
