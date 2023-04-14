@@ -115,6 +115,8 @@ void ARouteExample::BeginPlay()
 	player->AudioManager = AudioManager;
 	
 
+
+	
 	OrbitTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToOrbiting);
 	BeginOrbitTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::BeginToOrbiting);
 	// transition to checkpoint is the same as to orbiting for now
