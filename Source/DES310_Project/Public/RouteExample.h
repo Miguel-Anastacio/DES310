@@ -111,6 +111,9 @@ public:
 	FVector positionOffset;
 	
 
+	UPROPERTY(EditAnywhere, Category = Skybox) UMaterial* SkyboxMaterial;
+	UPROPERTY(EditAnywhere, Category = Skybox) UStaticMesh* SkyboxReference;
+	
 	UPROPERTY(BlueprintReadWrite) bool Temp;
 	UPROPERTY(BlueprintReadWrite) bool Temp2;
 	
