@@ -131,6 +131,7 @@ public:
 	APlanet* CurrentPlanet;
 
 	APlayerController* PlayerController;
+	ASpaceshipCharacter* SpaceshipCharacter;
 
 	std::vector<int> PlanetIndex;
 	

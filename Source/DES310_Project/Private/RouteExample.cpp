@@ -98,6 +98,8 @@ void ARouteExample::BeginPlay()
 	PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	PlayerController->SetShowMouseCursor(true);
 
+	SpaceshipCharacter = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+
 	CameraBoom->TargetArmLength = CameraBoom->TargetArmLength * this->GetActorScale().Length(); // TODO change to use Highest x/y/z instead of the pythag
 	FightCamera->SetWorldLocation(FVector(0, 0, 3000.f));
 	FightCamera->SetActive(false);
@@ -747,7 +749,7 @@ bool ARouteExample::MoveAlongPath(UPathData* PathData , float DeltaTime)
 
 	//Get The current Spline Track Position and Apply to the player
 	float SplineLength = PathData->Splines[PathData->Index]->GetSplineLength();
-	splineTimer += DeltaTime * PlayerMovementSpeed / SplineLength;
+	splineTimer += DeltaTime * SpaceshipCharacter->MovementSpeed / SplineLength;
 
 	/*GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple,  FString::Printf( TEXT("Spline Length %f"),SplineLength));
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple,  FString::Printf( TEXT("Travel Time %f"),PlayerTravelTime));

@@ -245,12 +245,15 @@ void ASpaceshipCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+
+	TopDownCamera->SetFieldOfView(FMath::Lerp(TopDownCamera->FieldOfView, CurrentFov, DeltaTime));
+	
 	if(isFireRate)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Fire Rate Increased"));
 
-		FireRateTimer -= DeltaTime;
-		if(FireRateTimer < 0)
+		FireRateCharge -= DeltaTime;
+		if(FireRateCharge < 0)
 		{
 			isFireRate = false;
 		}
@@ -306,14 +309,16 @@ void ASpaceshipCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	PlayerInputComponent->BindAction("Fire Rate Increase", IE_Pressed, this, &ASpaceshipCharacter::FireRatePressed);
 	PlayerInputComponent->BindAction("Fire Rate Increase", IE_Released, this, &ASpaceshipCharacter::FireRateReleased);
 
+	PlayerInputComponent->BindAction("Speed Up", IE_Pressed, this, &ASpaceshipCharacter::SpeedUp);
+	PlayerInputComponent->BindAction("Speed Up", IE_Released, this, &ASpaceshipCharacter::SpeedDown);
+
 	
 }
 
 void ASpaceshipCharacter::MouseClick()
 {
 	// only do this if the state is selecting
-	if(IsInSelectScreen)
-		Selected = true;
+
 }
 
 void ASpaceshipCharacter::ResetGame()
@@ -348,6 +353,11 @@ void ASpaceshipCharacter::ShieldReleased()
 void ASpaceshipCharacter::DeflectPressed()
 {
 
+	if(IsInSelectScreen)
+	{
+		Selected = true;
+	}
+	
 	if(deflectCharges <= 0 || isDeflecting || !isAttacking)
 		return;
 
@@ -369,12 +379,12 @@ void ASpaceshipCharacter::DeflectPressed()
 
 void ASpaceshipCharacter::FireRatePressed()
 {
-	GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("Fire Rate Increased"));
 
-	
 	if(FireRateCharge < 0 || !isAttacking)
 		return;
 
+	GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("Fire Rate Increased"));
+	
 	FireRate /= 2;
 
 	isFireRate = true;
@@ -386,6 +396,22 @@ void ASpaceshipCharacter::FireRateReleased()
 
 	FireRate *= 2; // Feel Like there could be data lost so just store a copy of the origional fireRate
 	isFireRate = false;
+}
+
+void ASpaceshipCharacter::SpeedUp()
+{
+	if(!isAttacking && !IsInSelectScreen)
+	{
+	
+	}
+	CurrentFov += FovIncrease;
+	MovementSpeed *=2;
+}
+
+void ASpaceshipCharacter::SpeedDown()
+{
+	CurrentFov= 90;
+	MovementSpeed /=2;
 }
 
 void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

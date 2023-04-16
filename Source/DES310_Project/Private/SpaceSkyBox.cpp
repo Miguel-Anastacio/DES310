@@ -24,9 +24,10 @@ void ASpaceSkyBox::BeginPlay()
 		return;
 	
 	Material = SkyMesh->GetMaterial(0);
-	UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(Material,this);
+	DynamicMaterial = UMaterialInstanceDynamic::Create(Material,this);
 
 	float RandomFloat = FMath::RandRange(0.0,1.0);
+	CurrentHue = RandomFloat;
 	DynamicMaterial->SetScalarParameterValue(FName(TEXT("Hue-slide")),RandomFloat);
 	if(RandomizeEverything)
 	{
@@ -51,6 +52,12 @@ void ASpaceSkyBox::BeginPlay()
 void ASpaceSkyBox::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if(Blend)
+	{
+		CurrentHue += Offset * DeltaTime;
+		DynamicMaterial->SetScalarParameterValue(FName(TEXT("Hue-slide")),CurrentHue);
+	}
 
 }
 

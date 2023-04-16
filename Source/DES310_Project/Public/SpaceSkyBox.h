@@ -25,7 +25,12 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = Skybox) UMaterialInterface* Material;
 	UPROPERTY(EditAnywhere, Category = Skybox) UStaticMeshComponent* SkyMesh;
+	UPROPERTY(EditAnywhere, Category = Skybox) UMaterialInstanceDynamic* DynamicMaterial;
+	
 	UPROPERTY(EditAnywhere, Category = Skybox) bool RandomizeSkyBox;
 	UPROPERTY(EditAnywhere, Category = Skybox) bool RandomizeEverything;
+	UPROPERTY(EditAnywhere, Category = Skybox) bool Blend;
+	UPROPERTY(EditAnywhere, Category = Skybox) float Offset = 1;
+	float CurrentHue = 0;
 
 };
