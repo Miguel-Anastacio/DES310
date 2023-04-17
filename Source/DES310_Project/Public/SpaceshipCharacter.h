@@ -60,17 +60,22 @@ public:
 	
 	//Shield Variables
 	bool isShielding = false;
-	UPROPERTY(EditAnywhere)float shieldingCharge = 100;
-
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)float shieldingCharge = 100;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)float InitShieldingCharge = 100;
+	
 	bool isDeflecting = false;
-	UPROPERTY(EditAnywhere)int deflectCharges = 5;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)int deflectCharges = 5;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)int InitDeflectCharges = 5;
 
 	bool isFireRate = false;
-	UPROPERTY(EditAnywhere)float FireRateCharge = 100;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)float FireRateCharge = 100;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)float InitFireRateCharge = 100;
 
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)float FovIncrease = 30;
+	float CurrentFov = 90;
 	
 	float DeflectionTimer = 0;
-	UPROPERTY(EditAnywhere)float DeflectionLength = 1.5f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)float DeflectionLength = 1.5f;
 
 	// variable to store a reference to the player controller
 	// prevents casting every time we need to use it
@@ -92,6 +97,8 @@ public:
 	void Attack(float DeltaTime, AEnemy* Enemy);
 	void ResetCombat();
 
+	UPROPERTY(EditAnywhere) float MovementSpeed = 200;
+	
 	//Attack Variables
 	UPROPERTY(EditAnywhere)TArray<ABullet_CPP*> Bullets;
 	UPROPERTY(EditAnywhere)TSubclassOf<class ABullet_CPP> PlayerBulletBP;
@@ -111,7 +118,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = Fight)float FireRate = 1.5f;
 	float FireRateTimer = 0;
 
-	bool isAttacking = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)bool isAttacking = false;
 	UPROPERTY(VisibleAnywhere)AAudioManager* AudioManager;
 
 	UPROPERTY() USceneComponent* CurrentTarget;// can maybe just be a actor pointer incase the player can target things other than enemeis
@@ -197,6 +204,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	//Input Functions
 	void MouseClick();
 	void ResetGame();
 	void ShieldPressed();
@@ -204,5 +212,6 @@ protected:
 	void DeflectPressed();
 	void FireRatePressed();
 	void FireRateReleased();
-
+	void SpeedUp();
+	void SpeedDown();
 };
