@@ -18,10 +18,10 @@
 #include "SpaceshipCharacter.generated.h"
 
 class APlanet;
-class UInventoryComponent;
 class UStatsComponent;
 class URandomEventsComponent;
 class ARouteExample;
+class UAbilityComponent;
 
 UENUM(BlueprintType)
 enum PlayerCurrentState
@@ -34,6 +34,7 @@ enum PlayerCurrentState
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FQuestCompletedDelegate);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDamageTakenDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDodgeDamageDelegate);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FQuestStartedDelegate, UQuest*, NewQuest);
 
@@ -94,6 +95,13 @@ public:
 	//Attack Variables
 	UPROPERTY(EditAnywhere)TArray<ABullet_CPP*> Bullets;
 	UPROPERTY(EditAnywhere)TSubclassOf<class ABullet_CPP> PlayerBulletBP;
+
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UAbilityComponent* AbilitiesComponent;
+
+	// Sets default values for this character's properties
+	ASpaceshipCharacter();
 
 	UPROPERTY(EditAnywhere, Category = Fight)float BulletSpawnOffset = -150.f;
 	UPROPERTY(EditAnywhere, Category = Fight)float BulletSpeed = 1000.f;
@@ -175,6 +183,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Custom Events", BlueprintCallable)
 	FDamageTakenDelegate DamageTakenDelegate;
+
+	UPROPERTY(BlueprintAssignable, Category = "Custom Events", BlueprintCallable)
+		FDodgeDamageDelegate DodgeDamageDelegate;
 
 protected:
 	PlayerCurrentState State = IDLE;
