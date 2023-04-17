@@ -28,6 +28,8 @@ public:
 	UPROPERTY(VisibleAnywhere) UAudioComponent* AmbientSoundComponent;
 	UPROPERTY(VisibleAnywhere) UAudioComponent* BattleSoundComponent;
 	UPROPERTY(VisibleAnywhere) UAudioComponent* ThrusterSoundComponent;
+	UPROPERTY(VisibleAnywhere) UAudioComponent* AlarmSoundComponent;
+	UPROPERTY(VisibleAnywhere) UAudioComponent* ShootSoundComponent;
 
 	UPROPERTY(EditAnywhere, Category = Sound)  TArray <class USoundCue*> SoundCues;
 

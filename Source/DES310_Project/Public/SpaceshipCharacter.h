@@ -11,7 +11,10 @@
 #include "Components/BoxComponent.h"
 #include "InventoryComponent.h"
 #include "Quest.h"
+#include "AudioManager.h"
+#include "Enemy.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Components/PrimitiveComponent.h"
 #include "SpaceshipCharacter.generated.h"
 
 class APlanet;
@@ -23,14 +26,16 @@ class UAbilityComponent;
 UENUM(BlueprintType)
 enum PlayerCurrentState
 {
-	IDLE   UMETA(DisplayName = "IDLE"),
+	IDLE UMETA(DisplayName = "IDLE"),
 	ON_PLANET UMETA(DisplayName = 'ON_PLANET')
 };
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FQuestCompletedDelegate);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDamageTakenDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDodgeDamageDelegate);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FQuestStartedDelegate, UQuest*, NewQuest);
 
 UCLASS()
@@ -38,52 +43,58 @@ class DES310_PROJECT_API ASpaceshipCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-
 public:
-
 	bool Selected = false;
 	bool IsInSelectScreen = false;
 
+	//Actor Components
+	UPROPERTY(VisibleAnywhere, Category = Camera)UCameraComponent* TopDownCamera;
+	UPROPERTY(EditAnywhere, Category = Camera)USpringArmComponent* CameraBoom;
+	UPROPERTY(VisibleAnywhere, Category = "Trigger Box")UBoxComponent* TriggerBox; // for some reason the default capsule component does not work
+	UPROPERTY(EditAnywhere, Category = "Player Mesh")UStaticMeshComponent* PlayerMesh;
+	UPROPERTY(EditAnywhere, Category = "Deflection Device") UStaticMeshComponent* DeflectionMesh;
+	UPROPERTY(VisibleAnywhere, Category = "Trigger Box") UBoxComponent* DeflectionTriggerBox;
 
-	UPROPERTY(VisibleAnywhere, Category = Camera)
-	UCameraComponent* TopDownCamera;
-
-	UPROPERTY(EditAnywhere, Category = Camera)
-	USpringArmComponent* CameraBoom;
-
-
-	// for some reason the default capsule component does not work
-	UPROPERTY(VisibleAnywhere, Category = "Trigger Box")
-	UBoxComponent* TriggerBox;
-
-	UPROPERTY(EditAnywhere, Category = "Player Mesh")
-	UStaticMeshComponent* PlayerMesh;
+	UPROPERTY(EditAnywhere, Category = "Deflection Device") UStaticMeshComponent* ShieldMesh;
+	//UPROPERTY(VisibleAnywhere, Category = "Trigger Box") UBoxComponent* ShieldTriggerBox; No collision interaction, so trigger is unneeded
 	
+	//Shield Variables
+	bool isShielding = false;
+	UPROPERTY(EditAnywhere)float shieldingCharge = 100;
+
+	bool isDeflecting = false;
+	UPROPERTY(EditAnywhere)int deflectCharges = 5;
+
+	bool isFireRate = false;
+	UPROPERTY(EditAnywhere)float FireRateCharge = 100;
+
+	
+	float DeflectionTimer = 0;
+	UPROPERTY(EditAnywhere)float DeflectionLength = 1.5f;
+
 	// variable to store a reference to the player controller
 	// prevents casting every time we need to use it
-	UPROPERTY()
-	APlayerController* PlayerController;
+	UPROPERTY()APlayerController* PlayerController;
+	UPROPERTY(VisibleAnywhere)UInventoryComponent* PlayerInventoryComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)UStatsComponent* StatsPlayerComponent;
+	UPROPERTY(EditAnywhere)float GameplayEventTick = 3.0f; // designer can set the frequency of the roll for event
 
-	UPROPERTY(VisibleAnywhere)
-	UInventoryComponent* PlayerInventoryComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	UStatsComponent* StatsPlayerComponent;
+	UPROPERTY(BlueprintReadWrite)APlanet* CurrentPlanet;
+	UPROPERTY(BlueprintReadWrite)UQuest* ActiveQuest = nullptr;
 
-	// designer can set the frequency of the roll for event
-	UPROPERTY(EditAnywhere)
-	float GameplayEventTick = 3.0f;
+	UPROPERTY(BlueprintReadWrite)UQuest* LastCompletedQuest = nullptr;
+	UPROPERTY(BlueprintReadWrite) int Credits = 100.0f;
 
-	UPROPERTY(BlueprintReadWrite)
-	APlanet* CurrentPlanet; 
+	// Sets default values for this character's properties
+	ASpaceshipCharacter();
 
-	UPROPERTY(BlueprintReadWrite)
-	UQuest* ActiveQuest = nullptr;
+	void Attack(float DeltaTime, AEnemy* Enemy);
+	void ResetCombat();
 
-	UPROPERTY(BlueprintReadWrite)
-	UQuest* LastCompletedQuest = nullptr;
-	UPROPERTY(BlueprintReadWrite)
-	int Credits = 100.0f;
+	//Attack Variables
+	UPROPERTY(EditAnywhere)TArray<ABullet_CPP*> Bullets;
+	UPROPERTY(EditAnywhere)TSubclassOf<class ABullet_CPP> PlayerBulletBP;
 
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
@@ -92,26 +103,45 @@ public:
 	// Sets default values for this character's properties
 	ASpaceshipCharacter();
 
-	UFUNCTION(BlueprintCallable)	
-	PlayerCurrentState GetPlayerStatus() {
+	UPROPERTY(EditAnywhere, Category = Fight)float BulletSpawnOffset = -150.f;
+	UPROPERTY(EditAnywhere, Category = Fight)float BulletSpeed = 1000.f;
+	UPROPERTY(EditAnywhere, Category = Fight)float BulletAngleRange = 60;
+
+	UPROPERTY(EditAnywhere, Category = Fight)float HomingStrength = 1.f;
+	UPROPERTY(EditAnywhere, Category = Fight)float FireRate = 1.5f;
+	float FireRateTimer = 0;
+
+	bool isAttacking = false;
+	UPROPERTY(VisibleAnywhere)AAudioManager* AudioManager;
+
+	UPROPERTY() USceneComponent* CurrentTarget;// can maybe just be a actor pointer incase the player can target things other than enemeis
+
+	UFUNCTION(BlueprintCallable)
+	PlayerCurrentState GetPlayerStatus()
+	{
 		return State;
 	};
 
 	UFUNCTION(BlueprintCallable)
-	void SetPlayerStatus(PlayerCurrentState newState) {
+	void SetPlayerStatus(PlayerCurrentState newState)
+	{
 		State = newState;
 	};
 
 
 	UFUNCTION(BlueprintCallable)
-	UInventoryComponent* GetPlayerInventory() {
+	UInventoryComponent* GetPlayerInventory()
+	{
 		return PlayerInventoryComponent;
 	}
 
-	UFUNCTION(BlueprintCallable) void ApplyInventoryToStats();
-	UFUNCTION() void ApplyItemToStats(UItem* item);
+	UFUNCTION(BlueprintCallable)
+	void ApplyInventoryToStats();
+	UFUNCTION()
+	void ApplyItemToStats(UItem* item);
 
-	UFUNCTION(BlueprintCallable) void UpdatePlayerStats(int xpGained);
+	UFUNCTION(BlueprintCallable)
+	void UpdatePlayerStats(int xpGained);
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -120,8 +150,14 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION()
-	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp,
-						int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor,
+	                    class UPrimitiveComponent* OtherComp,
+	                    int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnDeflectOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor,
+	                           class UPrimitiveComponent* OtherComp,
+	                           int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	// change camera 
 	void MoveCameraTo(AActor* Actors);
@@ -140,19 +176,18 @@ public:
 
 
 	UFUNCTION(BlueprintCallable)
-		void StartQuest(UQuest* QuestStarted);
+	void StartQuest(UQuest* QuestStarted);
 
 	UPROPERTY(BlueprintAssignable, Category = "Custom Events", BlueprintCallable)
-		FQuestStartedDelegate StartQuestDelegate;
+	FQuestStartedDelegate StartQuestDelegate;
 
 	UPROPERTY(BlueprintAssignable, Category = "Custom Events", BlueprintCallable)
-		FDamageTakenDelegate DamageTakenDelegate;
+	FDamageTakenDelegate DamageTakenDelegate;
 
 	UPROPERTY(BlueprintAssignable, Category = "Custom Events", BlueprintCallable)
 		FDodgeDamageDelegate DodgeDamageDelegate;
 
 protected:
-
 	PlayerCurrentState State = IDLE;
 
 	FVector TargetLocation = FVector(0, 0, 0);
@@ -164,4 +199,10 @@ protected:
 
 	void MouseClick();
 	void ResetGame();
+	void ShieldPressed();
+	void ShieldReleased();
+	void DeflectPressed();
+	void FireRatePressed();
+	void FireRateReleased();
+
 };
