@@ -71,6 +71,15 @@ void UStatsComponent::SetStatsBasedOnLevel(int level)
 
 }
 
+bool UStatsComponent::DodgeAttack()
+{
+	if (Speed > FMath::RandRange(0, GetMaxSpeed()))
+	{
+		return true;
+	}
+	return false;
+}
+
 // Called when the game starts
 void UStatsComponent::BeginPlay()
 {

@@ -1080,6 +1080,7 @@ void ARouteExample::SwapToMoving()
 
 	SwapState(Moving);
 	ASpaceshipCharacter* Charac = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	Charac->SetHidden(false);
 
 	Charac->TopDownCamera->SetActive(true);
 	PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
@@ -1344,7 +1345,7 @@ void ARouteExample::FightScene(float DeltaTime) {
 		AEnemyActor->SetActorLocation(player->GetActorLocation() + TempEnemyPosition);
 		AEnemyActor->SetActorRotation(FRotator(UKismetMathLibrary::FindLookAtRotation(player->GetActorLocation(), AEnemyActor->GetActorLocation())));
 
-		AEnemyActor->SetPlayerLocation(GetActorLocation());
+		AEnemyActor->SetPlayerLocation(player->GetActorLocation());
 		AEnemyActor->SetEnemyLevel(player->StatsPlayerComponent->CurrentReputation);
 		AEnemyActor->GetEnemyStats()->DamageTakenPerHit = player->StatsPlayerComponent->ATKPower / 10;
 		
@@ -1357,9 +1358,9 @@ void ARouteExample::FightScene(float DeltaTime) {
 		player->SetActorRotation(Rot);
 	}
 
-
 	AEnemyActor->SetActorLocation(player->GetActorLocation() + TempEnemyPosition + FVector(cos(timer) * 30,cos(timer) * 30,sin(timer) * 30));
 	AEnemyActor->SetActorRotation(FRotator(UKismetMathLibrary::FindLookAtRotation(player->GetActorLocation(), AEnemyActor->GetActorLocation())));
+
 
 	player->SetActorLocation(FightCamera->GetComponentLocation() + FVector(600, -300, 0) + FVector(cos(timer + 53.1) * 30,cos(timer+ 3.1) * 30,sin(timer+  543.1) * 30));
 	player->SetActorRotation(FRotator(UKismetMathLibrary::FindLookAtRotation(AEnemyActor->GetActorLocation(), player->GetActorLocation())));
@@ -1393,7 +1394,7 @@ void ARouteExample::CombatReset(ASpaceshipCharacter* Player) {
 	FightCamera->SetActive(false);
 	Player->TopDownCamera->SetActive(true);
 
-	PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0),0,EViewTargetBlendFunction::VTBlend_Linear);
+	PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(), CameraTransitionSpeed),0,EViewTargetBlendFunction::VTBlend_Linear);
 	AEnemyActor->ResetEnemy();
 	AEnemyActor->Destroy();
 	
