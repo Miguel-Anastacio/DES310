@@ -107,8 +107,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UAbilityComponent* AbilitiesComponent;
 
-	// Sets default values for this character's properties
-	ASpaceshipCharacter();
 
 	UPROPERTY(EditAnywhere, Category = Fight)float BulletSpawnOffset = -150.f;
 	UPROPERTY(EditAnywhere, Category = Fight)float BulletSpeed = 1000.f;
