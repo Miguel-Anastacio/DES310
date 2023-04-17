@@ -113,10 +113,6 @@ void ARouteExample::BeginPlay()
 	SuperTempTimer = 0;
 	
 	AudioManager->AmbientSoundComponent->Play();
-	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	player->AudioManager = AudioManager;
-	
-
 
 	
 	OrbitTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToOrbiting);
@@ -1254,6 +1250,9 @@ void ARouteExample::StartGame()
 	PlayerController->SetShowMouseCursor(true);
 
 	FightCamera->SetWorldLocation(FVector(0, 0, 3000.0));
+
+	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	player->AudioManager = AudioManager;
 	
 }
 

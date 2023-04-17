@@ -101,8 +101,13 @@ void ASpaceshipCharacter::Attack(float DeltaTime, AEnemy* Enemy)
 
 	if (FireRateTimer <= 0.f && IsValid(Enemy))
 	{
-		AudioManager->ShootSoundComponent->Play();
-		
+		if(AudioManager)
+			if(AudioManager->ShootSoundComponent)
+				AudioManager->ShootSoundComponent->Play();
+			else
+				GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Red, TEXT("Sound Cue"));
+		else
+			GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Red, TEXT("Audio Manager"));
 		FActorSpawnParameters SpawnInfo;
 		SpawnInfo.Owner = this;
 
@@ -177,7 +182,7 @@ void ASpaceshipCharacter::ResetCombat()
 	}
 	Bullets.Empty();
 
-	AudioManager->AlarmSoundComponent->Stop();
+	//AudioManager->AlarmSoundComponent->Stop();
 	isAttacking = false;
 }
 
@@ -426,8 +431,8 @@ void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 		float overflowDamage;
 
 
-		if (!StatsPlayerComponent->DodgeAttack())
-		{
+		//if (!StatsPlayerComponent->DodgeAttack())
+		//{
 			// take damage
 			if (StatsPlayerComponent->CurrentShields > 0)
 			{
@@ -447,12 +452,12 @@ void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 			}
 
 			DamageTakenDelegate.Broadcast();
-		}
-		else
-		{
+		//}
+		//else
+		//{
 			//DodgeDamageDelegate.Broadcast();
 
-		}
+		//}
 
 	}
 }
