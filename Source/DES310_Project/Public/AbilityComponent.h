@@ -15,7 +15,10 @@ struct FPlayerAbility
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Ability) FString Name;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Ability) FText Description;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Ability) float Cooldown = 5.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Ability) float Duration = 5.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Ability) float Cooldown = 10.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Ability) bool InUse = false;
+	float timer = 0.0f;
 
 };
 
@@ -43,7 +46,9 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	void DoBulletDeflector();
+	void DisableBulletDeflector();
 	void DoSpecialAttack();
+	void DisableSpecialAttack();
 	UFUNCTION(BlueprintCallable) void DoAbilitySelected(FString AbilityName);
 		
 };

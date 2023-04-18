@@ -179,6 +179,8 @@ void ASpaceshipCharacter::ResetCombat()
 
 	AudioManager->AlarmSoundComponent->Stop();
 	isAttacking = false;
+	AbilitiesComponent->DisableBulletDeflector();
+	AbilitiesComponent->DisableSpecialAttack();
 }
 
 // Called when the game starts or when spawned
@@ -200,6 +202,7 @@ void ASpaceshipCharacter::BeginPlay()
 	TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ASpaceshipCharacter::OnOverlapBegin);
 	DeflectionTriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ASpaceshipCharacter::OnDeflectOverlapBegin);
 	
+	
 	if (!StatsPlayerComponent)
 	{
 		GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Red, TEXT("Stats Problem"));
@@ -218,6 +221,8 @@ void ASpaceshipCharacter::BeginPlay()
 	ShieldMesh->SetVisibility(false);
 	ShieldMesh->SetCollisionEnabled( ECollisionEnabled::NoCollision);
 
+	FireRate = DefaultFireRate;
+
 }
 
 void ASpaceshipCharacter::ApplyInventoryToStats()
@@ -234,6 +239,7 @@ void ASpaceshipCharacter::ApplyItemToStats(UItem* item)
 	StatsPlayerComponent->Speed = item->Modifiers.SpeedBonus * StatsPlayerComponent->BaseSpeed;
 	StatsPlayerComponent->HullIntegrity = item->Modifiers.HealthBonus * StatsPlayerComponent->BaseHullIntegrity;
 	StatsPlayerComponent->ATKPower = item->Modifiers.DamageBonus * StatsPlayerComponent->BaseATKPower;
+	StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
 }
 
 void ASpaceshipCharacter::UpdatePlayerStats(int xpGained)
@@ -251,6 +257,7 @@ void ASpaceshipCharacter::Tick(float DeltaTime)
 
 	TopDownCamera->SetFieldOfView(FMath::Lerp(TopDownCamera->FieldOfView, CurrentFov, DeltaTime));
 	
+	/*
 	if(isFireRate)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Fire Rate Increased"));
@@ -273,11 +280,12 @@ void ASpaceshipCharacter::Tick(float DeltaTime)
 			ShieldMesh->SetCollisionEnabled( ECollisionEnabled::NoCollision);
 		}
 	}
+	*/
 	
 	if(isDeflecting)
 	{
 		DeflectionMesh->AddRelativeRotation(FRotator(0,0,DeltaTime * 200));
-		DeflectionTimer += DeltaTime;
+		/*
 		if(DeflectionTimer > DeflectionLength)
 		{
 			isDeflecting = false;
@@ -292,7 +300,7 @@ void ASpaceshipCharacter::Tick(float DeltaTime)
 
 			DeflectionTimer = 0;
 			
-		}
+		}*/
 	}
 }
 
@@ -301,16 +309,16 @@ void ASpaceshipCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	// bind action
-	PlayerInputComponent->BindAction("Mouse Click", IE_Pressed, this, &ASpaceshipCharacter::MouseClick);
+	//PlayerInputComponent->BindAction("Mouse Click", IE_Pressed, this, &ASpaceshipCharacter::MouseClick);
 	PlayerInputComponent->BindAction("Reset Game", IE_Pressed, this, &ASpaceshipCharacter::ResetGame);
 
-	PlayerInputComponent->BindAction("Shield", IE_Pressed, this, &ASpaceshipCharacter::ShieldPressed);
-	PlayerInputComponent->BindAction("Shield", IE_Released, this, &ASpaceshipCharacter::ShieldReleased);
+	//PlayerInputComponent->BindAction("Shield", IE_Pressed, this, &ASpaceshipCharacter::ShieldPressed);
+	//PlayerInputComponent->BindAction("Shield", IE_Released, this, &ASpaceshipCharacter::ShieldReleased);
 	
 	PlayerInputComponent->BindAction("Deflect", IE_Pressed, this, &ASpaceshipCharacter::DeflectPressed);
 
-	PlayerInputComponent->BindAction("Fire Rate Increase", IE_Pressed, this, &ASpaceshipCharacter::FireRatePressed);
-	PlayerInputComponent->BindAction("Fire Rate Increase", IE_Released, this, &ASpaceshipCharacter::FireRateReleased);
+	//PlayerInputComponent->BindAction("Fire Rate Increase", IE_Pressed, this, &ASpaceshipCharacter::FireRatePressed);
+	//PlayerInputComponent->BindAction("Fire Rate Increase", IE_Released, this, &ASpaceshipCharacter::FireRateReleased);
 
 	PlayerInputComponent->BindAction("Speed Up", IE_Pressed, this, &ASpaceshipCharacter::SpeedUp);
 	PlayerInputComponent->BindAction("Speed Up", IE_Released, this, &ASpaceshipCharacter::SpeedDown);
@@ -321,7 +329,10 @@ void ASpaceshipCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 void ASpaceshipCharacter::MouseClick()
 {
 	// only do this if the state is selecting
-
+	if (IsInSelectScreen)
+	{
+		Selected = true;
+	}
 }
 
 void ASpaceshipCharacter::ResetGame()
@@ -356,14 +367,14 @@ void ASpaceshipCharacter::ShieldReleased()
 void ASpaceshipCharacter::DeflectPressed()
 {
 
-	if(IsInSelectScreen)
+	if (IsInSelectScreen)
 	{
 		Selected = true;
 	}
-	
+	/*
 	if(deflectCharges <= 0 || isDeflecting || !isAttacking)
 		return;
-
+	
 	deflectCharges--;
 	isDeflecting = true;
 
@@ -375,7 +386,7 @@ void ASpaceshipCharacter::DeflectPressed()
 	DeflectionTriggerBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	DeflectionTriggerBox->SetVisibility(true);
 	
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Deflection Enabled"));
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Deflection Enabled"));*/
 
 
 }
@@ -426,8 +437,8 @@ void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 		float overflowDamage;
 
 
-		if (!StatsPlayerComponent->DodgeAttack())
-		{
+		//if (!StatsPlayerComponent->DodgeAttack())
+		//{
 			// take damage
 			if (StatsPlayerComponent->CurrentShields > 0)
 			{
@@ -442,17 +453,21 @@ void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 			else
 			{
 				StatsPlayerComponent->CurrentHullIntegrity -= StatsPlayerComponent->DamageTakenPerHit;
-				if (StatsPlayerComponent->CurrentHullIntegrity < 0)
+				if (StatsPlayerComponent->CurrentHullIntegrity <= 0)
+				{
 					StatsPlayerComponent->CurrentHullIntegrity = 0;
+					Alive = false;
+					
+				}
 			}
 
 			DamageTakenDelegate.Broadcast();
-		}
-		else
-		{
+		//}
+		//else
+		//{
 			//DodgeDamageDelegate.Broadcast();
 
-		}
+		//}
 
 	}
 }
