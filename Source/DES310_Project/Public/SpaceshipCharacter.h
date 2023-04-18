@@ -36,6 +36,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FQuestCompletedDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDamageTakenDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDodgeDamageDelegate);
 
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FQuestStartedDelegate, UQuest*, NewQuest);
 
 UCLASS()
@@ -46,6 +47,7 @@ class DES310_PROJECT_API ASpaceshipCharacter : public ACharacter
 public:
 	bool Selected = false;
 	bool IsInSelectScreen = false;
+	bool Alive = true;
 
 	//Actor Components
 	UPROPERTY(VisibleAnywhere, Category = Camera)UCameraComponent* TopDownCamera;
@@ -114,6 +116,7 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = Fight)float HomingStrength = 1.f;
 	UPROPERTY(EditAnywhere, Category = Fight)float FireRate = 1.5f;
+	UPROPERTY(EditAnywhere, Category = Fight)float DefaultFireRate = 1.5f;
 	float FireRateTimer = 0;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)bool isAttacking = false;
@@ -190,7 +193,7 @@ public:
 	FDamageTakenDelegate DamageTakenDelegate;
 
 	UPROPERTY(BlueprintAssignable, Category = "Custom Events", BlueprintCallable)
-		FDodgeDamageDelegate DodgeDamageDelegate;
+	FDodgeDamageDelegate DodgeDamageDelegate;
 
 protected:
 	PlayerCurrentState State = IDLE;

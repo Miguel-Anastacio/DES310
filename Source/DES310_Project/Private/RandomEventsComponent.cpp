@@ -18,7 +18,7 @@ URandomEventsComponent::URandomEventsComponent()
 	// ...
 }
 
-UGameEvents* URandomEventsComponent::RollForEvent(int32 ChanceOfEventInThisRoute, float deltaTime, int CombatChance, int StoryChance, int RandomChance)
+UGameEvents* URandomEventsComponent::RollForEvent(int32 ChanceOfEventInThisRoute, float deltaTime, int StoryChance, int RandomChance)
 {
 	// roll to see if event happens
 	// if yes then choose a random event
@@ -31,11 +31,10 @@ UGameEvents* URandomEventsComponent::RollForEvent(int32 ChanceOfEventInThisRoute
 		{
 			// determine the type of event
 			int typeOfEventRoll = FMath::RandRange(0, 100);	
-			if (typeOfEventRoll < CombatChance)
-				RollEventFromArray(CombatEventsList);
-			else if (typeOfEventRoll < CombatChance + StoryChance && typeOfEventRoll >= CombatChance)
+
+			if (typeOfEventRoll <= StoryChance)
 				RollEventFromArray(StoryEventsList);
-			else if(typeOfEventRoll < CombatChance + StoryChance + RandomChance && typeOfEventRoll >= CombatChance + StoryChance)
+			else 
 				RollEventFromArray(RandomEventsList);
 
 			EventTimer = 0;
@@ -116,12 +115,8 @@ void URandomEventsComponent::ConvertDataAssets()
 				case STORY:
 					StoryEventsList.Add(Event);
 					break;
-				case COMBAT:
-					CombatEventsList.Add(Event);
-					break;
 				case RANDOM:
 					RandomEventsList.Add(Event);
-				default:
 					break;
 				}
 			}

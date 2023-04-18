@@ -13,8 +13,7 @@ UENUM(BlueprintType)
 enum EventType
 {
 	STORY UMETA(DisplayName = "STORY"),
-	COMBAT  UMETA(DisplayName = "COMBAT"),
-	RANDOM  UMETA(DisplayName = "COMBAT")
+	RANDOM  UMETA(DisplayName = "RANDOM")
 };
 
 /**
