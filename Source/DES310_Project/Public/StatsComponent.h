@@ -75,5 +75,9 @@ public:
 
 	void SetStatsBasedOnLevel(int level);
 
+	int GetMaxSpeed() { return MAX_LEVEL * SpeedIncrement; };
+
+	bool DodgeAttack();
+
 
 };
