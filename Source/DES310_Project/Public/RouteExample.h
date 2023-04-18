@@ -11,6 +11,7 @@
 #include "PoissonDiscSampling.h"
 #include "Planet.h"
 #include "Path.h"
+#include "RouteSpline.h"
 #include "Components/SplineComponent.h"
 #include "DelaunayTriangulation.h"
 #include "Engine/StaticMeshActor.h"
@@ -76,6 +77,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	void Generate();
+	void GenerateImproved();
+	void CreatePath(TArray<FVector2D>& Path, TArray<APath*>& PathMeshes,USplineComponent* SplineComponent);
+	void ResetRoute();
 	void GenerateDetails();
 	void ClearRouteData();
 	APath* CreateBasicCube(FTransform transform);
@@ -104,6 +108,8 @@ public:
 	void OrbitPlanet(UPathData* PathData, float DeltaTime);
 	void SelectPath();
 
+	UFUNCTION(BlueprintCallable) FVector2D GetPlanetsOnScreenPosition(int Index);
+	
 	UFUNCTION(BlueprintCallable)
 		void TransitionToMap();
 
@@ -117,13 +123,14 @@ public:
 	UPROPERTY(BlueprintReadWrite) bool Temp;
 	UPROPERTY(BlueprintReadWrite) bool Temp2;
 	
-	UPROPERTY() USplineComponent* SplineComponent1;
+	/*UPROPERTY() USplineComponent* SplineComponent1;
 	UPROPERTY() USplineComponent* SplineComponent2;
-	UPROPERTY() USplineComponent* SplineComponent3;
+	UPROPERTY() USplineComponent* SplineComponent3;*/
 
-	UPROPERTY() USplineComponent* CameraSplineComponent1;
-	UPROPERTY() USplineComponent* CameraSplineComponent2;
-	UPROPERTY() USplineComponent* CameraSplineComponent3;
+	UPROPERTY(EditAnywhere, Category = BpActors) TSubclassOf<class ARouteSpline> SplineBP;
+	UPROPERTY(VisibleAnywhere) ARouteSpline* Spline1;
+	UPROPERTY(VisibleAnywhere) ARouteSpline* Spline2;
+	UPROPERTY(VisibleAnywhere) ARouteSpline* Spline3;
 
 	UPROPERTY() USplineComponent* CurrentSpline;
 	
@@ -254,3 +261,4 @@ public:
 	void FightScene(float DeltaTime);
 	void CombatReset(ASpaceshipCharacter* Player);
 };
+

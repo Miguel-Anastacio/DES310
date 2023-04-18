@@ -3,7 +3,6 @@
 
 #include "SpaceSkyBox.h"
 
-#include <string>
 
 // Sets default values
 ASpaceSkyBox::ASpaceSkyBox()
