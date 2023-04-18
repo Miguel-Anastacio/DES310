@@ -991,7 +991,7 @@ void ARouteExample::SelectPath()
 			RouteData->Index = 0;
 			RouteData->RouteName = "Long Route";
 			RouteData->AtFirstPlanet = false;
-			RouteData->CalculateLength();
+			//RouteData->CalculateLength();
 		}
 		else
 		{
@@ -1002,7 +1002,7 @@ void ARouteExample::SelectPath()
 			RouteData->Index = 0;
 			RouteData->StoryEventChance = 50;
 			RouteData->AtFirstPlanet = false;
-			RouteData->CalculateLength();
+			//RouteData->CalculateLength();
 		}
 
 		PathClickedDelegate.Broadcast(RouteData);
@@ -1263,8 +1263,6 @@ void ARouteExample::StartGame()
 	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	player->AudioManager = AudioManager;
 	
-	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	player->AudioManager = AudioManager;
 }
 
 void ARouteExample::ChangeVisibilityOfRoute(bool toHide)
