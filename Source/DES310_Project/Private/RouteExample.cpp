@@ -1259,6 +1259,9 @@ void ARouteExample::StartGame()
 	PlayerController->SetShowMouseCursor(true);
 
 	FightCamera->SetWorldLocation(FVector(0, 0, 3000.0));
+
+	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	player->AudioManager = AudioManager;
 	
 	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	player->AudioManager = AudioManager;
