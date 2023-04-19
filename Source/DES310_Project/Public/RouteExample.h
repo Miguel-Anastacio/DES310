@@ -253,6 +253,9 @@ public:
 
 	void SetQuest();
 
+	UFUNCTION()
 	void FightScene(float DeltaTime);
+
+	UFUNCTION()
 	void CombatReset();
 };

@@ -43,7 +43,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = Type)
 	bool IsCheckpoint = false;
 
-
 	UPROPERTY(Category = Rotation, EditAnywhere)
 	FRotator RotationPerFrame;
 	

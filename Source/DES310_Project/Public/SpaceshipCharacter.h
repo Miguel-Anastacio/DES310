@@ -178,6 +178,7 @@ public:
 	// Events delegates and fucntions binded to events
 	UFUNCTION()
 	void CompleteQuest();
+	void SaveGame();
 
 	UPROPERTY(BlueprintAssignable, Category = "Custom Events", BlueprintCallable)
 	FQuestCompletedDelegate CompleteQuestDelegate;

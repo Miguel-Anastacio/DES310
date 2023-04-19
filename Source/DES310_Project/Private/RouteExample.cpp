@@ -148,6 +148,7 @@ void ARouteExample::Tick(float DeltaTime)
 		//Generate();
 	}
 	
+	ASpaceshipCharacter* PlayerOBJ = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	
 	cameraTimer += DeltaTime;
 	if (cameraTimer >= CameraRate)
@@ -156,6 +157,8 @@ void ARouteExample::Tick(float DeltaTime)
 		SwitchCamera();
 	}
 
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple,	FString::Printf(TEXT("State Num: %i"), (int)PlayerState));
+	
 	FString StateName = "";
 	switch (PlayerState)
 	{
@@ -182,6 +185,7 @@ void ARouteExample::Tick(float DeltaTime)
 		break;
 	case PlayerStates::Orbiting: OrbitPlanet(RouteData, DeltaTime);
 		StateName = "Orbiting";
+		PlayerOBJ->SaveGame();
 		break;
 	case PlayerStates::Selecting: SelectPath();
 		StateName = "Selecting";
