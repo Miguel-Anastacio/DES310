@@ -1544,6 +1544,14 @@ void ARouteExample::SwapState(PlayerStates State)
 			Planets[i]->HideUI = true;
 		}
 	}
+
+	if (PlayerState == Selecting)
+	{
+		for (int i = 0; i < Planets.Num(); i++)
+		{
+			Planets[i]->HideUI = false;
+		}
+	}
 }
 
 void ARouteExample::GetPathSelected(UPathData* path)

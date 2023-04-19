@@ -12,8 +12,8 @@
 #include "Vendor.h"
 #include "Quest.h"
 #include "Components/PointLightComponent.h"
-#include "Components/WidgetComponent.h"
-#include "Components/SlateWrapperTypes.h"
+//#include "Components/WidgetComponent.h"
+//#include "Components/SlateWrapperTypes.h"
 #include "Planet.generated.h"
 
 
