@@ -31,7 +31,8 @@ APlanet::APlanet()
 	Tags.Add(TEXT("Planet"));
 
 	RotationPerFrame = FRotator(0.0, 0.0, 0.0f);
-	
+
+
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
@@ -46,6 +47,11 @@ APlanet::APlanet()
 	FocusPlanetCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Planet Camera"));
 	FocusPlanetCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FocusPlanetCamera->bUsePawnControlRotation = false;
+
+	Line1 = FText::FromString("Planet A");
+	Line2 = FText::FromString("You Are Maybe Here");
+	Line3 = FText::FromString("Distance: 100 AU");
+
 
 }
 
@@ -76,6 +82,30 @@ void APlanet::BeginPlay()
 	if(object)
 		Quest = Cast<UQuest>(object);
 		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("QUEST - Error casting to object"));
+
+	Line1 = FText::FromString(Name);
+	if(IsFirstPlanet)
+	{
+		Line2 = FText::FromString("You Are Here!");
+		Line3 = FText::FromString(" ");
+
+	}
+	else
+	{
+		if(IsCheckpoint)
+		{
+			Line2 = FText::FromString("Shop Available");
+		}
+		else
+		{
+			Line2 = FText::FromString("Destination");
+		}
+
+		Line3 = FText::FromString("Distance: 100 AU");
+	}
+
+
+
 }
 
 // Called every frame

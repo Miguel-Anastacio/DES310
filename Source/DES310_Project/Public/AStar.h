@@ -26,6 +26,8 @@ public:
 	void ConnectPoints(int id, int to_id ,bool directional = true);
 	int findPoint(FVector2D newPoint);
 
+	void LockCurrentPath();
+	
 	TArray<AStarPoint> points;
 	TArray<FVector2D> path;
 
