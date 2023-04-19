@@ -45,13 +45,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = Type)
 	bool IsCheckpoint = false;
 
-	UPROPERTY(BlueprintReadWrite)bool IsFirstPlanet = false;
+	UPROPERTY(BlueprintReadWrite) bool IsFirstPlanet = false;
 	UPROPERTY(BlueprintReadWrite) FText Line1;
 	UPROPERTY(BlueprintReadWrite) FText Line2;
 	UPROPERTY(BlueprintReadWrite) FText Line3;
 	UPROPERTY(BlueprintReadWrite) bool HideUI = true;
-;
-	
+
 	UPROPERTY(Category = Rotation, EditAnywhere)
 	FRotator RotationPerFrame;
 	

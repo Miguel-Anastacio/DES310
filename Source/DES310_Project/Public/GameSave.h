@@ -7,6 +7,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/SaveGame.h"
+#include "StatsComponent.h"
 #include "GameSave.generated.h"
 
 /**
@@ -19,9 +20,7 @@ class DES310_PROJECT_API UGameSave : public USaveGame
 	
 public:
 
-	 float routeSeed;
-	 float playerHealth = 69;
-	 FVector playerPosition;
+	FPlayerSaveData SavedPlayerStats;
 
 	
 };
