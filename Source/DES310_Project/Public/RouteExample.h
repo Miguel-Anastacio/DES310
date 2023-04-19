@@ -77,7 +77,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	void Generate();
-	void GenerateImproved();
+	void GenerateImproved(int FirstPlanetID, FVector Offset);
 	void CreatePath(TArray<FVector2D>& Path, TArray<APath*>& PathMeshes,USplineComponent* SplineComponent);
 	void ResetRoute();
 	void GenerateDetails();
@@ -229,6 +229,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable) void GetPathSelected(UPathData* path);
 	UFUNCTION(BlueprintCallable) void LeaveOrbit();
+	UFUNCTION(BlueprintCallable) void SelectRoute(bool WhichRoute);
+	UFUNCTION(BlueprintCallable) void FinalSelectRoute();
+	bool SelectedPath = false;
 	
 	
 	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)FOrbitTransitionDelegate OrbitTransitionDelegate;

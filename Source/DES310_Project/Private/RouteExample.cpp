@@ -133,7 +133,7 @@ void ARouteExample::Tick(float DeltaTime)
 		timer = 0;
 		//Generate();
 	}
-	GetPlanetsOnScreenPosition(0);
+	//GetPlanetsOnScreenPosition(0);
 	
 	cameraTimer += DeltaTime;
 	if (cameraTimer >= CameraRate)
@@ -248,7 +248,7 @@ APlanet* ARouteExample::CreatePlanetMainRoute(FTransform transform)
 	}
 
 
-	if(planetIndex == PlanetBP.Num() - 1 || planetIndex == PlanetBP.Num() - 2)
+	if(planetIndex == PlanetBP.Num() - 1 || planetIndex == PlanetBP.Num() - 2) // Last 2 planets are starts so makes it so only one star is possible
 	{
 		indexOfPlanetsInUse.push_back(PlanetBP.Num() - 1);
 		indexOfPlanetsInUse.push_back( PlanetBP.Num() - 2);
@@ -259,13 +259,14 @@ APlanet* ARouteExample::CreatePlanetMainRoute(FTransform transform)
 	}
 	
 	APlanet* APlanetActor = nullptr;
-	// index 0 is the checkpoint always?
+	// index 0 is the checkpoint always? TODO this means the first element in planets is ignored
 	if(planetIndex == 0)
 		APlanetActor = GetWorld()->SpawnActor<APlanet>(SpaceStationBP[planetIndex], transform, SpawnParams);
 	else
 		APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[planetIndex], transform, SpawnParams);
 		
 
+	APlanetActor->Index = planetIndex;
 	//if (PlanetIndex.Num() < 1)
 	//{
 
@@ -286,7 +287,7 @@ APlanet* ARouteExample::CreatePlanetMainRoute(FTransform transform)
 	//APlanet* APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[FMath::RandRange(0, PlanetBP.Num() - 1)], transform, SpawnParams);
 
 	APlanetActor->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
-
+	
 	return APlanetActor;
 }
 
@@ -295,11 +296,27 @@ APlanet* ARouteExample::CreatePlanet(FTransform transform, int i)
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
 
-	i = FMath::Clamp(i,0,PlanetBP.Num() - 1);
+	i = FMath::Clamp(i,1,PlanetBP.Num() - 1);
 	
-	APlanet* APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[FMath::RandRange(0, PlanetBP.Num() - 1)], transform, SpawnParams);
+	APlanet* APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[i], transform, SpawnParams);
 	APlanetActor->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
 
+
+	if(i == PlanetBP.Num() - 1 || i == PlanetBP.Num() - 2) // Last 2 planets are starts so makes it so only one star is possible
+		{
+		indexOfPlanetsInUse.push_back(PlanetBP.Num() - 1);
+		indexOfPlanetsInUse.push_back( PlanetBP.Num() - 2);
+		}
+	else
+	{
+		indexOfPlanetsInUse.push_back(i);
+	}
+
+	APlanetActor->Index = i;
+	APlanetActor->IsFirstPlanet = true;
+	APlanetActor->Line2 = FText::FromString("You Are Here");
+	APlanetActor->Line3 = FText::FromString(" ");
+	
 	return APlanetActor;
 }
 
@@ -589,8 +606,11 @@ void ARouteExample::Generate()
 */
 }
 
-void ARouteExample::GenerateImproved()
+void ARouteExample::GenerateImproved(int FirstPlanetID, FVector Offset)
 {
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Silver, FString::Printf(TEXT("Index = %i"), FirstPlanetID));
+	
 	ResetRoute();
 	
 	//Manually Add the Start and End planets to the possible routes
@@ -694,24 +714,27 @@ void ARouteExample::GenerateImproved()
 	
 	/////////////////////////////////////////////
 	
-
-
+	if(FirstPlanetID < 0)
+	{
+		FirstPlanetID = FMath::RandRange(1,PlanetBP.Num());
+	}
+	
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Silver, FString::Printf(TEXT("Index = %i"), FirstPlanetID));
+	
 	FTransform SpawnTransfrom;
 	if (Planets.Num() < 3)
 	{
-
 		SpawnTransfrom.SetRotation(FQuat4d(0, 0, 0, 1.f));
 		SpawnTransfrom.SetScale3D(FVector(PlanetScaling, PlanetScaling, PlanetScaling));
 		SpawnTransfrom.SetLocation(FVector(SpaceStation.X - Dimensions.X / 2, SpaceStation.Y - Dimensions.Y / 2, 0));
-
-		Planets.Add(CreatePlanetMainRoute(SpawnTransfrom * WorldTransform));
-		SpawnTransfrom.SetLocation(FVector(Max.X - Dimensions.X / 2, Max.Y - Dimensions.Y / 2, 0));
 		Planets.Add(CreatePlanetMainRoute(SpawnTransfrom * WorldTransform));
 		SpawnTransfrom.SetLocation(FVector(Min.X - Dimensions.X / 2, Min.Y - Dimensions.Y / 2 , 0));
+		Planets.Add(CreatePlanet(SpawnTransfrom * WorldTransform,FirstPlanetID));
+		SpawnTransfrom.SetLocation(FVector(Max.X - Dimensions.X / 2, Max.Y - Dimensions.Y / 2, 0));
 		Planets.Add(CreatePlanetMainRoute(SpawnTransfrom * WorldTransform));
 	}
 
-	GenerateDetails();
+	//GenerateDetails();
 	
 	//for (auto point : astar.points)
 	//{
@@ -726,6 +749,8 @@ void ARouteExample::GenerateImproved()
 	//	
 	//}
 
+
+	
 	SpawnTransfrom *= WorldTransform;
 
 	auto playerController = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
@@ -736,6 +761,17 @@ void ARouteExample::GenerateImproved()
 		playerController->SetActorLocation(FVector(SpawnTransfrom.GetLocation().X, SpawnTransfrom.GetLocation().Y, 1000));
 	}
 
+	std::string Line = "Distance: ";
+	int length = Spline2->Spline->GetSplineLength() / 20;
+	Line += std::to_string(length);
+	Line += " AU";
+	Planets[0]->Line3 = FText::FromString(FString(Line.c_str()));
+
+	Line = "Distance: ";
+	length = Spline1->Spline->GetSplineLength() / 20;
+	Line += std::to_string(length);
+	Line += " AU";
+	Planets[2]->Line3 = FText::FromString(FString(Line.c_str()));
 
 	// set quests
 	SetQuest();
@@ -806,7 +842,25 @@ void ARouteExample::ResetRoute()
 	Spline2->Spline->ClearSplinePoints();
 	Spline3->Spline->ClearSplinePoints();
 
+	for(auto mesh : Spline1->Meshes)
+	{
+		mesh->DestroyComponent();
+	}
+	Spline1->Meshes.Empty();
+	for(auto mesh : Spline2->Meshes)
+	{
+		mesh->DestroyComponent();
+	}
+	Spline2->Meshes.Empty();
 
+	for(auto mesh : Spline3->Meshes)
+	{
+		mesh->DestroyComponent();
+	}
+	Spline3->Meshes.Empty();
+
+	indexOfPlanetsInUse.clear();
+	
 	for (auto& Planet : Planets)
 	{
 		Planet->Destroy();
@@ -937,6 +991,7 @@ bool ARouteExample::MoveAlongPath(UPathData* PathData , float DeltaTime)
 
 	//Get The current Spline Track Position and Apply to the player
 	float SplineLength = PathData->Splines[PathData->Index]->GetSplineLength();
+	auto player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	splineTimer += DeltaTime * SpaceshipCharacter->MovementSpeed / SplineLength;
 
 	/*GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple,  FString::Printf( TEXT("Spline Length %f"),SplineLength));
@@ -1033,6 +1088,12 @@ void ARouteExample::OrbitPlanet(UPathData* PathData, float DeltaTime)
 }
 void ARouteExample::SelectPath()
 {
+
+	for(int i =0; i < Planets.Num();i++)
+	{
+		Planets[i]->HideUI = false;
+	}
+	
 	//SwapState(Selecting); TODO maybe not needed/ messes up previous state
 	auto player = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	FVector LookPosition;
@@ -1105,7 +1166,7 @@ void ARouteExample::SelectPath()
 		Spline3->SetMaterial(1);
 		
 		CurrentSpline = Spline1->Spline;
-		CurrentPlanet = Planets[1];
+		CurrentPlanet = Planets[2];
 	}
 	else
 	{
@@ -1144,6 +1205,8 @@ void ARouteExample::SelectPath()
 	}
 	
 
+
+	
 	ASpaceshipCharacter* Charac = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	Charac->Selected;
 
@@ -1183,7 +1246,7 @@ void ARouteExample::SelectPath()
 			RouteData->Splines.Add(Spline2->Spline);
 			RouteData->Splines.Add(Spline3->Spline);
 			RouteData->Stops.Add(Planets[0]);
-			RouteData->Stops.Add(Planets[1]);
+			RouteData->Stops.Add(Planets[2]);
 			RouteData->Max = RouteData->Splines.Num();
 			RouteData->Index = 0;
 			RouteData->RouteName = "Long Route";
@@ -1192,7 +1255,7 @@ void ARouteExample::SelectPath()
 		else
 		{
 			RouteData->Splines.Add(Spline1->Spline);
-			RouteData->Stops.Add(Planets[1]);
+			RouteData->Stops.Add(Planets[2]);
 			RouteData->Max = RouteData->Splines.Num();
 			RouteData->RouteName = "Short Route";
 			RouteData->Index = 0;
@@ -1445,6 +1508,11 @@ void ARouteExample::SwapState(PlayerStates State)
 		{
 			mesh->SetVisibility(false);
 		}
+
+		for(int i =0; i < Planets.Num();i++)
+		{
+			Planets[i]->HideUI = true;
+		}
 	}
 }
 
@@ -1485,11 +1553,9 @@ void ARouteExample::LeaveOrbit()
 	{
 
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Last Planet")));
-		
 		//UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetViewTargetWithBlend(this, CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
-
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: %i"), RouteData->Max));
-		//Generate();
+		GenerateImproved(Planets[1]->Index,FVector(0,0,0));
 
 		SelectTransitionDelegate.Broadcast();
 	}
@@ -1501,14 +1567,70 @@ void ARouteExample::LeaveOrbit()
 	
 }
 
+void ARouteExample::SelectRoute(bool WhichRoute)
+{
+	if(WhichRoute)
+	{
+		Spline1->SetMaterial(0);
+		Spline2->SetMaterial(1);
+		Spline3->SetMaterial(1);
+		
+		CurrentSpline = Spline1->Spline;
+		CurrentPlanet = Planets[2];
+		SelectedPath = false;
+	}
+	else
+	{
+		Spline1->SetMaterial(1);
+		Spline2->SetMaterial(0);
+		Spline3->SetMaterial(0);
+		
+		CurrentSpline = Spline2->Spline;
+		CurrentPlanet = Planets[0];
+		SelectedPath = true;
+	}
+
+
+}
+
+void ARouteExample::FinalSelectRoute()
+{
+
+	RouteData->Reset();
+
+	timer = 0;
+	if (SelectedPath)
+	{
+		RouteData->Splines.Add(Spline2->Spline);
+		RouteData->Splines.Add(Spline3->Spline);
+		RouteData->Stops.Add(Planets[0]);
+		RouteData->Stops.Add(Planets[2]);
+		RouteData->Max = RouteData->Splines.Num();
+		RouteData->Index = 0;
+		RouteData->RouteName = "Long Route";
+		RouteData->AtFirstPlanet = false;
+	}
+	else
+	{
+		RouteData->Splines.Add(Spline1->Spline);
+		RouteData->Stops.Add(Planets[2]);
+		RouteData->Max = RouteData->Splines.Num();
+		RouteData->RouteName = "Short Route";
+		RouteData->Index = 0;
+		RouteData->AtFirstPlanet = false;
+	}
+
+	PathClickedDelegate.Broadcast(RouteData);
+}
+
 void ARouteExample::StartGame()
 {
-	GenerateImproved();
+	GenerateImproved(-1,FVector(0,0,0));
 	randomSpinRate = FMath::RandRange(1, 100);
 
-	UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetViewTargetWithBlend(Planets[2], CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
-	Planets[2]->CurrentPlanet = true;
-	CurrentPlanet = Planets[2];
+	UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetViewTargetWithBlend(Planets[1], CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
+	Planets[1]->CurrentPlanet = true;
+	CurrentPlanet = Planets[1];
 
 	PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	PlayerController->SetShowMouseCursor(true);
@@ -1548,16 +1670,16 @@ void ARouteExample::ChangeVisibilityOfRoute(bool toHide)
 void ARouteExample::SetQuest()
 {
 	// On the starting planet a quest for the last one of the route?
-	if(!Planets[2])
-		return;
-
-	if(!Planets[2]->Quest)
-		return;
-
 	if(!Planets[1])
 		return;
+
+	if(!Planets[1]->Quest)
+		return;
+
+	if(!Planets[2])
+		return;
 		
-	Planets[2]->Quest->TargetName = Planets[1]->Name;
+	Planets[1]->Quest->TargetName = Planets[2]->Name;
 	// when we have more quests randomize the contents out of a set of templates
 
 }

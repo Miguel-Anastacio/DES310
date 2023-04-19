@@ -413,7 +413,7 @@ void ASpaceshipCharacter::SpeedUp()
 
 void ASpaceshipCharacter::SpeedDown()
 {
-	CurrentFov= 90;
+	CurrentFov = 90;
 	MovementSpeed /=2;
 }
 

@@ -43,7 +43,7 @@ void ARouteSpline::SetMaterial(int MaterialIndex)
 	/*if(MaterialIndex >= Materials.Num())
 		MaterialIndex = 0;*/
 
-	for(int i =0; i < Meshes.Num();i++)
+	for(int i = 0; i < Meshes.Num();i++)
 	{
 		Meshes[i]->SetMaterial(0,Materials[MaterialIndex]);
 	}
