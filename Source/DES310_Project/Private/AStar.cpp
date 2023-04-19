@@ -97,7 +97,8 @@ int AStar::AddPoint(FVector2D newPoint)
 {
 	for(int i = 0; i < points.Num(); i++)
 	{
-		if(FMath::IsNearlyEqual(points[i].position .X , newPoint.X) && FMath::IsNearlyEqual(points[i].position .Y , newPoint.Y))
+		//if the point is already in the array then just return the index without adding
+		if(FMath::IsNearlyEqual(points[i].position.X , newPoint.X) && FMath::IsNearlyEqual(points[i].position .Y , newPoint.Y))
 		{
 			return i;
 		}
@@ -122,6 +123,18 @@ int AStar::findPoint(FVector2D newPoint)
 		}
 	}
 	return -1;
+}
+
+void AStar::LockCurrentPath()
+{
+	for (int j = 0; j < path.Num() - 1; j++)
+	{
+		int id = findPoint(path[j]);
+		if (id != -1 && j != 0) // point is not the first
+		{
+			points[id].blocked = true;
+		}
+	}
 }
 
 void AStar::ConnectPoints(int id, int to_id ,bool directional)
