@@ -12,7 +12,7 @@ AShip::AShip()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	playerHealth = 100;
+	/*playerHealth = 100;
 
 	if (UGameplayStatics::DoesSaveGameExist(TEXT("Save1"), 0))
 	{
@@ -23,7 +23,7 @@ AShip::AShip()
 		SaveData = Cast<UGameSave>(UGameplayStatics::CreateSaveGameObject(UGameSave::StaticClass()));
 		SaveData->playerHealth = playerHealth;
 		UGameplayStatics::SaveGameToSlot(SaveData, TEXT("Save1"), 0);
-	}
+	}*/
 
 
 	bSimGravityDisabled = false;
@@ -74,18 +74,18 @@ void AShip::Save()
 	//SaveData->playerHealth += 100;
 	//UGameplayStatics::SaveGameToSlot(SaveData, TEXT("Save1"), 0);
 
-	if(SaveData)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Game Saved")));
-		SaveData->playerHealth = playerHealth + 100.f;
-		UGameplayStatics::SaveGameToSlot(SaveData,TEXT("Save1"),0);
-	}
+	// if(SaveData)
+	// {
+	// 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Game Saved")));
+	// 	SaveData->playerHealth = playerHealth + 100.f;
+	// 	UGameplayStatics::SaveGameToSlot(SaveData,TEXT("Save1"),0);
+	// }
 	
 }
 
 void AShip::Load()
 {
-	if(UGameplayStatics::DoesSaveGameExist(TEXT("Save1"),0))
+	/*if(UGameplayStatics::DoesSaveGameExist(TEXT("Save1"),0))
 	{
 		SaveData = Cast<UGameSave>(UGameplayStatics::LoadGameFromSlot(TEXT("Save1"),0));
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Game Loaded")));
@@ -100,6 +100,6 @@ void AShip::Load()
 	else 
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("No Save Availible")));
-	}
+	}*/
 
 }

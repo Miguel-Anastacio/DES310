@@ -212,8 +212,13 @@ void ASpaceshipCharacter::BeginPlay()
 	{
 		GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Red, TEXT("Stats Problem"));
 	}
-	ApplyInventoryToStats();
-	StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
+
+	if(!StatsPlayerComponent->AttemptLoad())
+	{
+		GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Red, TEXT("Load Fail"));
+		ApplyInventoryToStats();
+		StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
+	}
 
 	
 	DeflectionMesh->SetCollisionEnabled( ECollisionEnabled::NoCollision);
@@ -240,11 +245,15 @@ void ASpaceshipCharacter::ApplyInventoryToStats()
 
 void ASpaceshipCharacter::ApplyItemToStats(UItem* item)
 {
-	StatsPlayerComponent->Shields = item->Modifiers.ShieldBonus * StatsPlayerComponent->BaseShields;
-	StatsPlayerComponent->Speed = item->Modifiers.SpeedBonus * StatsPlayerComponent->BaseSpeed;
-	StatsPlayerComponent->HullIntegrity = item->Modifiers.HealthBonus * StatsPlayerComponent->BaseHullIntegrity;
-	StatsPlayerComponent->ATKPower = item->Modifiers.DamageBonus * StatsPlayerComponent->BaseATKPower;
-	StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
+	
+	if(item)
+	{
+		StatsPlayerComponent->Shields = item->Modifiers.ShieldBonus * StatsPlayerComponent->BaseShields;
+		StatsPlayerComponent->Speed = item->Modifiers.SpeedBonus * StatsPlayerComponent->BaseSpeed;
+		StatsPlayerComponent->HullIntegrity = item->Modifiers.HealthBonus * StatsPlayerComponent->BaseHullIntegrity;
+		StatsPlayerComponent->ATKPower = item->Modifiers.DamageBonus * StatsPlayerComponent->BaseATKPower;
+		StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
+	}
 }
 
 void ASpaceshipCharacter::UpdatePlayerStats(int xpGained)
@@ -534,4 +543,11 @@ void ASpaceshipCharacter::CompleteQuest()
 	GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("XP"));
 	GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("Quest Completed"));
 	ActiveQuest = nullptr;
+}
+
+void ASpaceshipCharacter::SaveGame()
+{
+
+	StatsPlayerComponent->SaveStats();
+	
 }

@@ -4,6 +4,9 @@
 */
 
 #include "StatsComponent.h"
+#include "GameSave.h"
+#include "Serialization/ObjectAndNameAsStringProxyArchive.h"
+
 
 // Sets default values for this component's properties
 UStatsComponent::UStatsComponent()
@@ -107,7 +110,7 @@ void UStatsComponent::XPSystem(int GainedXP)
 		return;
 	}
 	
-	auto CarryOverXP = 0;
+	int CarryOverXP = 0;
     
 	do {
 
@@ -154,4 +157,50 @@ void UStatsComponent::IncreaseCurrency(int Amount)
 void UStatsComponent::DecreaseCurrency(int Amount)
 {
 	CurrentCurrency -= Amount;
+}
+
+void UStatsComponent::SaveStats()
+{
+	
+	FPlayerSaveData StatsData;
+
+	StatsData.playerName = GetOwner()->GetFName();
+	FMemoryWriter MemoryWriter(StatsData.ByteData);
+
+	FObjectAndNameAsStringProxyArchive Ar(MemoryWriter, true);
+	// Find only variables with UPROPERTY(SaveGame)
+	Ar.ArIsSaveGame = true;
+	// Converts Actor's SaveGame UPROPERTIES into binary array
+	this->Serialize(Ar);
+
+	UGameSave* GS;
+	GS = Cast<UGameSave>(UGameplayStatics::CreateSaveGameObject(UGameSave::StaticClass()));
+	GS->SavedPlayerStats = StatsData;
+
+	UGameplayStatics::SaveGameToSlot(GS, TEXT("Game_Save"), 0);
+	
+}
+
+bool UStatsComponent::AttemptLoad()
+{
+
+	if (!UGameplayStatics::DoesSaveGameExist(TEXT("Game_Save"), 0))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,	TEXT("SAVE NOT FOUND"));
+		return false;
+	}
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green,	TEXT("SAVE FOUND"));
+	UGameSave* GS;
+	GS = Cast<UGameSave>(UGameplayStatics::CreateSaveGameObject(UGameSave::StaticClass()));
+	GS = Cast<UGameSave>(UGameplayStatics::LoadGameFromSlot("Game_Save", 0));
+	
+	FMemoryReader MemReader(GS->SavedPlayerStats.ByteData);
+	FObjectAndNameAsStringProxyArchive Ar(MemReader, true);
+
+	Ar.ArIsSaveGame = true;
+	// Convert binary array back into actor's variables
+	this->Serialize(Ar);
+
+	return true;
+	
 }
