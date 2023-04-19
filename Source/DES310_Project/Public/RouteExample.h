@@ -185,6 +185,7 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = Fight) FVector TempEnemyPosition = FVector(300, 600, 500);
 	UPROPERTY(EditAnywhere, Category = Fight) float HomingStrength = 2000.f;
 
+	bool IsRouteGood();
 	
 	TArray<TArray<APath*>> Hello;
 

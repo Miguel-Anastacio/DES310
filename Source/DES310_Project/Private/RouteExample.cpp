@@ -610,6 +610,9 @@ void ARouteExample::GenerateImproved(int FirstPlanetID, FVector Offset)
 {
 
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Silver, FString::Printf(TEXT("Index = %i"), FirstPlanetID));
+
+	do
+	{
 	
 	ResetRoute();
 	
@@ -773,9 +776,12 @@ void ARouteExample::GenerateImproved(int FirstPlanetID, FVector Offset)
 	Line += " AU";
 	Planets[2]->Line3 = FText::FromString(FString(Line.c_str()));
 
+	}
+	while (!IsRouteGood());
+		
 	// set quests
 	SetQuest();
-
+		
 
 	Spline1->CreateSpline();
 	Spline2->CreateSpline();
@@ -1461,6 +1467,22 @@ void ARouteExample::SwapToCombat()
 
 }
 
+
+bool ARouteExample::IsRouteGood()
+{
+
+	if(Spline1->Spline->GetNumberOfSplinePoints() <= 3)
+		return false;
+
+	if(Spline2->Spline->GetNumberOfSplinePoints() <= 3)
+		return false;
+
+	if(Spline3->Spline->GetNumberOfSplinePoints() <= 3)
+		return false;
+
+
+	return true;
+}
 
 void ARouteExample::SwapState(PlayerStates State)
 {
