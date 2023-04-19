@@ -169,7 +169,7 @@ void ARouteExample::Tick(float DeltaTime)
 	case PlayerStates::Orbiting: OrbitPlanet(RouteData, DeltaTime);
 		StateName = "Orbiting";
 		break;
-	case PlayerStates::Selecting: SelectPath();
+	case PlayerStates::Selecting: //SelectPath();
 		StateName = "Selecting";
 		break;
 	case PlayerStates::Event:
@@ -1167,9 +1167,10 @@ void ARouteExample::SelectPath()
 			}
 		}*/
 
+		/*
 		Spline1->SetMaterial(0);
 		Spline2->SetMaterial(1);
-		Spline3->SetMaterial(1);
+		Spline3->SetMaterial(1);*/
 		
 		CurrentSpline = Spline1->Spline;
 		CurrentPlanet = Planets[2];
@@ -1201,9 +1202,10 @@ void ARouteExample::SelectPath()
 			}
 		}*/
 
+		/*
 		Spline1->SetMaterial(1);
 		Spline2->SetMaterial(0);
-		Spline3->SetMaterial(0);
+		Spline3->SetMaterial(0);*/
 		
 		CurrentSpline = Spline2->Spline;
 		CurrentPlanet = Planets[0];
@@ -1589,7 +1591,7 @@ void ARouteExample::LeaveOrbit()
 	
 }
 
-void ARouteExample::SelectRoute(bool WhichRoute)
+UPathData* ARouteExample::SelectRoute(bool WhichRoute)
 {
 	if(WhichRoute)
 	{
@@ -1600,6 +1602,9 @@ void ARouteExample::SelectRoute(bool WhichRoute)
 		CurrentSpline = Spline1->Spline;
 		CurrentPlanet = Planets[2];
 		SelectedPath = false;
+		RouteData->RouteName = "Route 2";
+		RouteData->CombatEventChance = 80;
+		RouteData->StoryEventChance = 50;
 	}
 	else
 	{
@@ -1610,7 +1615,13 @@ void ARouteExample::SelectRoute(bool WhichRoute)
 		CurrentSpline = Spline2->Spline;
 		CurrentPlanet = Planets[0];
 		SelectedPath = true;
+
+		RouteData->RouteName = "Route 1";
+		RouteData->CombatEventChance = 40;
+		RouteData->StoryEventChance = 50;
 	}
+
+	return RouteData;
 
 
 }

@@ -230,7 +230,7 @@ public:
 	
 	UFUNCTION(BlueprintCallable) void GetPathSelected(UPathData* path);
 	UFUNCTION(BlueprintCallable) void LeaveOrbit();
-	UFUNCTION(BlueprintCallable) void SelectRoute(bool WhichRoute);
+	UFUNCTION(BlueprintCallable) UPathData* SelectRoute(bool WhichRoute);
 	UFUNCTION(BlueprintCallable) void FinalSelectRoute();
 	bool SelectedPath = false;
 	
