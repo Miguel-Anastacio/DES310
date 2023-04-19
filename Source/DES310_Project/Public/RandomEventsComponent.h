@@ -66,7 +66,7 @@ public:
 
 	// returns the event that is supposed to happen
 	// returns null if no event is to happen
-	UGameEvents* RollForEvent(int32 ChanceOfEventInThisRoute, float deltaTime, int CombatChance, int StoryChance, int RandomChance);
+	UGameEvents* RollForEvent(int32 ChanceOfEventInThisRoute, float deltaTime, int StoryChance, int RandomChance);
 
 	UGameEvents* RollEventFromArray(TArray<UGameEvents*>& eventsList);
 

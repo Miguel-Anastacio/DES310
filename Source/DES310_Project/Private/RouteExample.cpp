@@ -115,6 +115,9 @@ void ARouteExample::BeginPlay()
 	MovingTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToMoving);
 	SelectTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToSelecting);
 	CombatTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToCombat);
+	GameOverDelegate.AddUniqueDynamic(this, &ARouteExample::CombatReset);
+
+
 	PlayerState = Event;
 	//PlayerState = Selecting;
 	//SelectTransitionDelegate.Broadcast();
@@ -151,7 +154,7 @@ void ARouteExample::Tick(float DeltaTime)
 // passing the current path is cleaner
 		// pass the values for now
 		SuperTempTimer += DeltaTime;
-		if (EventsComponent->RollForEvent(RouteData->EventChance, DeltaTime, RouteData->CombatEventChance, RouteData->StoryEventChance, RouteData->RandomEventChance))
+		if (EventsComponent->RollForEvent(RouteData->EventChance, DeltaTime, RouteData->StoryEventChance, RouteData->RandomEventChance))
 		{
 			PlayerState = Event;
 		}
@@ -1259,6 +1262,7 @@ void ARouteExample::SelectPath()
 			RouteData->Index = 0;
 			RouteData->RouteName = "Long Route";
 			RouteData->AtFirstPlanet = false;
+			//RouteData->CalculateLength();
 		}
 		else
 		{
@@ -1267,7 +1271,9 @@ void ARouteExample::SelectPath()
 			RouteData->Max = RouteData->Splines.Num();
 			RouteData->RouteName = "Short Route";
 			RouteData->Index = 0;
+			RouteData->StoryEventChance = 50;
 			RouteData->AtFirstPlanet = false;
+			//RouteData->CalculateLength();
 		}
 
 		PathClickedDelegate.Broadcast(RouteData);
@@ -1669,6 +1675,9 @@ void ARouteExample::StartGame()
 	PlayerController->SetShowMouseCursor(true);
 
 	FightCamera->SetWorldLocation(FVector(0, 0, 3000.0));
+
+	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	player->AudioManager = AudioManager;
 	
 }
 
@@ -1790,9 +1799,15 @@ void ARouteExample::FightScene(float DeltaTime) {
 		AEnemyActor->Attack();
 	}
 
-	if (!IsValid(AEnemyActor))
+	if (!(player->Alive))
 	{
-		CombatReset(player);
+		GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Player is Dead"));
+		CombatReset();
+		GameOverDelegate.Broadcast();
+	}
+	else if (!IsValid(AEnemyActor))
+	{
+		CombatReset();
 		CombatOverTransitionDelegate.Broadcast();
 		// player->TopDownCamera->SetActive(true);
 		// UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetViewTargetWithBlend(this, CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
@@ -1801,11 +1816,11 @@ void ARouteExample::FightScene(float DeltaTime) {
 }
 
 
-void ARouteExample::CombatReset(ASpaceshipCharacter* Player) {
+void ARouteExample::CombatReset() {
 
 	//MovingTransitionDelegate.Broadcast();
 	//SwapState(PreviousState);
-
+	ASpaceshipCharacter* Player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	FightCamera->SetActive(false);
 	Player->TopDownCamera->SetActive(true);
 
@@ -1816,6 +1831,6 @@ void ARouteExample::CombatReset(ASpaceshipCharacter* Player) {
 	Player->ResetCombat();
 	
 	AEnemyActor = nullptr;
-
+	GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Combat Reset"));
 	SwapState(Event);
 }
