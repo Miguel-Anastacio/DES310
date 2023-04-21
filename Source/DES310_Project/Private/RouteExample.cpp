@@ -1009,7 +1009,7 @@ bool ARouteExample::MoveAlongPath(UPathData* PathData , float DeltaTime)
 	//Get The current Spline Track Position and Apply to the player
 	float SplineLength = PathData->Splines[PathData->Index]->GetSplineLength();
 	auto player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	splineTimer += DeltaTime * SpaceshipCharacter->MovementSpeed / SplineLength;
+	splineTimer += DeltaTime * player->MovementSpeed / SplineLength;
 
 	/*GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple,  FString::Printf( TEXT("Spline Length %f"),SplineLength));
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple,  FString::Printf( TEXT("Travel Time %f"),PlayerTravelTime));
