@@ -21,15 +21,19 @@ public:
 
 
 	void Reset();
+	void AssignRouteValues();
 	
 	TArray<USplineComponent*> Splines;
 	TArray<APlanet*> Stops;
 	int Index = 0;
 	int Max = 0; // Could probably just use Stops.Num
 	bool AtFirstPlanet = true;
+	bool AssignedValues = false;
 	
 	UPROPERTY(BlueprintReadOnly) int EventChance = 40;
+	UPROPERTY(BlueprintReadOnly) FString EventChanceText = "Normal";
 	UPROPERTY(BlueprintReadOnly) int CombatEventChance = 33;
+	UPROPERTY(BlueprintReadOnly) FString CombatChanceText = "Normal";
 	UPROPERTY(BlueprintReadOnly) int StoryEventChance = 33;
 	UPROPERTY(BlueprintReadOnly) int RandomEventChance = 33;
 	UPROPERTY(BlueprintReadOnly) int StoryQuestChance = 10;

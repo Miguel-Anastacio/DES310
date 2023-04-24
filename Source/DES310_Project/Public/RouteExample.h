@@ -176,6 +176,8 @@ public:
 	float SuperTempTimer = 0;
 
 	UPROPERTY(VisibleAnywhere) UPathData* RouteData;
+	UPROPERTY(VisibleAnywhere) UPathData* Route1Data;
+	UPROPERTY(VisibleAnywhere) UPathData* Route2Data;
 
 
 	UPROPERTY(EditAnywhere) float RouteTickRate = 200000000;

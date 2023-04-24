@@ -11,13 +11,36 @@ void UPathData::Reset()
 	Max = 0; // Could probably just use Stops.Num
 	AtFirstPlanet = true;
 
-	//In Percent?
-	EventChance = 10;
-	StoryQuestChance = 10;
-	RandomQuestChance = 10;
-
 	RouteName = "Undefined";
 
-
+	StoryEventChance = 50;
+	RandomEventChance = 50;
 	
+}
+
+void UPathData::AssignRouteValues()
+{
+	if (!AssignedValues)
+	{
+		EventChance = FMath::RandRange(0, 100);
+		if (EventChance < 33)
+			EventChanceText = "Low";
+		else if (EventChance < 66)
+			EventChanceText = "Normal";
+		else
+			EventChanceText = "High";
+
+		CombatEventChance = FMath::RandRange(0, 100);
+		if (CombatEventChance < 33)
+			CombatChanceText = "Low";
+		else if (CombatEventChance < 66)
+			CombatChanceText = "Normal";
+		else
+			CombatChanceText = "High";
+
+		StoryEventChance = 50;
+		RandomEventChance = 50;
+
+		AssignedValues = true;
+	}
 }

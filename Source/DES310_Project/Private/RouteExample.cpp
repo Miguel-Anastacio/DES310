@@ -52,6 +52,9 @@ ARouteExample::ARouteExample()
 	FightCamera->SetupAttachment(RootComponent);
 
 	RouteData = CreateDefaultSubobject<UPathData>(TEXT("Route Data"));
+	// just hold the values for the chances of each route
+	Route1Data = CreateDefaultSubobject<UPathData>(TEXT("Route1 Data"));
+	Route2Data = CreateDefaultSubobject<UPathData>(TEXT("Route2 Data"));
 	
 	CameraBoom->SetWorldRotation(FRotator(-90, 180, 0));
 
@@ -170,7 +173,7 @@ void ARouteExample::Tick(float DeltaTime)
 			}
 			else if (SuperTempTimer > CombatTick)
 			{
-				if (FMath::RandRange(0, 100) < CombatChance)
+				if (FMath::RandRange(0, 100) < RouteData->CombatEventChance)
 				{
 					SuperTempTimer = 0;
 					CombatTransitionDelegate.Broadcast();
@@ -1627,9 +1630,10 @@ UPathData* ARouteExample::SelectRoute(bool WhichRoute)
 		CurrentSpline = Spline1->Spline;
 		CurrentPlanet = Planets[2];
 		SelectedPath = false;
-		RouteData->RouteName = "Route 2";
-		RouteData->CombatEventChance = 80;
-		RouteData->StoryEventChance = 50;
+		Route2Data->RouteName = "Route 2";
+		Route2Data->AssignRouteValues();
+
+		RouteData = Route2Data;
 	}
 	else
 	{
@@ -1641,9 +1645,10 @@ UPathData* ARouteExample::SelectRoute(bool WhichRoute)
 		CurrentPlanet = Planets[0];
 		SelectedPath = true;
 
-		RouteData->RouteName = "Route 1";
-		RouteData->CombatEventChance = 40;
-		RouteData->StoryEventChance = 50;
+		Route1Data->RouteName = "Route 1";
+		Route1Data->AssignRouteValues();
+		RouteData = Route1Data;
+
 	}
 
 	return RouteData;
