@@ -217,6 +217,11 @@ public:
 	float angle = 0;
 	float randomSpinRate = 1;
 
+	// minimum time that nothing can happen after something happens during navigation
+	UPROPERTY(EditAnywhere)
+	float NavIncidentsCooldown = 3.0f;
+	float NavIncidentsTimer = 0.0f;
+
 	UStaticMesh* CubeMesh;
 	UStaticMesh* SphereMesh;
 	UFUNCTION(BlueprintCallable)

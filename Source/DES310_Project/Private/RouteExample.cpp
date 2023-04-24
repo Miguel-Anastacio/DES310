@@ -156,25 +156,28 @@ void ARouteExample::Tick(float DeltaTime)
 	switch (PlayerState)
 	{
 	case PlayerStates::Moving:
+		NavIncidentsTimer += DeltaTime;
 		StateName = "Moving";
 		MoveAlongPath(RouteData, DeltaTime);
-// passing the current path is cleaner
+		// passing the current path is cleaner
 		// pass the values for now
 		SuperTempTimer += DeltaTime;
-		if (EventsComponent->RollForEvent(RouteData->EventChance, DeltaTime, RouteData->StoryEventChance, RouteData->RandomEventChance))
+		if (NavIncidentsTimer > NavIncidentsCooldown)
 		{
-			PlayerState = Event;
-		}
-		else if (SuperTempTimer > CombatTick)
-		{
-			if(FMath::RandRange(0,100) < CombatChance)
+			if (EventsComponent->RollForEvent(RouteData->EventChance, DeltaTime, RouteData->StoryEventChance, RouteData->RandomEventChance))
 			{
-				SuperTempTimer = 0;
-				CombatTransitionDelegate.Broadcast();
 				SwapState(Event);
 			}
+			else if (SuperTempTimer > CombatTick)
+			{
+				if (FMath::RandRange(0, 100) < CombatChance)
+				{
+					SuperTempTimer = 0;
+					CombatTransitionDelegate.Broadcast();
+					SwapState(Event);
+				}
+			}
 		}
-
 		break;
 	case PlayerStates::Orbiting: OrbitPlanet(RouteData, DeltaTime);
 		StateName = "Orbiting";
@@ -1393,7 +1396,7 @@ void ARouteExample::BeginToOrbiting()
 
 void ARouteExample::SwapToMoving()
 {
-
+	NavIncidentsTimer = 0.0f;
 	SwapState(Moving);
 	ASpaceshipCharacter* Charac = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	Charac->SetHidden(false);
@@ -1480,7 +1483,7 @@ void ARouteExample::SwapToSelecting()
 
 void ARouteExample::SwapToCombat()
 {
-
+	NavIncidentsTimer = 0.0f;
 }
 
 

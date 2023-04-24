@@ -18,7 +18,7 @@ URandomEventsComponent::URandomEventsComponent()
 	// ...
 }
 
-UGameEvents* URandomEventsComponent::RollForEvent(int32 ChanceOfEventInThisRoute, float deltaTime, int StoryChance, int RandomChance)
+bool URandomEventsComponent::RollForEvent(int32 ChanceOfEventInThisRoute, float deltaTime, int StoryChance, int RandomChance)
 {
 	// roll to see if event happens
 	// if yes then choose a random event
@@ -38,11 +38,12 @@ UGameEvents* URandomEventsComponent::RollForEvent(int32 ChanceOfEventInThisRoute
 				RollEventFromArray(RandomEventsList);
 
 			EventTimer = 0;
-			return CurrentEvent;
+			if(CurrentEvent != nullptr)
+				return true;
 		}
 	}
 
-	return nullptr;
+	return false;
 }
 
 UGameEvents* URandomEventsComponent::RollEventFromArray(TArray<UGameEvents*>& eventsList)
@@ -169,7 +170,6 @@ void URandomEventsComponent::HandleEvent(UEventOption* OptionPicked)
 	ARouteExample* route = Cast<ARouteExample>(GetOwner());
 	EventIsDisplayed = false;
 	CurrentEvent = nullptr;
-	route->MovingTransitionDelegate.Broadcast();
 	//route->SwapState(Fighting);
 	//route->CheckpointTransitionDelegate.Broadcast();
 	// depnding on the effects of the option
@@ -193,6 +193,7 @@ void URandomEventsComponent::HandleEvent(UEventOption* OptionPicked)
 	// if the option leads to combat then change the state
 	// and pass the enemy data associated with the event ??? 
 
+	route->MovingTransitionDelegate.Broadcast();
 }
 
 
