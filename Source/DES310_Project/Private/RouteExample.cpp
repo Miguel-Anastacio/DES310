@@ -1403,9 +1403,9 @@ void ARouteExample::SwapToMoving()
 	SwapState(Moving);
 	ASpaceshipCharacter* Charac = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	Charac->SetHidden(false);
-
 	Charac->TopDownCamera->SetActive(true);
 	PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
+
 
 	
 	//Make the Camera Face the direction we are moving
@@ -1672,6 +1672,12 @@ void ARouteExample::FinalSelectRoute()
 		RouteData->Index = 0;
 		RouteData->RouteName = "Long Route";
 		RouteData->AtFirstPlanet = false;
+
+		for (auto it : CubePath1)
+		{
+			it->SetActorHiddenInGame(true);
+		}
+
 	}
 	else
 	{
@@ -1681,6 +1687,16 @@ void ARouteExample::FinalSelectRoute()
 		RouteData->RouteName = "Short Route";
 		RouteData->Index = 0;
 		RouteData->AtFirstPlanet = false;
+
+		for (auto it : CubePath2)
+		{
+			it->SetActorHiddenInGame(true);
+		}
+
+		for (auto it : CubePath3)
+		{
+			it->SetActorHiddenInGame(true);
+		}
 	}
 
 	PathClickedDelegate.Broadcast(RouteData);
@@ -1822,11 +1838,11 @@ void ARouteExample::FightScene(float DeltaTime) {
 	{
 		AEnemyActor->Attack();
 	}
-
+	player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	if (!(player->Alive))
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Player is Dead"));
-		CombatReset();
+		//CombatReset();
 		GameOverDelegate.Broadcast();
 	}
 	else if (!IsValid(AEnemyActor))
@@ -1844,15 +1860,16 @@ void ARouteExample::CombatReset() {
 
 	//MovingTransitionDelegate.Broadcast();
 	//SwapState(PreviousState);
-	ASpaceshipCharacter* Player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	ASpaceshipCharacter* CurrentPlayer = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	FightCamera->SetActive(false);
-	Player->TopDownCamera->SetActive(true);
+	if(CurrentPlayer)
+		CurrentPlayer->TopDownCamera->SetActive(true);
 
 	PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(), CameraTransitionSpeed),0,EViewTargetBlendFunction::VTBlend_Linear);
 	AEnemyActor->ResetEnemy();
-	AEnemyActor->Destroy();
-	
-	Player->ResetCombat();
+;
+	if(CurrentPlayer)
+		CurrentPlayer->ResetCombat();
 	
 	AEnemyActor = nullptr;
 	GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Combat Reset"));

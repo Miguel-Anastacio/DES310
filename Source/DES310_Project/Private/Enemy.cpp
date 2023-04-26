@@ -137,6 +137,7 @@ void AEnemy::Attack()
 void AEnemy::ResetEnemy()
 {
 	Health = InitialHealth;
+	
 	for (int i = 0; i < BulletsFired.Num(); i++)
 	{
 		if (BulletsFired[i])
@@ -144,6 +145,8 @@ void AEnemy::ResetEnemy()
 
 	}
 	BulletsFired.Empty();
+
+	this->Destroy();
 }
 
 void AEnemy::SetEnemyLevel(int playerLevel)

@@ -451,8 +451,8 @@ void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 		float overflowDamage;
 
 
-		if (!StatsPlayerComponent->DodgeAttack())
-		{
+		//if (!StatsPlayerComponent->DodgeAttack())
+		//{
 			// take damage
 			if (StatsPlayerComponent->CurrentShields > 0)
 			{
@@ -476,12 +476,12 @@ void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 			}
 
 			DamageTakenDelegate.Broadcast();
-		}
-		else
-		{
-			DodgeDamageDelegate.Broadcast();
+		//}
+		//else
+		//{
+			//DodgeDamageDelegate.Broadcast();
 
-		}
+		//}
 
 	}
 }
@@ -525,15 +525,15 @@ void ASpaceshipCharacter::WasQuestCompleted(FString planetName)
 {
 	if (ActiveQuest)
 	{
-		if (ActiveQuest->TargetName == planetName)
-		{
+		//if (ActiveQuest->TargetName == planetName)
+		//{
 			LastCompletedQuest = ActiveQuest;
 			StatsPlayerComponent->IncreaseCurrency(LastCompletedQuest->CreditsGained);
 			GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("XP"));
 			StatsPlayerComponent->XPSystem(LastCompletedQuest->XPGained);
 			ApplyInventoryToStats();
 			CompleteQuestDelegate.Broadcast();
-		}
+		//}
 	
 	}
 }
