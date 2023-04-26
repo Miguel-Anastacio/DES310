@@ -99,7 +99,7 @@ public:
 	void Attack(float DeltaTime, AEnemy* Enemy);
 	void ResetCombat();
 
-	UPROPERTY(EditAnywhere) float MovementSpeed = 200;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) float MovementSpeed = 200;
 	
 	//Attack Variables
 	UPROPERTY(EditAnywhere)TArray<ABullet_CPP*> Bullets;

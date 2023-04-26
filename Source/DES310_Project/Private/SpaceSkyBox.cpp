@@ -36,9 +36,9 @@ void ASpaceSkyBox::BeginPlay()
 	}
 	else
 	{
-		DynamicMaterial->SetScalarParameterValue(FName(TEXT("power")),0.45);
+		/*DynamicMaterial->SetScalarParameterValue(FName(TEXT("power")),0.45);
 		DynamicMaterial->SetScalarParameterValue(FName(TEXT("Scene Brightness")),0.6);
-		DynamicMaterial->SetScalarParameterValue(FName(TEXT("starBrightness")),0.2);
+		DynamicMaterial->SetScalarParameterValue(FName(TEXT("starBrightness")),0.2);*/
 	}
 
 

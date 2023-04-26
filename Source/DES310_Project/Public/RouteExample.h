@@ -210,9 +210,9 @@ public:
 	PlayerStates PlayerState;
 	PlayerStates PreviousState;
 
-	UFUNCTION(BlueprintCallable)
-		PlayerStates GetPlayerState() { return PlayerState; };
-
+	UFUNCTION(BlueprintCallable)PlayerStates GetPlayerState() { return PlayerState; };
+	UFUNCTION(BlueprintCallable)void SetPlayerState(PlayerStates State) { PlayerState = State; };
+	
 	float timer = 0;
 	float cameraTimer = 0;
 	float splineTimer = 0;
