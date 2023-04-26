@@ -64,9 +64,9 @@ public:
 	// Sets default values for this component's properties
 	URandomEventsComponent();
 
-	// returns the event that is supposed to happen
-	// returns null if no event is to happen
-	UGameEvents* RollForEvent(int32 ChanceOfEventInThisRoute, float deltaTime, int StoryChance, int RandomChance);
+	// returns true it event is supposed to happen
+	// returns false if no event is to happen
+	bool RollForEvent(int32 ChanceOfEventInThisRoute, float deltaTime, int StoryChance, int RandomChance);
 
 	UGameEvents* RollEventFromArray(TArray<UGameEvents*>& eventsList);
 

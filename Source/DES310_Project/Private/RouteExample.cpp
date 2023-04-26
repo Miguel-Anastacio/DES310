@@ -52,6 +52,9 @@ ARouteExample::ARouteExample()
 	FightCamera->SetupAttachment(RootComponent);
 
 	RouteData = CreateDefaultSubobject<UPathData>(TEXT("Route Data"));
+	// just hold the values for the chances of each route
+	Route1Data = CreateDefaultSubobject<UPathData>(TEXT("Route1 Data"));
+	Route2Data = CreateDefaultSubobject<UPathData>(TEXT("Route2 Data"));
 	
 	CameraBoom->SetWorldRotation(FRotator(-90, 180, 0));
 
@@ -156,25 +159,28 @@ void ARouteExample::Tick(float DeltaTime)
 	switch (PlayerState)
 	{
 	case PlayerStates::Moving:
+		NavIncidentsTimer += DeltaTime;
 		StateName = "Moving";
 		MoveAlongPath(RouteData, DeltaTime);
-// passing the current path is cleaner
+		// passing the current path is cleaner
 		// pass the values for now
 		SuperTempTimer += DeltaTime;
-		if (EventsComponent->RollForEvent(RouteData->EventChance, DeltaTime, RouteData->StoryEventChance, RouteData->RandomEventChance))
+		if (NavIncidentsTimer > NavIncidentsCooldown)
 		{
-			PlayerState = Event;
-		}
-		else if (SuperTempTimer > CombatTick)
-		{
-			if(FMath::RandRange(0,100) < CombatChance)
+			if (EventsComponent->RollForEvent(RouteData->EventChance, DeltaTime, RouteData->StoryEventChance, RouteData->RandomEventChance))
 			{
-				SuperTempTimer = 0;
-				CombatTransitionDelegate.Broadcast();
 				SwapState(Event);
 			}
+			else if (SuperTempTimer > CombatTick)
+			{
+				if (FMath::RandRange(0, 100) < RouteData->CombatEventChance)
+				{
+					SuperTempTimer = 0;
+					CombatTransitionDelegate.Broadcast();
+					SwapState(Event);
+				}
+			}
 		}
-
 		break;
 	case PlayerStates::Orbiting: OrbitPlanet(RouteData, DeltaTime);
 		StateName = "Orbiting";
@@ -1393,13 +1399,13 @@ void ARouteExample::BeginToOrbiting()
 
 void ARouteExample::SwapToMoving()
 {
-
+	NavIncidentsTimer = 0.0f;
 	SwapState(Moving);
 	ASpaceshipCharacter* Charac = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	Charac->SetHidden(false);
-
 	Charac->TopDownCamera->SetActive(true);
 	PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
+
 
 	
 	//Make the Camera Face the direction we are moving
@@ -1480,7 +1486,7 @@ void ARouteExample::SwapToSelecting()
 
 void ARouteExample::SwapToCombat()
 {
-
+	NavIncidentsTimer = 0.0f;
 }
 
 
@@ -1624,9 +1630,10 @@ UPathData* ARouteExample::SelectRoute(bool WhichRoute)
 		CurrentSpline = Spline1->Spline;
 		CurrentPlanet = Planets[2];
 		SelectedPath = false;
-		RouteData->RouteName = "Route 2";
-		RouteData->CombatEventChance = 80;
-		RouteData->StoryEventChance = 50;
+		Route2Data->RouteName = "Route 2";
+		Route2Data->AssignRouteValues();
+
+		RouteData = Route2Data;
 	}
 	else
 	{
@@ -1638,9 +1645,10 @@ UPathData* ARouteExample::SelectRoute(bool WhichRoute)
 		CurrentPlanet = Planets[0];
 		SelectedPath = true;
 
-		RouteData->RouteName = "Route 1";
-		RouteData->CombatEventChance = 40;
-		RouteData->StoryEventChance = 50;
+		Route1Data->RouteName = "Route 1";
+		Route1Data->AssignRouteValues();
+		RouteData = Route1Data;
+
 	}
 
 	return RouteData;
@@ -1664,6 +1672,12 @@ void ARouteExample::FinalSelectRoute()
 		RouteData->Index = 0;
 		RouteData->RouteName = "Long Route";
 		RouteData->AtFirstPlanet = false;
+
+		for (auto it : CubePath1)
+		{
+			it->SetActorHiddenInGame(true);
+		}
+
 	}
 	else
 	{
@@ -1673,6 +1687,16 @@ void ARouteExample::FinalSelectRoute()
 		RouteData->RouteName = "Short Route";
 		RouteData->Index = 0;
 		RouteData->AtFirstPlanet = false;
+
+		for (auto it : CubePath2)
+		{
+			it->SetActorHiddenInGame(true);
+		}
+
+		for (auto it : CubePath3)
+		{
+			it->SetActorHiddenInGame(true);
+		}
 	}
 
 	PathClickedDelegate.Broadcast(RouteData);
@@ -1814,11 +1838,11 @@ void ARouteExample::FightScene(float DeltaTime) {
 	{
 		AEnemyActor->Attack();
 	}
-
+	player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	if (!(player->Alive))
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Player is Dead"));
-		CombatReset();
+		//CombatReset();
 		GameOverDelegate.Broadcast();
 	}
 	else if (!IsValid(AEnemyActor))
@@ -1836,15 +1860,16 @@ void ARouteExample::CombatReset() {
 
 	//MovingTransitionDelegate.Broadcast();
 	//SwapState(PreviousState);
-	ASpaceshipCharacter* Player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	ASpaceshipCharacter* CurrentPlayer = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	FightCamera->SetActive(false);
-	Player->TopDownCamera->SetActive(true);
+	if(CurrentPlayer)
+		CurrentPlayer->TopDownCamera->SetActive(true);
 
 	PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(), CameraTransitionSpeed),0,EViewTargetBlendFunction::VTBlend_Linear);
 	AEnemyActor->ResetEnemy();
-	AEnemyActor->Destroy();
-	
-	Player->ResetCombat();
+;
+	if(CurrentPlayer)
+		CurrentPlayer->ResetCombat();
 	
 	AEnemyActor = nullptr;
 	GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Combat Reset"));

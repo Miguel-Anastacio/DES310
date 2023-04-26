@@ -176,6 +176,8 @@ public:
 	float SuperTempTimer = 0;
 
 	UPROPERTY(VisibleAnywhere) UPathData* RouteData;
+	UPROPERTY(VisibleAnywhere) UPathData* Route1Data;
+	UPROPERTY(VisibleAnywhere) UPathData* Route2Data;
 
 
 	UPROPERTY(EditAnywhere) float RouteTickRate = 200000000;
@@ -216,6 +218,11 @@ public:
 	float splineTimer = 0;
 	float angle = 0;
 	float randomSpinRate = 1;
+
+	// minimum time that nothing can happen after something happens during navigation
+	UPROPERTY(EditAnywhere)
+	float NavIncidentsCooldown = 3.0f;
+	float NavIncidentsTimer = 0.0f;
 
 	UStaticMesh* CubeMesh;
 	UStaticMesh* SphereMesh;

@@ -80,6 +80,7 @@ bool UInventoryComponent::RemoveItem(FString name)
 	return false;
 }
 
+
 bool UInventoryComponent::SwapShipParts(PartType type, UItem* newItem)
 {
 	bool result = false;
@@ -147,7 +148,7 @@ void UInventoryComponent::BeginPlay()
 	Super::BeginPlay();
 	if (ItemDatabase)
 	{
-		ConvertDataAsset();
+		ConvertDataAsset(ItemDatabase, Items);
 		AssignSlots();
 	}
 	// ...
@@ -188,9 +189,9 @@ void UInventoryComponent::AssignSlots()
 	}
 }
 
-void UInventoryComponent::ConvertDataAsset()
+void UInventoryComponent::ConvertDataAsset(UItemData* AItemDatabase, TArray<UItem*>&ArrayOfItems)
 {
-	for (auto it : ItemDatabase->Data)
+	for (auto it : AItemDatabase->Data)
 	{
 		UObject* object = it->GetDefaultObject();
 		UItem* Item = nullptr;
@@ -199,7 +200,7 @@ void UInventoryComponent::ConvertDataAsset()
 			Item = Cast<UItem>(object);
 			if (Item)
 			{
-				Items.Add(Item);
+				ArrayOfItems.Add(Item);
 			}
 			else
 			{

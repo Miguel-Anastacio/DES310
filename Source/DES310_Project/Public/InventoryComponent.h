@@ -47,11 +47,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool RemoveItem(FString name);
 
+
 	// swap item from slot, then delete the old one
 	// maybe move to player inventory class 
 	UFUNCTION(BlueprintCallable)
 	bool SwapShipParts(PartType type, UItem* newItem);
 
+
+	// converts database into an array of items
+	void ConvertDataAsset(UItemData* AItemDatabase, TArray<UItem*>&ArrayOfItems);
 protected:
 
 	// player inventory has 4 slots
@@ -66,8 +70,7 @@ protected:
 	// goes through the database and attaches each part to a slot
 	// maybe move to player inventory class or change it to be more versatile
 	void AssignSlots();
-	// converts database into an array of items
-	void ConvertDataAsset();
+
 
 
 

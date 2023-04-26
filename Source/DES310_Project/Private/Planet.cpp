@@ -4,6 +4,7 @@
 	Author: MIGUEL ANASTACIO 15/02/2023
 */
 #include "Planet.h"
+#include "Vendor.h"
 #include "SpaceshipCharacter.h"
 #include "Animation/AnimInstanceProxy.h"
 
@@ -74,6 +75,8 @@ void APlanet::BeginPlay()
 
 	
 	VendorActor = GetWorld()->SpawnActor<AVendor>(Vendor, SpawnTransform, SpawnParams);
+	if(VendorActor)
+		VendorActor->CreateRandomInventoryFromAllItems();
 
 	UObject* object = nullptr;
 	if(QuestTemplate)
