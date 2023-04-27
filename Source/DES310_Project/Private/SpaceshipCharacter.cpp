@@ -235,6 +235,13 @@ void ASpaceshipCharacter::BeginPlay()
 
 }
 
+void ASpaceshipCharacter::SetStatsBasedOnClass()
+{
+	StatsPlayerComponent->InitAllBaseStats(PlayerShip.Hull, PlayerShip.Speed, PlayerShip.Shield, PlayerShip.AttackPower);
+	ApplyInventoryToStats();
+	StatsPlayerComponent->UpdateCurrentStats(0, 0);
+}
+
 void ASpaceshipCharacter::ApplyInventoryToStats()
 {
 	ApplyItemToStats(PlayerInventoryComponent->GetEquippedShield());
