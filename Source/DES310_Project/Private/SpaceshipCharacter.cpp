@@ -532,15 +532,15 @@ void ASpaceshipCharacter::WasQuestCompleted(FString planetName)
 {
 	if (ActiveQuest)
 	{
-		//if (ActiveQuest->TargetName == planetName)
-		//{
+		if (ActiveQuest->TargetName == planetName)
+		{
 			LastCompletedQuest = ActiveQuest;
 			StatsPlayerComponent->IncreaseCurrency(LastCompletedQuest->CreditsGained);
 			GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("XP"));
 			StatsPlayerComponent->XPSystem(LastCompletedQuest->XPGained);
 			ApplyInventoryToStats();
 			CompleteQuestDelegate.Broadcast();
-		//}
+		}
 	
 	}
 }
