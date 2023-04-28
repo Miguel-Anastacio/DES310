@@ -1065,6 +1065,7 @@ bool ARouteExample::MoveAlongPath(UPathData* PathData , float DeltaTime)
 	UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->SetActorRotation(PlayerRotation);
 	AudioManager->ThrusterSoundComponent->SetWorldLocation(PlayerPosition);
 
+	/* // TODO F key scaling stuff, can probably be removed for the final build
 	if(Temp)
 	{
 		Temp = false;
@@ -1079,6 +1080,7 @@ bool ARouteExample::MoveAlongPath(UPathData* PathData , float DeltaTime)
 		UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->SetActorScale3D(FVector(1,1,1));
 
 	}
+	*/
 
 	
 	if (splineTimer > PathStartEndPercent.Y)

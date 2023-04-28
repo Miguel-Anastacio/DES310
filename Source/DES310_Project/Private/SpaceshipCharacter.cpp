@@ -268,7 +268,7 @@ void ASpaceshipCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-
+	CurrentFov = FMath::Clamp(90 + (MovementSpeed / MaxMovementSpeed) * 50, 90 , 140);
 	TopDownCamera->SetFieldOfView(FMath::Lerp(TopDownCamera->FieldOfView, CurrentFov, DeltaTime));
 	
 	/*
