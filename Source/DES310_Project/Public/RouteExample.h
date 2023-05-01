@@ -79,7 +79,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	void Generate();
 	void GenerateImproved(int FirstPlanetID, FVector Offset);
-	void CreatePath(TArray<FVector2D>& Path, TArray<APath*>& PathMeshes,USplineComponent* SplineComponent);
+	void CreatePath(TArray<FVector2D>& Path, TArray<APath*>& PathMeshes,USplineComponent* SplineComponent,float PathPercentage);
 	void ResetRoute();
 	void GenerateDetails();
 	void ClearRouteData();
@@ -97,6 +97,8 @@ public:
 	MovingState* MovingState;*/
 
 
+	UPROPERTY(EditAnywhere, Category = Poisson) float BuoysPercent = 50;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		URandomEventsComponent* EventsComponent;
 
