@@ -122,8 +122,8 @@ public:
 	void Attack(float DeltaTime, AEnemy* Enemy);
 	void ResetCombat();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite) float MovementSpeed = 200;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite) float MaxMovementSpeed = 1000;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) float MovementSpeed = 1250;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) float MaxMovementSpeed = 1750;
 	
 	//Attack Variables
 	UPROPERTY(EditAnywhere)TArray<ABullet_CPP*> Bullets;
