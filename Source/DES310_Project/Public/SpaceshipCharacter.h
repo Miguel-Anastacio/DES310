@@ -100,6 +100,7 @@ public:
 	void ResetCombat();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) float MovementSpeed = 200;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) float MaxMovementSpeed = 1000;
 	
 	//Attack Variables
 	UPROPERTY(EditAnywhere)TArray<ABullet_CPP*> Bullets;
