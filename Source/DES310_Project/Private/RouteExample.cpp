@@ -1112,6 +1112,8 @@ bool ARouteExample::MoveAlongPath(UPathData* PathData , float DeltaTime)
 			// update the current planet
 			// this bool in the planet class is used by the vendor UI
 			PathData->Stops[PathData->Index]->CurrentPlanet = true;
+			// reset events when we reach a planet
+			EventsComponent->ResetEvents();
 			OrbitTransitionDelegate.Broadcast();
 		}
 		

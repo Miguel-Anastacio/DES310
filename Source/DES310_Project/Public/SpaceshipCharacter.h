@@ -31,6 +31,29 @@ enum PlayerCurrentState
 };
 
 
+UENUM(BlueprintType)
+enum ShipClassType
+{
+	HEAVY_VIKING UMETA(DisplayName = "Heavy Viking"),
+	FIGHTER_VIKING UMETA(DisplayName = "Fighter Viking"),
+	HEAVY_EGYPTIAN UMETA(DisplayName = "Heavy Egyptian"),
+	FIGHTER_EGYPTIAN UMETA(DisplayName = "Fighter Egyptian"),
+};
+ 
+USTRUCT(BlueprintType)
+struct FPlayerShipClass
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere) FText ClassDescription;
+	UPROPERTY(BlueprintReadOnly, EditAnywhere) float Speed;
+	UPROPERTY(BlueprintReadOnly, EditAnywhere) float Shield;
+	UPROPERTY(BlueprintReadOnly, EditAnywhere) float Hull;
+	UPROPERTY(BlueprintReadOnly, EditAnywhere) float AttackPower;
+	UPROPERTY(BlueprintReadOnly, EditAnywhere) TEnumAsByte<ShipClassType> Type;
+	UPROPERTY(BlueprintReadOnly, EditAnywhere) UTexture2D* ClassImage;
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FQuestCompletedDelegate);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDamageTakenDelegate);
@@ -124,6 +147,16 @@ public:
 	UPROPERTY(VisibleAnywhere)AAudioManager* AudioManager;
 
 	UPROPERTY() USceneComponent* CurrentTarget;// can maybe just be a actor pointer incase the player can target things other than enemeis
+
+	// class of the ship 
+	// we have to save the type of ship so that we can load the appropriate player model
+	UPROPERTY(BlueprintReadWrite) FPlayerShipClass PlayerShip;
+	// player faction, probably better to have an enum but there is only two factions so: true - viking , false - egyptian
+	// save this so that we can set the right frames in the UI
+	UPROPERTY(BlueprintReadWrite) bool PlayerFaction;
+
+	UFUNCTION(BlueprintCallable)
+	void SetStatsBasedOnClass();
 
 	UFUNCTION(BlueprintCallable)
 	PlayerCurrentState GetPlayerStatus()

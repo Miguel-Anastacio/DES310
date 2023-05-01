@@ -235,6 +235,28 @@ void ASpaceshipCharacter::BeginPlay()
 
 }
 
+void ASpaceshipCharacter::SetStatsBasedOnClass()
+{
+	StatsPlayerComponent->InitAllBaseStats(PlayerShip.Hull, PlayerShip.Speed, PlayerShip.Shield, PlayerShip.AttackPower);
+	ApplyInventoryToStats();
+	StatsPlayerComponent->UpdateCurrentStats(0, 0);
+
+	// set faction as well
+	switch (PlayerShip.Type)
+	{
+	case FIGHTER_EGYPTIAN: PlayerFaction = false;
+		break;
+	case HEAVY_EGYPTIAN: PlayerFaction = false;
+		break;
+	case FIGHTER_VIKING: PlayerFaction = true;
+		break;
+	case HEAVY_VIKING: PlayerFaction = true;
+		break;
+	default:
+		break;
+	}
+}
+
 void ASpaceshipCharacter::ApplyInventoryToStats()
 {
 	ApplyItemToStats(PlayerInventoryComponent->GetEquippedShield());
@@ -525,15 +547,15 @@ void ASpaceshipCharacter::WasQuestCompleted(FString planetName)
 {
 	if (ActiveQuest)
 	{
-		//if (ActiveQuest->TargetName == planetName)
-		//{
+		if (ActiveQuest->TargetName == planetName)
+		{
 			LastCompletedQuest = ActiveQuest;
 			StatsPlayerComponent->IncreaseCurrency(LastCompletedQuest->CreditsGained);
 			GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("XP"));
 			StatsPlayerComponent->XPSystem(LastCompletedQuest->XPGained);
 			ApplyInventoryToStats();
 			CompleteQuestDelegate.Broadcast();
-		//}
+		}
 	
 	}
 }
