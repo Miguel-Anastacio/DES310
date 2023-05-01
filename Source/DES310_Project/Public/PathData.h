@@ -29,6 +29,7 @@ public:
 	int Max = 0; // Could probably just use Stops.Num
 	bool AtFirstPlanet = true;
 	bool AssignedValues = false;
+	int ID = -1;
 	
 	UPROPERTY(BlueprintReadOnly) int EventChance = 40;
 	UPROPERTY(BlueprintReadOnly) FString EventChanceText = "Normal";
@@ -40,7 +41,7 @@ public:
 	UPROPERTY(BlueprintReadOnly) int RandomQuestChance = 10;
 
 	UPROPERTY(BlueprintReadOnly) FString RouteName = "Temp";
-	
+
 
 	
 	

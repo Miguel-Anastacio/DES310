@@ -17,6 +17,7 @@ ARouteSpline::ARouteSpline()
 	this->SetRootComponent(root);
 	
 	Spline = CreateDefaultSubobject<USplineComponent>(TEXT("Spline Short Path 1"));
+	Spline->SetMobility(EComponentMobility::Type::Movable);
 	Spline->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 	Spline->ClearSplinePoints();
 	Spline->bDrawDebug = true;
@@ -54,10 +55,12 @@ void ARouteSpline::CreateSpline()
 	for(int i = 0; i < Spline->GetNumberOfSplinePoints(); i ++)
 	{
 		FTransform Transform = GetTransform();
-		USplineMeshComponent* Mesh = Cast<USplineMeshComponent>(AddComponentByClass(USplineMeshComponent::StaticClass(),false,Transform,false));
+		USplineMeshComponent* Mesh = Cast<USplineMeshComponent>(AddComponentByClass(USplineMeshComponent::StaticClass(),true,Transform,false));
+
 		if(Mesh)
 		{
 			Mesh->Mobility = EComponentMobility::Type::Movable;
+			Mesh->SetMobility(EComponentMobility::Type::Movable);
 			Mesh->SetStaticMesh(SplineMesh);
 			Mesh->SetMaterial(0,Materials[counter]);
 			Mesh->SetForwardAxis(ESplineMeshAxis::Z);
