@@ -147,7 +147,12 @@ public:
 
 	UPROPERTY() USceneComponent* CurrentTarget;// can maybe just be a actor pointer incase the player can target things other than enemeis
 
+	// class of the ship 
+	// we have to save the type of ship so that we can load the appropriate player model
 	UPROPERTY(BlueprintReadWrite) FPlayerShipClass PlayerShip;
+	// player faction, probably better to have an enum but there is only two factions so: true - viking , false - egyptian
+	// save this so that we can set the right frames in the UI
+	UPROPERTY(BlueprintReadWrite) bool PlayerFaction;
 
 	UFUNCTION(BlueprintCallable)
 	void SetStatsBasedOnClass();

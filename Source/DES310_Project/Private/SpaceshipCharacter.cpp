@@ -240,6 +240,21 @@ void ASpaceshipCharacter::SetStatsBasedOnClass()
 	StatsPlayerComponent->InitAllBaseStats(PlayerShip.Hull, PlayerShip.Speed, PlayerShip.Shield, PlayerShip.AttackPower);
 	ApplyInventoryToStats();
 	StatsPlayerComponent->UpdateCurrentStats(0, 0);
+
+	// set faction as well
+	switch (PlayerShip.Type)
+	{
+	case FIGHTER_EGYPTIAN: PlayerFaction = false;
+		break;
+	case HEAVY_EGYPTIAN: PlayerFaction = false;
+		break;
+	case FIGHTER_VIKING: PlayerFaction = true;
+		break;
+	case HEAVY_VIKING: PlayerFaction = true;
+		break;
+	default:
+		break;
+	}
 }
 
 void ASpaceshipCharacter::ApplyInventoryToStats()
