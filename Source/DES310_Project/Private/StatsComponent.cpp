@@ -52,6 +52,8 @@ void UStatsComponent::InitAllBaseStats(int hull, int classSpeed, float shields, 
 	BaseATKPower = attackPower;
 	BaseSpeed = classSpeed;
 	BaseShields = shields;
+
+	MaxSpeed = classSpeed * 1.5 + MAX_LEVEL * SpeedIncrement;
 }
 
 void UStatsComponent::UpdateCurrentStats(float newHull, float newShields)

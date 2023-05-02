@@ -473,8 +473,8 @@ void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 		float overflowDamage;
 
 
-		//if (!StatsPlayerComponent->DodgeAttack())
-		//{
+		if (!StatsPlayerComponent->DodgeAttack())
+		{
 			// take damage
 			if (StatsPlayerComponent->CurrentShields > 0)
 			{
@@ -498,12 +498,12 @@ void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 			}
 
 			DamageTakenDelegate.Broadcast();
-		//}
-		//else
-		//{
-			//DodgeDamageDelegate.Broadcast();
+		}
+		else
+		{
+			DodgeDamageDelegate.Broadcast();
 
-		//}
+		}
 
 	}
 }
