@@ -5,6 +5,7 @@
 
 #include "StatsComponent.h"
 #include "GameSave.h"
+#include "GameInstance_CPP.h"
 #include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 
 
@@ -88,10 +89,8 @@ void UStatsComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (!UGameplayStatics::DoesSaveGameExist(TEXT("Game_Save"), 0))
-	{
-		AttemptLoad();
-	}
+
+	AttemptLoad();
 	// ...
 	
 }
@@ -193,12 +192,11 @@ bool UStatsComponent::AttemptLoad()
 		return false;
 	}
 	
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green,	TEXT("SAVE FOUND"));
-	UGameSave* GS;
-	GS = Cast<UGameSave>(UGameplayStatics::CreateSaveGameObject(UGameSave::StaticClass()));
-	GS = Cast<UGameSave>(UGameplayStatics::LoadGameFromSlot("Game_Save", 0));
+	UGameSave* GameSave = (Cast<UGameInstance_CPP>(UGameplayStatics::GetGameInstance(GetWorld())))->GetGameData();
+
+	FMemoryReader MemReader(GameSave->SavedPlayerStats.ByteData);
+	GetOwner()->SetActorLocation(GameSave->SavedPlayerStats.playerPos);
 	
-	FMemoryReader MemReader(GS->SavedPlayerStats.ByteData);
 	FObjectAndNameAsStringProxyArchive Ar(MemReader, true);
 
 	Ar.ArIsSaveGame = true;
