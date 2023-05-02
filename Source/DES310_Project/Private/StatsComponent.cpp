@@ -88,7 +88,10 @@ void UStatsComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	
+	if (!UGameplayStatics::DoesSaveGameExist(TEXT("Game_Save"), 0))
+	{
+		AttemptLoad();
+	}
 	// ...
 	
 }
@@ -189,6 +192,7 @@ bool UStatsComponent::AttemptLoad()
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,	TEXT("SAVE NOT FOUND"));
 		return false;
 	}
+	
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green,	TEXT("SAVE FOUND"));
 	UGameSave* GS;
 	GS = Cast<UGameSave>(UGameplayStatics::CreateSaveGameObject(UGameSave::StaticClass()));
