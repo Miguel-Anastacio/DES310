@@ -65,6 +65,8 @@ protected:
 	UPROPERTY(EditAnywhere) int HullIntegrityIncrement;
 	UPROPERTY(EditAnywhere) int ATKPowerIncrement;
 
+	int MaxSpeed = 0;
+
 public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -100,7 +102,7 @@ UFUNCTION()
 
 	void SetStatsBasedOnLevel(int level);
 
-	int GetMaxSpeed() { return MAX_LEVEL * SpeedIncrement; };
+	int GetMaxSpeed() { return MaxSpeed; };
 
 	bool DodgeAttack();
 

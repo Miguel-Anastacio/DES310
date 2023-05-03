@@ -181,7 +181,7 @@ void URandomEventsComponent::HandleEvent(UEventOption* OptionPicked)
 	else {
 		ASpaceshipCharacter* PlayerOBJ = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 		PlayerOBJ->StatsPlayerComponent->IncreaseCurrency(OptionPicked->CreditsGained);
-		PlayerOBJ->StatsPlayerComponent->XPSystem(OptionPicked->XPGained);
+		PlayerOBJ->UpdatePlayerStats(OptionPicked->XPGained);
 	}
 
 	if(route)

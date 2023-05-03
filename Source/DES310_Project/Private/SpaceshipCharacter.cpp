@@ -182,10 +182,13 @@ void ASpaceshipCharacter::ResetCombat()
 	}
 	Bullets.Empty();
 
-	//AudioManager->AlarmSoundComponent->Stop();
+	AudioManager->AlarmSoundComponent->Stop();
 	isAttacking = false;
 	AbilitiesComponent->DisableBulletDeflector();
 	AbilitiesComponent->DisableSpecialAttack();
+
+	// combat finished reset shields
+	StatsPlayerComponent->CurrentShields = StatsPlayerComponent->Shields;
 }
 
 // Called when the game starts or when spawned
@@ -218,7 +221,7 @@ void ASpaceshipCharacter::BeginPlay()
 	if(!StatsPlayerComponent->AttemptLoad())
 	{
 		GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Red, TEXT("Load Fail"));
-		ApplyInventoryToStats();
+		//ApplyInventoryToStats();
 		StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
 	}
 
@@ -241,7 +244,7 @@ void ASpaceshipCharacter::SetStatsBasedOnClass()
 {
 	StatsPlayerComponent->InitAllBaseStats(PlayerShip.Hull, PlayerShip.Speed, PlayerShip.Shield, PlayerShip.AttackPower);
 	ApplyInventoryToStats();
-	StatsPlayerComponent->UpdateCurrentStats(0, 0);
+	StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
 
 	// set faction as well
 	switch (PlayerShip.Type)
@@ -265,18 +268,32 @@ void ASpaceshipCharacter::ApplyInventoryToStats()
 	ApplyItemToStats(PlayerInventoryComponent->GetEquippedBlaster());
 	ApplyItemToStats(PlayerInventoryComponent->GetEquippedHull());
 	ApplyItemToStats(PlayerInventoryComponent->GetEquippedEngine());
+
 }
 
 void ASpaceshipCharacter::ApplyItemToStats(UItem* item)
 {
-	
+	FString TheFloatStr = FString::FromInt(StatsPlayerComponent->HullIntegrity);
+
+
 	if(item)
 	{
-		StatsPlayerComponent->Shields = item->Modifiers.ShieldBonus * StatsPlayerComponent->BaseShields;
-		StatsPlayerComponent->Speed = item->Modifiers.SpeedBonus * StatsPlayerComponent->BaseSpeed;
-		StatsPlayerComponent->HullIntegrity = item->Modifiers.HealthBonus * StatsPlayerComponent->BaseHullIntegrity;
-		StatsPlayerComponent->ATKPower = item->Modifiers.DamageBonus * StatsPlayerComponent->BaseATKPower;
-		StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
+
+		if(item->Modifiers.ShieldBonus > 0)
+			StatsPlayerComponent->Shields = item->Modifiers.ShieldBonus * StatsPlayerComponent->BaseShields + StatsPlayerComponent->BaseShields;
+
+
+		if (item->Modifiers.SpeedBonus > 0)
+			StatsPlayerComponent->Speed = item->Modifiers.SpeedBonus * StatsPlayerComponent->BaseSpeed + StatsPlayerComponent->BaseSpeed;
+
+
+		if (item->Modifiers.HealthBonus > 0)
+			StatsPlayerComponent->HullIntegrity = item->Modifiers.HealthBonus * StatsPlayerComponent->BaseHullIntegrity + StatsPlayerComponent->BaseHullIntegrity;
+
+		
+		if (item->Modifiers.DamageBonus > 0)
+			StatsPlayerComponent->ATKPower = item->Modifiers.DamageBonus * StatsPlayerComponent->BaseATKPower + StatsPlayerComponent->BaseATKPower;
+
 	}
 }
 
@@ -284,7 +301,7 @@ void ASpaceshipCharacter::UpdatePlayerStats(int xpGained)
 {
 	StatsPlayerComponent->XPSystem(xpGained);
 	ApplyInventoryToStats();
-	StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
+	//StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
 }
 
 // Called every frame
@@ -475,8 +492,8 @@ void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 		float overflowDamage;
 
 
-		//if (!StatsPlayerComponent->DodgeAttack())
-		//{
+		if (!StatsPlayerComponent->DodgeAttack())
+		{
 			// take damage
 			if (StatsPlayerComponent->CurrentShields > 0)
 			{
@@ -500,12 +517,12 @@ void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 			}
 
 			DamageTakenDelegate.Broadcast();
-		//}
-		//else
-		//{
-			//DodgeDamageDelegate.Broadcast();
+		}
+		else
+		{
+			DodgeDamageDelegate.Broadcast();
 
-		//}
+		}
 
 	}
 }
