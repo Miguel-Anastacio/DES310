@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "MainMenuShip.generated.h"
+#include "MainMenuSpaceStation.generated.h"
 
 UCLASS()
-class DES310_PROJECT_API AMainMenuShip : public AActor
+class DES310_PROJECT_API AMainMenuSpaceStation : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	AMainMenuShip();
+	AMainMenuSpaceStation();
 
 protected:
 	// Called when the game starts or when spawned
@@ -23,15 +23,12 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	float timer = 0;
-
-
+	UPROPERTY(VisibleAnywhere) USceneComponent* Root;
 	UPROPERTY(EditAnywhere) UStaticMeshComponent* Mesh1;
 	UPROPERTY(EditAnywhere) UStaticMeshComponent* Mesh2;
-
-	UPROPERTY(EditAnywhere) FVector AxisSpeed = FVector(1,1,1);
-	UPROPERTY(EditAnywhere) FVector AxisRadius = FVector(1,1,1);
-
-	FVector StartingLocation;
+	UPROPERTY(EditAnywhere) UStaticMeshComponent* EmptyMesh;
+	UPROPERTY(EditAnywhere) bool RandomizeDirection;
+	
+	UPROPERTY(EditAnywhere) FRotator Rotations;
 
 };
