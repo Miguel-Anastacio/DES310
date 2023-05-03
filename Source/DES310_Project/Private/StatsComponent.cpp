@@ -5,6 +5,7 @@
 
 #include "StatsComponent.h"
 #include "GameSave.h"
+#include "SpaceshipCharacter.h"
 #include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 
 
@@ -53,13 +54,18 @@ void UStatsComponent::InitAllBaseStats(int hull, int classSpeed, float shields, 
 	BaseSpeed = classSpeed;
 	BaseShields = shields;
 
+	HullIntegrity = BaseHullIntegrity;
+	Shields = BaseShields;
+	ATKPower = BaseATKPower;
+	Speed = BaseSpeed;
+
 	MaxSpeed = classSpeed * 1.5 + MAX_LEVEL * SpeedIncrement;
 }
 
 void UStatsComponent::UpdateCurrentStats(float newHull, float newShields)
 {
-	CurrentHullIntegrity = HullIntegrity;
-	CurrentShields = Shields;
+	CurrentHullIntegrity = newHull;
+	CurrentShields = newShields;
 }
 
 void UStatsComponent::SetStatsBasedOnLevel(int level)
@@ -149,6 +155,12 @@ void UStatsComponent::LevelUpStats()
 	BaseShields += ShieldIncrement ;
 	BaseHullIntegrity += HullIntegrityIncrement;
 	BaseATKPower += ATKPowerIncrement;
+
+	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(GetOwner());
+	if (player)
+	{
+		player->ApplyInventoryToStats();
+	}
 }
 
 void UStatsComponent::IncreaseCurrency(int Amount)

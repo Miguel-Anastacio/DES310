@@ -182,10 +182,13 @@ void ASpaceshipCharacter::ResetCombat()
 	}
 	Bullets.Empty();
 
-	//AudioManager->AlarmSoundComponent->Stop();
+	AudioManager->AlarmSoundComponent->Stop();
 	isAttacking = false;
 	AbilitiesComponent->DisableBulletDeflector();
 	AbilitiesComponent->DisableSpecialAttack();
+
+	// combat finished reset shields
+	StatsPlayerComponent->CurrentShields = StatsPlayerComponent->Shields;
 }
 
 // Called when the game starts or when spawned
@@ -216,7 +219,7 @@ void ASpaceshipCharacter::BeginPlay()
 	if(!StatsPlayerComponent->AttemptLoad())
 	{
 		GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Red, TEXT("Load Fail"));
-		ApplyInventoryToStats();
+		//ApplyInventoryToStats();
 		StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
 	}
 
@@ -239,7 +242,7 @@ void ASpaceshipCharacter::SetStatsBasedOnClass()
 {
 	StatsPlayerComponent->InitAllBaseStats(PlayerShip.Hull, PlayerShip.Speed, PlayerShip.Shield, PlayerShip.AttackPower);
 	ApplyInventoryToStats();
-	StatsPlayerComponent->UpdateCurrentStats(0, 0);
+	StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
 
 	// set faction as well
 	switch (PlayerShip.Type)
@@ -263,18 +266,42 @@ void ASpaceshipCharacter::ApplyInventoryToStats()
 	ApplyItemToStats(PlayerInventoryComponent->GetEquippedBlaster());
 	ApplyItemToStats(PlayerInventoryComponent->GetEquippedHull());
 	ApplyItemToStats(PlayerInventoryComponent->GetEquippedEngine());
+
+	/*
+	FString TheFloatStr = FString::FromInt(StatsPlayerComponent->HullIntegrity);
+	GEngine->AddOnScreenDebugMessage(-1, 60.f, FColor::Red, TheFloatStr);
+	TheFloatStr = FString::SanitizeFloat(StatsPlayerComponent->Shields);
+	GEngine->AddOnScreenDebugMessage(-1, 60.f, FColor::Red, TheFloatStr);
+	TheFloatStr = FString::FromInt(StatsPlayerComponent->ATKPower);
+	GEngine->AddOnScreenDebugMessage(-1, 60.f, FColor::Red, TheFloatStr);
+	TheFloatStr = FString::FromInt(StatsPlayerComponent->Speed);
+	GEngine->AddOnScreenDebugMessage(-1, 60.f, FColor::Red, TheFloatStr);*/
+
 }
 
 void ASpaceshipCharacter::ApplyItemToStats(UItem* item)
 {
-	
+	FString TheFloatStr = FString::FromInt(StatsPlayerComponent->HullIntegrity);
+	GEngine->AddOnScreenDebugMessage(-1, 40.f, FColor::Blue, TheFloatStr);
+
 	if(item)
 	{
-		StatsPlayerComponent->Shields = item->Modifiers.ShieldBonus * StatsPlayerComponent->BaseShields;
-		StatsPlayerComponent->Speed = item->Modifiers.SpeedBonus * StatsPlayerComponent->BaseSpeed;
-		StatsPlayerComponent->HullIntegrity = item->Modifiers.HealthBonus * StatsPlayerComponent->BaseHullIntegrity;
-		StatsPlayerComponent->ATKPower = item->Modifiers.DamageBonus * StatsPlayerComponent->BaseATKPower;
-		StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
+		GEngine->AddOnScreenDebugMessage(-1, 40.f, FColor::Green, item->Name);
+		StatsPlayerComponent->Shields += item->Modifiers.ShieldBonus * StatsPlayerComponent->BaseShields;
+		TheFloatStr = FString::SanitizeFloat(item->Modifiers.ShieldBonus);
+		GEngine->AddOnScreenDebugMessage(-1, 40.f, FColor::Green,TheFloatStr);
+
+		StatsPlayerComponent->Speed += item->Modifiers.SpeedBonus * StatsPlayerComponent->BaseSpeed;
+		TheFloatStr = FString::SanitizeFloat(item->Modifiers.SpeedBonus);
+		GEngine->AddOnScreenDebugMessage(-1, 40.f, FColor::Green, TheFloatStr);
+
+		StatsPlayerComponent->HullIntegrity += item->Modifiers.HealthBonus * StatsPlayerComponent->BaseHullIntegrity;
+		TheFloatStr = FString::FromInt(StatsPlayerComponent->HullIntegrity);
+		GEngine->AddOnScreenDebugMessage(-1, 40.f, FColor::Green, TheFloatStr);
+
+		StatsPlayerComponent->ATKPower += item->Modifiers.DamageBonus * StatsPlayerComponent->BaseATKPower;
+		TheFloatStr = FString::SanitizeFloat(item->Modifiers.DamageBonus);
+		GEngine->AddOnScreenDebugMessage(-1, 40.f, FColor::Green, TheFloatStr);
 	}
 }
 
@@ -282,7 +309,7 @@ void ASpaceshipCharacter::UpdatePlayerStats(int xpGained)
 {
 	StatsPlayerComponent->XPSystem(xpGained);
 	ApplyInventoryToStats();
-	StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
+	//StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
 }
 
 // Called every frame
