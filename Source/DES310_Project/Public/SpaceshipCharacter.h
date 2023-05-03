@@ -124,6 +124,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) float MovementSpeed = 1250;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) float MaxMovementSpeed = 1750;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) float MinMovementSpeed = 1250;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) int Steps = 5;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) float StepSpeed = 200;
 	
 	//Attack Variables
 	UPROPERTY(EditAnywhere)TArray<ABullet_CPP*> Bullets;

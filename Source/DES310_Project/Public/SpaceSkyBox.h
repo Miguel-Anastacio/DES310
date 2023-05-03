@@ -23,6 +23,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void OffsetColor();
+
 	UPROPERTY(EditAnywhere, Category = Skybox) UMaterialInterface* Material;
 	UPROPERTY(EditAnywhere, Category = Skybox) UStaticMeshComponent* SkyMesh;
 	UPROPERTY(EditAnywhere, Category = Skybox) UMaterialInstanceDynamic* DynamicMaterial;
@@ -32,5 +34,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = Skybox) bool Blend;
 	UPROPERTY(EditAnywhere, Category = Skybox) float Offset = 1;
 	float CurrentHue = 0;
+	float TargetHue = 0;
 
 };
