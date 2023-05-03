@@ -301,6 +301,7 @@ void ASpaceshipCharacter::UpdatePlayerStats(int xpGained)
 {
 	StatsPlayerComponent->XPSystem(xpGained);
 	ApplyInventoryToStats();
+	StatsPlayerComponent->CurrentShields = StatsPlayerComponent->Shields;
 	//StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
 }
 
