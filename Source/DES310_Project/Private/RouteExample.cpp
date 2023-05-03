@@ -10,6 +10,7 @@
 
 #include "Kismet/KismetMathLibrary.h"
 #include "SpaceshipCharacter.h"
+#include "SpaceSkyBox.h"
 #include "StatsComponent.h"
 #include "Components/AudioComponent.h"
 
@@ -1353,6 +1354,12 @@ void ARouteExample::TransitionToMap()
 
 void ARouteExample::SwapToOrbiting()
 {
+
+
+	//TODO change skybox color;
+	ASpaceSkyBox* SpaceSkyBox = Cast<ASpaceSkyBox>(UGameplayStatics::GetActorOfClass(GetWorld(),ASpaceSkyBox::StaticClass()));
+	SpaceSkyBox->OffsetColor();
+	
 	// it would probably look better 
 	// if we made all other planets and the path invisible when we are in a planet
 	// either do this or make the UI more opaque

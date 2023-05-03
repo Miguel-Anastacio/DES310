@@ -58,5 +58,21 @@ void ASpaceSkyBox::Tick(float DeltaTime)
 		DynamicMaterial->SetScalarParameterValue(FName(TEXT("Hue-slide")),CurrentHue);
 	}
 
+	//CurrentHue = FMath::Lerp(CurrentHue,TargetHue, DeltaTime);
+	
+}
+
+void ASpaceSkyBox::OffsetColor()
+{
+	//Picks a Color that isn't the current color
+	/*int RandomMultiplier = FMath::RandRange(1,5);
+	float RandomHue = (1.0/6.0) * RandomMultiplier; 
+	TargetHue = CurrentHue + RandomHue;*/
+
+	TargetHue = FMath::RandRange(0.0,1.0);
+	
+	DynamicMaterial->SetScalarParameterValue(FName(TEXT("Hue-slide")),TargetHue);
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Turquoise, FString::Printf(TEXT("Skybox Color Changed")));
+
 }
 
