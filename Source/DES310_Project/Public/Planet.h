@@ -100,6 +100,9 @@ public:
 		void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp,
 			int32 OtherBodyIndex);*/
 
+	UFUNCTION()
+		void OnPlanetDestroyed(AActor* Act);
+
 
 protected:
 	// Called when the game starts or when spawned

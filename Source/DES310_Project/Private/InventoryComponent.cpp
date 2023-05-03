@@ -80,6 +80,19 @@ bool UInventoryComponent::RemoveItem(FString name)
 	return false;
 }
 
+int UInventoryComponent::HowManyItemsOftype(PartType type)
+{
+	int amount = 0;
+	for (auto it : Items)
+	{
+		if (it->Type == type)
+		{
+			amount++;
+		}
+	}
+	return amount;
+}
+
 
 bool UInventoryComponent::SwapShipParts(PartType type, UItem* newItem)
 {

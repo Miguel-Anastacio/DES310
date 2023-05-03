@@ -48,6 +48,8 @@ public:
 	bool RemoveItem(FString name);
 
 
+	int HowManyItemsOftype(PartType type);
+
 	// swap item from slot, then delete the old one
 	// maybe move to player inventory class 
 	UFUNCTION(BlueprintCallable)

@@ -42,6 +42,8 @@ void AVendor::CreateRandomInventoryFromAllItems()
 	if (AllItemsDatabase)
 	{
 		maxItems = AllItemsDatabase->Data.Num() * 0.75;
+		if (maxItems > 8)
+			maxItems = 8;
 	}
 	else
 	{
@@ -86,7 +88,10 @@ void AVendor::CreateRandomInventoryFromAllItems()
 		while (InventoryComponent->Items.Num() < numberOfItems)
 		{
 			int index = FMath::RandRange(0, AllItems.Num() - 1);
-			InventoryComponent->Items.AddUnique(AllItems[index]);
+			UItem* itemToAdd = AllItems[index];
+
+			if(InventoryComponent->HowManyItemsOftype(itemToAdd->Type) < 2)
+				InventoryComponent->Items.AddUnique(itemToAdd);
 		}
 
 	}

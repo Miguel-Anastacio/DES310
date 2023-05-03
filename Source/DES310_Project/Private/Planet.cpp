@@ -56,6 +56,13 @@ APlanet::APlanet()
 
 }
 
+
+void APlanet::OnPlanetDestroyed(AActor* Act)
+{
+	if (VendorActor)
+		VendorActor->Destroy();
+}
+
 // Called when the game starts or when spawned
 void APlanet::BeginPlay()
 {
@@ -63,6 +70,8 @@ void APlanet::BeginPlay()
 	/*SphereCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlanet::OnOverlapBegin);
 	SphereCollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlanet::OnOverlapEnd);*/
 
+	this->OnDestroyed.AddDynamic(this, &APlanet::OnPlanetDestroyed);
+	
 	FTransform SpawnTransform;
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
