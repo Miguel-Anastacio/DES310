@@ -210,6 +210,8 @@ void ASpaceshipCharacter::BeginPlay()
 	TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ASpaceshipCharacter::OnOverlapBegin);
 	DeflectionTriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ASpaceshipCharacter::OnDeflectOverlapBegin);
 	
+
+	StepSpeed = (MaxMovementSpeed - MinMovementSpeed) / Steps;
 	
 	if (!StatsPlayerComponent)
 	{
@@ -307,7 +309,7 @@ void ASpaceshipCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	CurrentFov = FMath::Clamp(90 + ((MovementSpeed - 200) / MaxMovementSpeed) * 50, 90 , 140);
+	CurrentFov = FMath::Clamp(90 + ((MovementSpeed - MinMovementSpeed) / MaxMovementSpeed) * 50, 90 , 140);
 	TopDownCamera->SetFieldOfView(FMath::Lerp(TopDownCamera->FieldOfView, CurrentFov, DeltaTime));
 	
 	/*
