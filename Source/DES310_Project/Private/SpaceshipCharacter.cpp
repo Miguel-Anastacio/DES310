@@ -267,41 +267,31 @@ void ASpaceshipCharacter::ApplyInventoryToStats()
 	ApplyItemToStats(PlayerInventoryComponent->GetEquippedHull());
 	ApplyItemToStats(PlayerInventoryComponent->GetEquippedEngine());
 
-	/*
-	FString TheFloatStr = FString::FromInt(StatsPlayerComponent->HullIntegrity);
-	GEngine->AddOnScreenDebugMessage(-1, 60.f, FColor::Red, TheFloatStr);
-	TheFloatStr = FString::SanitizeFloat(StatsPlayerComponent->Shields);
-	GEngine->AddOnScreenDebugMessage(-1, 60.f, FColor::Red, TheFloatStr);
-	TheFloatStr = FString::FromInt(StatsPlayerComponent->ATKPower);
-	GEngine->AddOnScreenDebugMessage(-1, 60.f, FColor::Red, TheFloatStr);
-	TheFloatStr = FString::FromInt(StatsPlayerComponent->Speed);
-	GEngine->AddOnScreenDebugMessage(-1, 60.f, FColor::Red, TheFloatStr);*/
-
 }
 
 void ASpaceshipCharacter::ApplyItemToStats(UItem* item)
 {
 	FString TheFloatStr = FString::FromInt(StatsPlayerComponent->HullIntegrity);
-	GEngine->AddOnScreenDebugMessage(-1, 40.f, FColor::Blue, TheFloatStr);
+
 
 	if(item)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 40.f, FColor::Green, item->Name);
-		StatsPlayerComponent->Shields += item->Modifiers.ShieldBonus * StatsPlayerComponent->BaseShields;
-		TheFloatStr = FString::SanitizeFloat(item->Modifiers.ShieldBonus);
-		GEngine->AddOnScreenDebugMessage(-1, 40.f, FColor::Green,TheFloatStr);
 
-		StatsPlayerComponent->Speed += item->Modifiers.SpeedBonus * StatsPlayerComponent->BaseSpeed;
-		TheFloatStr = FString::SanitizeFloat(item->Modifiers.SpeedBonus);
-		GEngine->AddOnScreenDebugMessage(-1, 40.f, FColor::Green, TheFloatStr);
+		if(item->Modifiers.ShieldBonus > 0)
+			StatsPlayerComponent->Shields = item->Modifiers.ShieldBonus * StatsPlayerComponent->BaseShields + StatsPlayerComponent->BaseShields;
 
-		StatsPlayerComponent->HullIntegrity += item->Modifiers.HealthBonus * StatsPlayerComponent->BaseHullIntegrity;
-		TheFloatStr = FString::FromInt(StatsPlayerComponent->HullIntegrity);
-		GEngine->AddOnScreenDebugMessage(-1, 40.f, FColor::Green, TheFloatStr);
 
-		StatsPlayerComponent->ATKPower += item->Modifiers.DamageBonus * StatsPlayerComponent->BaseATKPower;
-		TheFloatStr = FString::SanitizeFloat(item->Modifiers.DamageBonus);
-		GEngine->AddOnScreenDebugMessage(-1, 40.f, FColor::Green, TheFloatStr);
+		if (item->Modifiers.SpeedBonus > 0)
+			StatsPlayerComponent->Speed = item->Modifiers.SpeedBonus * StatsPlayerComponent->BaseSpeed + StatsPlayerComponent->BaseSpeed;
+
+
+		if (item->Modifiers.HealthBonus > 0)
+			StatsPlayerComponent->HullIntegrity = item->Modifiers.HealthBonus * StatsPlayerComponent->BaseHullIntegrity + StatsPlayerComponent->BaseHullIntegrity;
+
+		
+		if (item->Modifiers.DamageBonus > 0)
+			StatsPlayerComponent->ATKPower = item->Modifiers.DamageBonus * StatsPlayerComponent->BaseATKPower + StatsPlayerComponent->BaseATKPower;
+
 	}
 }
 
