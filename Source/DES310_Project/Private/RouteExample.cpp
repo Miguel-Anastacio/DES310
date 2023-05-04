@@ -625,7 +625,7 @@ void ARouteExample::GenerateImproved(int FirstPlanetID, FVector Offset)
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Silver, FString::Printf(TEXT("Index = %i"), FirstPlanetID));
 	
 	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(),0));
-	player->MovementSpeed = 200; // TODO make a current base speed for player
+	
 	
 	do
 	{

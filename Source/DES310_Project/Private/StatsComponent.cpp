@@ -59,7 +59,7 @@ void UStatsComponent::InitAllBaseStats(int hull, int classSpeed, float shields, 
 	ATKPower = BaseATKPower;
 	Speed = BaseSpeed;
 
-	MaxSpeed = classSpeed * 1.5 + MAX_LEVEL * SpeedIncrement;
+	MaxSpeed = classSpeed * 1.25 + MAX_LEVEL * SpeedIncrement;
 }
 
 void UStatsComponent::UpdateCurrentStats(float newHull, float newShields)
@@ -161,6 +161,9 @@ void UStatsComponent::LevelUpStats()
 	{
 		player->ApplyInventoryToStats();
 	}
+
+	CurrentShields = Shields;
+	CurrentHullIntegrity = HullIntegrity;
 }
 
 void UStatsComponent::IncreaseCurrency(int Amount)
