@@ -86,6 +86,8 @@ public:
 	APath* CreateBasicCube(FTransform transform);
 	APlanet* CreatePlanetMainRoute(FTransform transform);
 	APlanet* CreatePlanet(FTransform transform, int i);
+	APlanet* CreateAsteroidCluster(FTransform transform);
+
 	
 	void SwitchCamera();
 
@@ -160,6 +162,7 @@ public:
 	
 	UPROPERTY(EditAnywhere, Category = BpActors) TArray<TSubclassOf<class APlanet>> PlanetBP;
 	UPROPERTY(EditAnywhere, Category = BpActors) TArray<TSubclassOf<class APlanet>> SpaceStationBP;
+	UPROPERTY(EditAnywhere, Category = BpActors) TArray<TSubclassOf<class APlanet>> AsteroidClusters;
 	UPROPERTY(EditAnywhere, Category = BpActors) TSubclassOf<class APath> PathBP;
 
 	UPROPERTY(EditAnywhere, Category = Poisson) FVector2D Dimensions = FVector2D(300, 300);

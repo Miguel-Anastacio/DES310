@@ -316,10 +316,10 @@ APlanet* ARouteExample::CreatePlanet(FTransform transform, int i)
 
 
 	if(i == PlanetBP.Num() - 1 || i == PlanetBP.Num() - 2) // Last 2 planets are starts so makes it so only one star is possible
-		{
+	{
 		indexOfPlanetsInUse.push_back(PlanetBP.Num() - 1);
 		indexOfPlanetsInUse.push_back( PlanetBP.Num() - 2);
-		}
+	}
 	else
 	{
 		indexOfPlanetsInUse.push_back(i);
@@ -330,6 +330,18 @@ APlanet* ARouteExample::CreatePlanet(FTransform transform, int i)
 	APlanetActor->Line2 = FText::FromString("You Are Here");
 	APlanetActor->Line3 = FText::FromString(" ");
 	
+	return APlanetActor;
+}
+
+APlanet* ARouteExample::CreateAsteroidCluster(FTransform transform)
+{
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+
+	int index = FMath::RandRange(0, AsteroidClusters.Num() - 1);
+
+	APlanet* APlanetActor = GetWorld()->SpawnActor<APlanet>(AsteroidClusters[index], transform, SpawnParams);
+	APlanetActor->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
 	return APlanetActor;
 }
 
@@ -993,7 +1005,8 @@ void ARouteExample::GenerateDetails()
 			SpawnTransfrom.SetLocation(RandomPosition);
 
 			//Details.Add(CreatePlanet(SpawnTransfrom * GetRootComponent()->GetComponentTransform(),RandomPlanetIndex));
-			Details.Add(CreatePlanetMainRoute(SpawnTransfrom * GetRootComponent()->GetComponentTransform()));
+			//Details.Add(CreatePlanetMainRoute(SpawnTransfrom * GetRootComponent()->GetComponentTransform()));
+			Details.Add(CreateAsteroidCluster(SpawnTransfrom * GetRootComponent()->GetComponentTransform()));
 
 			break;
 		}
