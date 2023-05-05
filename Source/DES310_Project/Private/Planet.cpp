@@ -83,7 +83,7 @@ void APlanet::BeginPlay()
 	PointLight->SourceRadius = this->GetActorScale().X; // TODO set to use average or the max
 
 	
-	VendorActor = GetWorld()->SpawnActor<AVendor>(Vendor, SpawnTransform, SpawnParams);
+	//VendorActor = GetWorld()->SpawnActor<AVendor>(Vendor, SpawnTransform, SpawnParams);
 	if(VendorActor)
 		VendorActor->CreateRandomInventoryFromAllItems();
 

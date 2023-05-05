@@ -37,6 +37,8 @@ void AVendor::Tick(float DeltaTime)
 
 void AVendor::CreateRandomInventoryFromAllItems()
 {
+	InventoryComponent->Items.Empty();
+
 	// first randomize number of items (min 4 max allItems * 0.75)
 	int maxItems = 0;
 	if (AllItemsDatabase)
