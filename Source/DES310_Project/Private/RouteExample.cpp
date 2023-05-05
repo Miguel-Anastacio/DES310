@@ -163,6 +163,7 @@ void ARouteExample::Tick(float DeltaTime)
 		NavIncidentsTimer += DeltaTime;
 		StateName = "Moving";
 		MoveAlongPath(RouteData, DeltaTime);
+		PlayerOBJ->UpdatePlayerSpeed(DeltaTime);
 		// passing the current path is cleaner
 		// pass the values for now
 		SuperTempTimer += DeltaTime;
@@ -1568,11 +1569,14 @@ void ARouteExample::SwapState(PlayerStates State)
 
 	if (PlayerState == Moving)
 	{
-		AudioManager->AmbientSoundComponent->Play();
+		if (AudioManager->AmbientSoundComponent->bIsPaused)
+			AudioManager->AmbientSoundComponent->SetPaused(false);
+		else
+			AudioManager->AmbientSoundComponent->Play();
 	}
 	else if(PreviousState == Moving)
 	{
-		AudioManager->AmbientSoundComponent->Stop();
+		AudioManager->AmbientSoundComponent->SetPaused(true);
 	}
 
 	if(PreviousState == Selecting)

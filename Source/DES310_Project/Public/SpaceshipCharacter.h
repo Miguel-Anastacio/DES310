@@ -39,6 +39,15 @@ enum ShipClassType
 	HEAVY_EGYPTIAN UMETA(DisplayName = "Heavy Egyptian"),
 	FIGHTER_EGYPTIAN UMETA(DisplayName = "Fighter Egyptian"),
 };
+
+UENUM(BlueprintType)
+enum EngineStatus
+{
+	ACCELERATING UMETA(DisplayName = "Accelerating"),
+	AT_MAX_SPEED UMETA(DisplayName = "At Max Speed"),
+	SLOWING_DOWN UMETA(DisplayName = "Slowing Down"),
+	CRUISING UMETA(DisplayName = "Cruising"),
+};
  
 USTRUCT(BlueprintType)
 struct FPlayerShipClass
@@ -233,7 +242,37 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Custom Events", BlueprintCallable)
 	FDodgeDamageDelegate DodgeDamageDelegate;
 
-protected:
+
+	// Miguel: My take on the minigame
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	float BaseAcceleration = 10.f;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	float MaxAcceleration= 100.f;
+
+	UPROPERTY(VisibleAnywhere)
+	float CurrentAcceleration = 0.f;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	float AccelerationDecrement = 100.f;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	float MaxSpeed = 1750.f;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	float TimeAtMaxSpeed = 5.f;
+
+	UPROPERTY(BlueprintReadWrite)
+	TEnumAsByte<EngineStatus> EngineStatus = CRUISING;
+
+	UPROPERTY(VisibleAnywhere)
+	float SpeedTimer = 0.f;
+
+	UFUNCTION(BlueprintCallable)
+	// pass 1 to increase, -1 to decrease
+	void UpdateAcceleration(int multiplier);
+
+	void UpdatePlayerSpeed(float DeltaTime);
+
 	PlayerCurrentState State = IDLE;
 
 	FVector TargetLocation = FVector(0, 0, 0);

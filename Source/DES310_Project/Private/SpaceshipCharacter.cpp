@@ -191,6 +191,67 @@ void ASpaceshipCharacter::ResetCombat()
 	StatsPlayerComponent->CurrentShields = StatsPlayerComponent->Shields;
 }
 
+void ASpaceshipCharacter::UpdateAcceleration(int multiplier)
+{
+	if (EngineStatus == AT_MAX_SPEED || EngineStatus == SLOWING_DOWN)
+		return;
+
+	multiplier = FMath::Clamp(multiplier, -1, 1);
+	if(multiplier == 1)
+		GEngine->AddOnScreenDebugMessage(10, 15.0f, FColor::Green, TEXT("Success"));
+	else
+		GEngine->AddOnScreenDebugMessage(10, 15.0f, FColor::Red, TEXT("Miss"));
+
+	CurrentAcceleration += BaseAcceleration * multiplier;
+	CurrentAcceleration = FMath::Clamp(CurrentAcceleration, 0, MaxAcceleration);
+	if (CurrentAcceleration > 0)
+		EngineStatus = ACCELERATING;
+	else
+		EngineStatus = CRUISING;
+}
+
+void ASpaceshipCharacter::UpdatePlayerSpeed(float DeltaTime)
+{
+	switch (EngineStatus)
+	{
+	case ACCELERATING:
+		MovementSpeed += CurrentAcceleration * DeltaTime;
+		break;
+	case AT_MAX_SPEED:
+		SpeedTimer += DeltaTime;
+		if (SpeedTimer > TimeAtMaxSpeed)
+		{
+			EngineStatus = SLOWING_DOWN;
+			SpeedTimer = 0.f;
+			CurrentAcceleration = BaseAcceleration;
+			MovementSpeed -= AccelerationDecrement * DeltaTime;
+			GEngine->AddOnScreenDebugMessage(10, 15.0f, FColor::Red, TEXT("Start slowing down"));
+		}
+		break;
+	case SLOWING_DOWN:
+		MovementSpeed -= AccelerationDecrement * DeltaTime;
+		if (MovementSpeed <= MinMovementSpeed)
+		{
+			EngineStatus = CRUISING;
+		}
+		break;
+	case CRUISING:
+		break;
+	default:
+		break;
+	}
+	if (MovementSpeed >= MaxSpeed)
+	{
+		EngineStatus = AT_MAX_SPEED;
+		GEngine->AddOnScreenDebugMessage(10,15.0f, FColor::Red, TEXT("Reached MaxSpeed"));
+	}
+
+
+	MovementSpeed = FMath::Clamp(MovementSpeed, MinMovementSpeed, MaxSpeed);
+
+
+}
+
 // Called when the game starts or when spawned
 void ASpaceshipCharacter::BeginPlay()
 {
@@ -313,6 +374,7 @@ void ASpaceshipCharacter::Tick(float DeltaTime)
 	CurrentFov = FMath::Clamp(90 + ((MovementSpeed - MinMovementSpeed) / MaxMovementSpeed) * 50, 90 , 140);
 	TopDownCamera->SetFieldOfView(FMath::Lerp(TopDownCamera->FieldOfView, CurrentFov, DeltaTime));
 	
+
 	/*
 	if(isFireRate)
 	{
