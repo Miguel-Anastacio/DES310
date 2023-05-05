@@ -339,22 +339,22 @@ void ASpaceshipCharacter::ApplyItemToStats(UItem* item)
 
 	if(item)
 	{
-
 		if(item->Modifiers.ShieldBonus > 0)
 			StatsPlayerComponent->Shields = item->Modifiers.ShieldBonus * StatsPlayerComponent->BaseShields + StatsPlayerComponent->BaseShields;
-
 
 		if (item->Modifiers.SpeedBonus > 0)
 			StatsPlayerComponent->Speed = item->Modifiers.SpeedBonus * StatsPlayerComponent->BaseSpeed + StatsPlayerComponent->BaseSpeed;
 
-
 		if (item->Modifiers.HealthBonus > 0)
 			StatsPlayerComponent->HullIntegrity = item->Modifiers.HealthBonus * StatsPlayerComponent->BaseHullIntegrity + StatsPlayerComponent->BaseHullIntegrity;
-
 		
 		if (item->Modifiers.DamageBonus > 0)
 			StatsPlayerComponent->ATKPower = item->Modifiers.DamageBonus * StatsPlayerComponent->BaseATKPower + StatsPlayerComponent->BaseATKPower;
 
+		StatsPlayerComponent->CurrentShields = StatsPlayerComponent->Shields;
+
+		if (item->Modifiers.HealthBonus > 0)
+			StatsPlayerComponent->CurrentHullIntegrity = StatsPlayerComponent->CurrentHullIntegrity + StatsPlayerComponent->BaseHullIntegrity * item->Modifiers.HealthBonus;
 	}
 }
 
