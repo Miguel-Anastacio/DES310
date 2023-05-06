@@ -211,6 +211,9 @@ public:
 	TArray<APlanet*> Planets;
 	TArray<APlanet*> Details;
 
+	// store the quest of the last planet of the previous route to set it as the quest of the first planet 
+	// of the next route
+	UQuest* LastQuestPreviousRoute = nullptr;
 
 	PlayerStates PlayerState;
 	PlayerStates PreviousState;

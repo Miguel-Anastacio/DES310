@@ -353,8 +353,9 @@ void ASpaceshipCharacter::ApplyItemToStats(UItem* item)
 
 		StatsPlayerComponent->CurrentShields = StatsPlayerComponent->Shields;
 
+		/*
 		if (item->Modifiers.HealthBonus > 0)
-			StatsPlayerComponent->CurrentHullIntegrity = StatsPlayerComponent->CurrentHullIntegrity + StatsPlayerComponent->BaseHullIntegrity * item->Modifiers.HealthBonus;
+			StatsPlayerComponent->CurrentHullIntegrity = StatsPlayerComponent->CurrentHullIntegrity + StatsPlayerComponent->BaseHullIntegrity * item->Modifiers.HealthBonus;*/
 	}
 }
 

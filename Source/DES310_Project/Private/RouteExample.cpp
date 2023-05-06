@@ -1817,15 +1817,25 @@ void ARouteExample::SetQuest()
 	if(!Planets[1])
 		return;
 
-	if(!Planets[1]->Quest)
-		return;
-
 	if(!Planets[2])
 		return;
-		
-	Planets[1]->Quest->TargetName = Planets[2]->Name;
-	// when we have more quests randomize the contents out of a set of templates
 
+	if (!Planets[1]->Quest)
+		return;
+
+	// on the first route 
+	// just store the quest
+	if (!LastQuestPreviousRoute)
+	{
+		LastQuestPreviousRoute = Planets[2]->Quest;
+	}
+	else
+	{
+		Planets[1]->Quest = LastQuestPreviousRoute;
+	}
+
+	Planets[1]->Quest->TargetName = Planets[2]->Name;
+	
 }
 
 void ARouteExample::FightScene(float DeltaTime) {
