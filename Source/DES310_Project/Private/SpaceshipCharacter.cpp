@@ -205,9 +205,16 @@ void ASpaceshipCharacter::UpdateAcceleration(int multiplier)
 	CurrentAcceleration += BaseAcceleration * multiplier;
 	CurrentAcceleration = FMath::Clamp(CurrentAcceleration, 0, MaxAcceleration);
 	if (CurrentAcceleration > 0)
+	{
 		EngineStatus = ACCELERATING;
+		if (!AudioManager->TurboSoundComponent->IsPlaying())
+			AudioManager->TurboSoundComponent->Play();
+	}
 	else
+	{
+		AudioManager->TurboSoundComponent->Stop();
 		EngineStatus = CRUISING;
+	}
 }
 
 void ASpaceshipCharacter::UpdatePlayerSpeed(float DeltaTime)
@@ -226,7 +233,10 @@ void ASpaceshipCharacter::UpdatePlayerSpeed(float DeltaTime)
 			CurrentAcceleration = BaseAcceleration;
 			MovementSpeed -= AccelerationDecrement * DeltaTime;
 			GEngine->AddOnScreenDebugMessage(10, 15.0f, FColor::Red, TEXT("Start slowing down"));
+
+			AudioManager->TurboSoundComponent->Stop();
 		}
+
 		break;
 	case SLOWING_DOWN:
 		MovementSpeed -= AccelerationDecrement * DeltaTime;
