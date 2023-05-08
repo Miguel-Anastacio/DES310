@@ -249,7 +249,7 @@ void ASpaceshipCharacter::UpdatePlayerSpeed(float DeltaTime)
 		if (MovementSpeed <= MinMovementSpeed)
 		{
 			EngineStatus = CRUISING;
-			CurrentAcceleration = 0;
+			CurrentAcceleration = BaseAcceleration;
 		}
 		break;
 	case CRUISING:
