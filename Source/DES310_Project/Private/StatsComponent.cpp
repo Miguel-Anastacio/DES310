@@ -134,6 +134,7 @@ void UStatsComponent::XPSystem(int GainedXP)
 		CarryOverXP = XPToNext * -1;
 		GainedXP -= (GainedXP - CarryOverXP);
 		LevelUpStats();
+		LevelUpDelegate.Broadcast();
 		// calculate next level xp
 		XPToNext = CalcNextLevel();
 

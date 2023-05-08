@@ -69,13 +69,13 @@ public:
 	UPROPERTY(EditAnywhere, Category = Camera)
 	float CameraDistance = 4000;
 
-	// temporary 
-	// quests will have to be created at runtime
+	// 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<UQuest> QuestTemplate;
+	TArray<TSubclassOf<UQuest>> QuestTemplates;
+	UPROPERTY(VisibleAnywhere)
 	UQuest* Quest;
 
-
+	
 	// keeps track if player is in this planet
 	bool CurrentPlanet = false;
 	// Sets default values for this actor's properties
@@ -89,7 +89,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	UQuest* GetQuest() { return Quest; };
 
-
+	void SetRandomQuest();
 	int Index = -1;
 	
 	/*UFUNCTION()

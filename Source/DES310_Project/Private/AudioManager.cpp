@@ -14,6 +14,7 @@ AAudioManager::AAudioManager()
 	ThrusterSoundComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Thruster Audio Component"));
 	AlarmSoundComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Alarm Audio Component"));
 	ShootSoundComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Shoot Audio Component"));
+	TurboSoundComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Turbo Audio Component"));
 
 }
 
@@ -43,7 +44,9 @@ void AAudioManager::BeginPlay()
 		ShootSoundComponent->SetSound(SoundCues[4]);
 	}
 	
-	
+	if (SoundCues[5]) {
+		TurboSoundComponent->SetSound(SoundCues[5]);
+	}
 }
 
 // Called every frame

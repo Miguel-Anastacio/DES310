@@ -53,7 +53,18 @@ APlanet::APlanet()
 	Line2 = FText::FromString("You Are Maybe Here");
 	Line3 = FText::FromString("Distance: 100 AU");
 
+}
 
+void APlanet::SetRandomQuest()
+{
+	UObject* object = nullptr;
+	int index = FMath::RandRange(0, QuestTemplates.Num() - 1);
+	if (QuestTemplates.Num() > 0 && QuestTemplates[index])
+		object = QuestTemplates[index]->GetDefaultObject();
+	//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("QUEST - Error casting from template"));
+	if (object)
+		Quest = Cast<UQuest>(object);
+	//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("QUEST - Error casting to object"));
 }
 
 
@@ -83,17 +94,10 @@ void APlanet::BeginPlay()
 	PointLight->SourceRadius = this->GetActorScale().GetMax(); // TODO set to use average or the max
 
 	
-	VendorActor = GetWorld()->SpawnActor<AVendor>(Vendor, SpawnTransform, SpawnParams);
+	//VendorActor = GetWorld()->SpawnActor<AVendor>(Vendor, SpawnTransform, SpawnParams);
 	if(VendorActor)
 		VendorActor->CreateRandomInventoryFromAllItems();
 
-	UObject* object = nullptr;
-	if(QuestTemplate)
-		object = QuestTemplate->GetDefaultObject();
-		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("QUEST - Error casting from template"));
-	if(object)
-		Quest = Cast<UQuest>(object);
-		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("QUEST - Error casting to object"));
 
 	Line1 = FText::FromString(Name);
 	if(IsFirstPlanet)
@@ -117,7 +121,7 @@ void APlanet::BeginPlay()
 	}
 
 
-
+	SetRandomQuest();
 }
 
 // Called every frame

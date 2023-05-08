@@ -159,6 +159,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = BpActors) TArray<TSubclassOf<class APlanet>> PlanetBP;
 	UPROPERTY(EditAnywhere, Category = BpActors) TArray<TSubclassOf<class ADetails>> DetailBP;
 	UPROPERTY(EditAnywhere, Category = BpActors) TArray<TSubclassOf<class APlanet>> SpaceStationBP;
+	UPROPERTY(EditAnywhere, Category = BpActors) TArray<TSubclassOf<class APlanet>> AsteroidClusters;
 	UPROPERTY(EditAnywhere, Category = BpActors) TSubclassOf<class APath> PathBP;
 
 	UPROPERTY(EditAnywhere, Category = Poisson) FVector2D Dimensions = FVector2D(300, 300);
@@ -205,6 +206,9 @@ public:
 	TArray<APlanet*> Planets;
 	TArray<ADetails*> Details;
 
+	// store the quest of the last planet of the previous route to set it as the quest of the first planet 
+	// of the next route
+	UQuest* LastQuestPreviousRoute = nullptr;
 
 	PlayerStates PlayerState;
 	PlayerStates PreviousState;

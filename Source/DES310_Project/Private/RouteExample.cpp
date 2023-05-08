@@ -163,6 +163,7 @@ void ARouteExample::Tick(float DeltaTime)
 		NavIncidentsTimer += DeltaTime;
 		StateName = "Moving";
 		MoveAlongPath(RouteData, DeltaTime);
+		PlayerOBJ->UpdatePlayerSpeed(DeltaTime);
 		// passing the current path is cleaner
 		// pass the values for now
 		SuperTempTimer += DeltaTime;
@@ -316,10 +317,10 @@ APlanet* ARouteExample::CreatePlanet(FTransform transform, int i)
 
 
 	if(i == PlanetBP.Num() - 1 || i == PlanetBP.Num() - 2) // Last 2 planets are starts so makes it so only one star is possible
-		{
+	{
 		indexOfPlanetsInUse.push_back(PlanetBP.Num() - 1);
 		indexOfPlanetsInUse.push_back( PlanetBP.Num() - 2);
-		}
+	}
 	else
 	{
 		indexOfPlanetsInUse.push_back(i);
@@ -333,6 +334,7 @@ APlanet* ARouteExample::CreatePlanet(FTransform transform, int i)
 	return APlanetActor;
 }
 
+
 ADetails* ARouteExample::CreateDetail(FTransform transform, int Index)
 {
 	FActorSpawnParameters SpawnParams;
@@ -344,6 +346,7 @@ ADetails* ARouteExample::CreateDetail(FTransform transform, int Index)
 	Detail->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
 
 	return Detail;
+
 }
 
 
@@ -1013,7 +1016,7 @@ void ARouteExample::GenerateDetails()
 			//Details.Add(CreatePlanet(SpawnTransfrom * GetRootComponent()->GetComponentTransform(),RandomPlanetIndex));
 			Details.Add(Detail);
 			Success = true;
-			
+
 			break;
 		}
 	}
@@ -1574,11 +1577,14 @@ void ARouteExample::SwapState(PlayerStates State)
 
 	if (PlayerState == Moving)
 	{
-		AudioManager->AmbientSoundComponent->Play();
+		if (AudioManager->AmbientSoundComponent->bIsPaused)
+			AudioManager->AmbientSoundComponent->SetPaused(false);
+		else
+			AudioManager->AmbientSoundComponent->Play();
 	}
 	else if(PreviousState == Moving)
 	{
-		AudioManager->AmbientSoundComponent->Stop();
+		AudioManager->AmbientSoundComponent->SetPaused(true);
 	}
 
 	if(PreviousState == Selecting)
@@ -1819,15 +1825,25 @@ void ARouteExample::SetQuest()
 	if(!Planets[1])
 		return;
 
-	if(!Planets[1]->Quest)
-		return;
-
 	if(!Planets[2])
 		return;
-		
-	Planets[1]->Quest->TargetName = Planets[2]->Name;
-	// when we have more quests randomize the contents out of a set of templates
 
+	if (!Planets[1]->Quest)
+		return;
+
+	// on the first route 
+	// just store the quest
+	if (!LastQuestPreviousRoute)
+	{
+		LastQuestPreviousRoute = Planets[2]->Quest;
+	}
+	else
+	{
+		Planets[1]->Quest = LastQuestPreviousRoute;
+	}
+
+	Planets[1]->Quest->TargetName = Planets[2]->Name;
+	
 }
 
 void ARouteExample::FightScene(float DeltaTime) {

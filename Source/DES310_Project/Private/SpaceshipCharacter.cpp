@@ -191,6 +191,76 @@ void ASpaceshipCharacter::ResetCombat()
 	StatsPlayerComponent->CurrentShields = StatsPlayerComponent->Shields;
 }
 
+void ASpaceshipCharacter::UpdateAcceleration(int multiplier)
+{
+	if (EngineStatus == AT_MAX_SPEED || EngineStatus == SLOWING_DOWN)
+		return;
+
+	multiplier = FMath::Clamp(multiplier, -1, 1);
+
+	CurrentAcceleration += BaseAcceleration * multiplier;
+	CurrentAcceleration = FMath::Clamp(CurrentAcceleration, 0, MaxAcceleration);
+
+	if (CurrentAcceleration > 0)
+	{
+		EngineStatus = ACCELERATING;
+		if (!AudioManager->TurboSoundComponent->IsPlaying())
+		{
+			AudioManager->TurboSoundComponent->Play();
+		}
+	}
+	else
+	{
+		AudioManager->TurboSoundComponent->Stop();
+		EngineStatus = CRUISING;
+	}
+}
+
+void ASpaceshipCharacter::UpdatePlayerSpeed(float DeltaTime)
+{
+	switch (EngineStatus)
+	{
+	case ACCELERATING:
+		MovementSpeed += CurrentAcceleration * DeltaTime;
+		break;
+	case AT_MAX_SPEED:
+		SpeedTimer += DeltaTime;
+		if (SpeedTimer > TimeAtMaxSpeed)
+		{
+			EngineStatus = SLOWING_DOWN;
+			SpeedTimer = 0.f;
+			CurrentAcceleration = BaseAcceleration;
+			MovementSpeed -= AccelerationDecrement * DeltaTime;
+			GEngine->AddOnScreenDebugMessage(10, 15.0f, FColor::Red, TEXT("Start slowing down"));
+
+			AudioManager->TurboSoundComponent->Stop();
+		}
+
+		break;
+	case SLOWING_DOWN:
+		MovementSpeed -= AccelerationDecrement * DeltaTime;
+		if (MovementSpeed <= MinMovementSpeed)
+		{
+			EngineStatus = CRUISING;
+		}
+		break;
+	case CRUISING:
+		break;
+	default:
+		break;
+	}
+	if (MovementSpeed >= MaxSpeed)
+	{
+		EngineStatus = AT_MAX_SPEED;
+		GEngine->AddOnScreenDebugMessage(10,15.0f, FColor::Red, TEXT("Reached MaxSpeed"));
+	}
+
+
+	MovementSpeed = FMath::Clamp(MovementSpeed, MinMovementSpeed, MaxSpeed);
+
+
+}
+
 // Called when the game starts or when spawned
 void ASpaceshipCharacter::BeginPlay()
 {
@@ -278,22 +348,23 @@ void ASpaceshipCharacter::ApplyItemToStats(UItem* item)
 
 	if(item)
 	{
-
 		if(item->Modifiers.ShieldBonus > 0)
 			StatsPlayerComponent->Shields = item->Modifiers.ShieldBonus * StatsPlayerComponent->BaseShields + StatsPlayerComponent->BaseShields;
-
 
 		if (item->Modifiers.SpeedBonus > 0)
 			StatsPlayerComponent->Speed = item->Modifiers.SpeedBonus * StatsPlayerComponent->BaseSpeed + StatsPlayerComponent->BaseSpeed;
 
-
 		if (item->Modifiers.HealthBonus > 0)
 			StatsPlayerComponent->HullIntegrity = item->Modifiers.HealthBonus * StatsPlayerComponent->BaseHullIntegrity + StatsPlayerComponent->BaseHullIntegrity;
-
 		
 		if (item->Modifiers.DamageBonus > 0)
 			StatsPlayerComponent->ATKPower = item->Modifiers.DamageBonus * StatsPlayerComponent->BaseATKPower + StatsPlayerComponent->BaseATKPower;
 
+		StatsPlayerComponent->CurrentShields = StatsPlayerComponent->Shields;
+
+		/*
+		if (item->Modifiers.HealthBonus > 0)
+			StatsPlayerComponent->CurrentHullIntegrity = StatsPlayerComponent->CurrentHullIntegrity + StatsPlayerComponent->BaseHullIntegrity * item->Modifiers.HealthBonus;*/
 	}
 }
 
@@ -313,6 +384,7 @@ void ASpaceshipCharacter::Tick(float DeltaTime)
 	CurrentFov = FMath::Clamp(90 + ((MovementSpeed - MinMovementSpeed) / MaxMovementSpeed) * 70, 90 , 140);
 	TopDownCamera->SetFieldOfView(FMath::Lerp(TopDownCamera->FieldOfView, CurrentFov, DeltaTime));
 	
+
 	/*
 	if(isFireRate)
 	{
