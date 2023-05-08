@@ -69,13 +69,23 @@ public:
 	UPROPERTY(EditAnywhere, Category = Camera)
 	float CameraDistance = 4000;
 
-	// temporary 
-	// quests will have to be created at runtime
+	// 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<UQuest> QuestTemplate;
+	TArray<TSubclassOf<UQuest>> QuestTemplates;
+	UPROPERTY(VisibleAnywhere)
 	UQuest* Quest;
 
+	
+	// UI icons for navigation
+	// 0 - you are here 1 - checkpoint 2 - destination
+	UPROPERTY(EditAnywhere)
+	TArray<UTexture2D*> AllIcons;
+	UPROPERTY(BlueprintReadWrite)
+	UTexture2D* Icon = nullptr;
 
+	UFUNCTION(BlueprintCallable)
+		void SetPlanetIconUI();
+	
 	// keeps track if player is in this planet
 	bool CurrentPlanet = false;
 	// Sets default values for this actor's properties
@@ -89,7 +99,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	UQuest* GetQuest() { return Quest; };
 
-
+	void SetRandomQuest();
 	int Index = -1;
 	
 	/*UFUNCTION()
@@ -99,6 +109,9 @@ public:
 	UFUNCTION()
 		void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp,
 			int32 OtherBodyIndex);*/
+
+	UFUNCTION()
+		void OnPlanetDestroyed(AActor* Act);
 
 
 protected:

@@ -182,10 +182,85 @@ void ASpaceshipCharacter::ResetCombat()
 	}
 	Bullets.Empty();
 
-	//AudioManager->AlarmSoundComponent->Stop();
+	AudioManager->AlarmSoundComponent->Stop();
 	isAttacking = false;
 	AbilitiesComponent->DisableBulletDeflector();
 	AbilitiesComponent->DisableSpecialAttack();
+
+	// combat finished reset shields
+	StatsPlayerComponent->CurrentShields = StatsPlayerComponent->Shields;
+}
+
+void ASpaceshipCharacter::UpdateAcceleration(int multiplier)
+{
+	if (EngineStatus == AT_MAX_SPEED || EngineStatus == SLOWING_DOWN)
+		return;
+
+	multiplier = FMath::Clamp(multiplier, -1, 1);
+
+	CurrentAcceleration += BaseAcceleration * multiplier;
+	CurrentAcceleration = FMath::Clamp(CurrentAcceleration, 0, MaxAcceleration);
+
+	if (CurrentAcceleration > 0)
+	{
+		EngineStatus = ACCELERATING;
+		if (!AudioManager->TurboSoundComponent->IsPlaying())
+		{
+			AudioManager->TurboSoundComponent->Play();
+		}
+	}
+	else
+	{
+		AudioManager->TurboSoundComponent->Stop();
+		EngineStatus = CRUISING;
+	}
+}
+
+void ASpaceshipCharacter::UpdatePlayerSpeed(float DeltaTime)
+{
+	AudioManager->TurboSoundComponent->SetWorldLocation(GetActorLocation());
+
+	switch (EngineStatus)
+	{
+	case ACCELERATING:
+		MovementSpeed += CurrentAcceleration * DeltaTime;
+		break;
+	case AT_MAX_SPEED:
+		SpeedTimer += DeltaTime;
+		if (SpeedTimer > TimeAtMaxSpeed)
+		{
+			EngineStatus = SLOWING_DOWN;
+			SpeedTimer = 0.f;
+			CurrentAcceleration = BaseAcceleration;
+			MovementSpeed -= AccelerationDecrement * DeltaTime;
+			GEngine->AddOnScreenDebugMessage(10, 15.0f, FColor::Red, TEXT("Start slowing down"));
+
+			AudioManager->TurboSoundComponent->Stop();
+		}
+
+		break;
+	case SLOWING_DOWN:
+		MovementSpeed -= AccelerationDecrement * DeltaTime;
+		if (MovementSpeed <= MinMovementSpeed)
+		{
+			EngineStatus = CRUISING;
+		}
+		break;
+	case CRUISING:
+		break;
+	default:
+		break;
+	}
+	if (MovementSpeed >= MaxSpeed)
+	{
+		EngineStatus = AT_MAX_SPEED;
+		GEngine->AddOnScreenDebugMessage(10,15.0f, FColor::Red, TEXT("Reached MaxSpeed"));
+	}
+
+
+	MovementSpeed = FMath::Clamp(MovementSpeed, MinMovementSpeed, MaxSpeed);
+
+
 }
 
 // Called when the game starts or when spawned
@@ -207,6 +282,8 @@ void ASpaceshipCharacter::BeginPlay()
 	TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ASpaceshipCharacter::OnOverlapBegin);
 	DeflectionTriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ASpaceshipCharacter::OnDeflectOverlapBegin);
 	
+
+	StepSpeed = (MaxMovementSpeed - MinMovementSpeed) / Steps;
 	
 	if (!StatsPlayerComponent)
 	{
@@ -216,7 +293,7 @@ void ASpaceshipCharacter::BeginPlay()
 	if(!StatsPlayerComponent->AttemptLoad())
 	{
 		GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Red, TEXT("Load Fail"));
-		ApplyInventoryToStats();
+		//ApplyInventoryToStats();
 		StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
 	}
 
@@ -239,7 +316,7 @@ void ASpaceshipCharacter::SetStatsBasedOnClass()
 {
 	StatsPlayerComponent->InitAllBaseStats(PlayerShip.Hull, PlayerShip.Speed, PlayerShip.Shield, PlayerShip.AttackPower);
 	ApplyInventoryToStats();
-	StatsPlayerComponent->UpdateCurrentStats(0, 0);
+	StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
 
 	// set faction as well
 	switch (PlayerShip.Type)
@@ -263,18 +340,33 @@ void ASpaceshipCharacter::ApplyInventoryToStats()
 	ApplyItemToStats(PlayerInventoryComponent->GetEquippedBlaster());
 	ApplyItemToStats(PlayerInventoryComponent->GetEquippedHull());
 	ApplyItemToStats(PlayerInventoryComponent->GetEquippedEngine());
+
 }
 
 void ASpaceshipCharacter::ApplyItemToStats(UItem* item)
 {
-	
+	FString TheFloatStr = FString::FromInt(StatsPlayerComponent->HullIntegrity);
+
+
 	if(item)
 	{
-		StatsPlayerComponent->Shields = item->Modifiers.ShieldBonus * StatsPlayerComponent->BaseShields;
-		StatsPlayerComponent->Speed = item->Modifiers.SpeedBonus * StatsPlayerComponent->BaseSpeed;
-		StatsPlayerComponent->HullIntegrity = item->Modifiers.HealthBonus * StatsPlayerComponent->BaseHullIntegrity;
-		StatsPlayerComponent->ATKPower = item->Modifiers.DamageBonus * StatsPlayerComponent->BaseATKPower;
-		StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
+		if(item->Modifiers.ShieldBonus > 0)
+			StatsPlayerComponent->Shields = item->Modifiers.ShieldBonus * StatsPlayerComponent->BaseShields + StatsPlayerComponent->BaseShields;
+
+		if (item->Modifiers.SpeedBonus > 0)
+			StatsPlayerComponent->Speed = item->Modifiers.SpeedBonus * StatsPlayerComponent->BaseSpeed + StatsPlayerComponent->BaseSpeed;
+
+		if (item->Modifiers.HealthBonus > 0)
+			StatsPlayerComponent->HullIntegrity = item->Modifiers.HealthBonus * StatsPlayerComponent->BaseHullIntegrity + StatsPlayerComponent->BaseHullIntegrity;
+		
+		if (item->Modifiers.DamageBonus > 0)
+			StatsPlayerComponent->ATKPower = item->Modifiers.DamageBonus * StatsPlayerComponent->BaseATKPower + StatsPlayerComponent->BaseATKPower;
+
+		StatsPlayerComponent->CurrentShields = StatsPlayerComponent->Shields;
+
+		/*
+		if (item->Modifiers.HealthBonus > 0)
+			StatsPlayerComponent->CurrentHullIntegrity = StatsPlayerComponent->CurrentHullIntegrity + StatsPlayerComponent->BaseHullIntegrity * item->Modifiers.HealthBonus;*/
 	}
 }
 
@@ -282,7 +374,8 @@ void ASpaceshipCharacter::UpdatePlayerStats(int xpGained)
 {
 	StatsPlayerComponent->XPSystem(xpGained);
 	ApplyInventoryToStats();
-	StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
+	StatsPlayerComponent->CurrentShields = StatsPlayerComponent->Shields;
+	//StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
 }
 
 // Called every frame
@@ -290,9 +383,10 @@ void ASpaceshipCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	CurrentFov = FMath::Clamp(90 + ((MovementSpeed - 200) / MaxMovementSpeed) * 50, 90 , 140);
+	CurrentFov = FMath::Clamp(90 + ((MovementSpeed - MinMovementSpeed) / MaxMovementSpeed) * 70, 90 , 140);
 	TopDownCamera->SetFieldOfView(FMath::Lerp(TopDownCamera->FieldOfView, CurrentFov, DeltaTime));
 	
+
 	/*
 	if(isFireRate)
 	{
@@ -473,8 +567,8 @@ void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 		float overflowDamage;
 
 
-		//if (!StatsPlayerComponent->DodgeAttack())
-		//{
+		if (!StatsPlayerComponent->DodgeAttack())
+		{
 			// take damage
 			if (StatsPlayerComponent->CurrentShields > 0)
 			{
@@ -498,12 +592,12 @@ void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 			}
 
 			DamageTakenDelegate.Broadcast();
-		//}
-		//else
-		//{
-			//DodgeDamageDelegate.Broadcast();
+		}
+		else
+		{
+			DodgeDamageDelegate.Broadcast();
 
-		//}
+		}
 
 	}
 }

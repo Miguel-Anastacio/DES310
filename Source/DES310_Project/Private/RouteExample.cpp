@@ -10,7 +10,9 @@
 
 #include "Kismet/KismetMathLibrary.h"
 #include "SpaceshipCharacter.h"
+
 #include "GameInstance_CPP.h"
+#include "SpaceSkyBox.h"
 #include "StatsComponent.h"
 #include "Components/AudioComponent.h"
 
@@ -128,6 +130,8 @@ void ARouteExample::BeginPlay()
 	PathClickedDelegate.AddUniqueDynamic(this, &ARouteExample::GetPathSelected);
 
 
+	AudioManager->VictorySoundComponent->OnAudioFinished.AddUniqueDynamic(this, &ARouteExample::CallCombatOverDelegate);
+
 }
 
 // Called every frame
@@ -161,6 +165,7 @@ void ARouteExample::Tick(float DeltaTime)
 		NavIncidentsTimer += DeltaTime;
 		StateName = "Moving";
 		MoveAlongPath(RouteData, DeltaTime);
+		PlayerOBJ->UpdatePlayerSpeed(DeltaTime);
 		// passing the current path is cleaner
 		// pass the values for now
 		SuperTempTimer += DeltaTime;
@@ -316,10 +321,10 @@ APlanet* ARouteExample::CreatePlanet(FTransform transform, int i)
 
 
 	if(i == PlanetBP.Num() - 1 || i == PlanetBP.Num() - 2) // Last 2 planets are starts so makes it so only one star is possible
-		{
+	{
 		indexOfPlanetsInUse.push_back(PlanetBP.Num() - 1);
 		indexOfPlanetsInUse.push_back( PlanetBP.Num() - 2);
-		}
+	}
 	else
 	{
 		indexOfPlanetsInUse.push_back(i);
@@ -327,10 +332,26 @@ APlanet* ARouteExample::CreatePlanet(FTransform transform, int i)
 
 	APlanetActor->Index = i;
 	APlanetActor->IsFirstPlanet = true;
+	APlanetActor->SetPlanetIconUI();
 	APlanetActor->Line2 = FText::FromString("You Are Here");
 	APlanetActor->Line3 = FText::FromString(" ");
 	
 	return APlanetActor;
+}
+
+
+ADetails* ARouteExample::CreateDetail(FTransform transform, int Index)
+{
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	
+	Index = FMath::Clamp(Index,0,DetailBP.Num() - 1);
+
+	ADetails* Detail = GetWorld()->SpawnActor<ADetails>(DetailBP[Index], transform, SpawnParams);
+	Detail->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
+
+	return Detail;
+
 }
 
 
@@ -625,7 +646,7 @@ void ARouteExample::GenerateImproved(int FirstPlanetID, FVector Offset)
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Silver, FString::Printf(TEXT("Index = %i"), FirstPlanetID));
 	
 	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(),0));
-	player->MovementSpeed = 200; // TODO make a current base speed for player
+	
 	
 	do
 	{
@@ -844,10 +865,12 @@ void ARouteExample::CreatePath(TArray<FVector2D>& Path, TArray<APath*>& PathMesh
 		{
 			FTransform SpawnTransfrom;
 			SpawnTransfrom.SetRotation(Rotation.Quaternion());
-			SpawnTransfrom.SetScale3D(FVector(1, 1, 1));
+			SpawnTransfrom.SetScale3D(FVector(10, 10, 10));
 			SpawnTransfrom.SetLocation(FVector( Path[i].X - Dimensions.X / 2, Path[i].Y - Dimensions.Y / 2, UKismetMathLibrary::Sin(i) * SinWaveAmplitude));
 
-			PathMeshes.Add(CreateBasicCube(SpawnTransfrom * WorldTransform));
+			auto path = CreateBasicCube(SpawnTransfrom * WorldTransform);
+			path->SetActorScale3D(FVector(PlanetScaling/5, PlanetScaling/5, PlanetScaling/5));
+			PathMeshes.Add(path);
 		
 			SplineComponent->AddSplinePoint((SpawnTransfrom * WorldTransform).GetLocation(), ESplineCoordinateSpace::Type::World, true);
 			SpawnTransfrom.AddToTranslation(FVector(0 ,50, 50));
@@ -934,15 +957,20 @@ void ARouteExample::ResetRoute()
 
 void ARouteExample::GenerateDetails()
 {
+	bool Success = false;
 	
 	for(int i = 0; i< DetailsWanted; i++)
 	{
+		int RandomIndex = FMath::RandRange(0,DetailBP.Num() - 1);
+		ADetails* Detail = CreateDetail(FTransform(FVector(0,0,0)),RandomIndex);
+		
 		for(int j = 0; j < DetailRejectionRate; j++)
 		{
-			int RandomPlanetIndex = FMath::RandRange(0,Planets.Num() - 1);
+			
 			FVector Origin;
 			FVector Radius; // Planets are uniformly sized so only need the raidus of 1 dimension
-			Planets[RandomPlanetIndex]->GetActorBounds(true,Origin,Radius);
+			Detail->GetActorBounds(true,Origin,Radius);
+
 
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Silver, FString::Printf(TEXT("Planet Dimensions %s"), *Radius.ToString()));
 
@@ -959,7 +987,7 @@ void ARouteExample::GenerateDetails()
 			FColor Color = FColor::Green;
 
 			//Check weather the new detail is too close to the existing route
-			if(FVector::Distance(ClosestPoint1,RandomPosition) < DetailMinDistance + Radius.X || FVector::Distance(ClosestPoint2,RandomPosition)  < DetailMinDistance + Radius.X || FVector::Distance(ClosestPoint3,RandomPosition)  < DetailMinDistance + Radius.X)
+			if(FVector::Distance(ClosestPoint1,RandomPosition) < DetailMinDistance + Radius.GetMax() || FVector::Distance(ClosestPoint2,RandomPosition)  < DetailMinDistance + Radius.GetMax() || FVector::Distance(ClosestPoint3,RandomPosition)  < DetailMinDistance + Radius.GetMax())
 			{
 				Color = FColor::Red;
 				/*
@@ -979,7 +1007,7 @@ void ARouteExample::GenerateDetails()
 			bool failed = false;
 			for(auto detail : Details)
 			{
-				if(FVector::Distance(RandomPosition,detail->GetActorLocation()) < DetailMinDistance + Radius.X){
+				if(FVector::Distance(RandomPosition,detail->GetActorLocation()) < DetailMinDistance + Radius.GetMax()){
 					failed = true;
 				}
 			}
@@ -987,13 +1015,12 @@ void ARouteExample::GenerateDetails()
 			if(failed)
 				continue;
 			
-			FTransform SpawnTransfrom;
-			SpawnTransfrom.SetRotation(FQuat4d(0, 0, 0, 1.f));
-			SpawnTransfrom.SetScale3D(FVector(PlanetScaling, PlanetScaling, PlanetScaling));
-			SpawnTransfrom.SetLocation(RandomPosition);
+			Detail->SetActorScale3D(FVector(DetailScaling, DetailScaling, DetailScaling));
+			Detail->SetActorLocation(RandomPosition);
 
 			//Details.Add(CreatePlanet(SpawnTransfrom * GetRootComponent()->GetComponentTransform(),RandomPlanetIndex));
-			Details.Add(CreatePlanetMainRoute(SpawnTransfrom * GetRootComponent()->GetComponentTransform()));
+			Details.Add(Detail);
+			Success = true;
 
 			break;
 		}
@@ -1354,6 +1381,12 @@ void ARouteExample::TransitionToMap()
 
 void ARouteExample::SwapToOrbiting()
 {
+
+
+	//TODO change skybox color;
+	ASpaceSkyBox* SpaceSkyBox = Cast<ASpaceSkyBox>(UGameplayStatics::GetActorOfClass(GetWorld(),ASpaceSkyBox::StaticClass()));
+	SpaceSkyBox->OffsetColor();
+	
 	// it would probably look better 
 	// if we made all other planets and the path invisible when we are in a planet
 	// either do this or make the UI more opaque
@@ -1532,10 +1565,12 @@ void ARouteExample::SwapState(PlayerStates State)
 	if(PreviousState == Moving)
 	{
 		AudioManager->ThrusterSoundComponent->Stop();
+		AudioManager->TurboSoundComponent->Stop();
 	}
 	else if (PlayerState == Moving)
 	{
 		AudioManager->ThrusterSoundComponent->Play();
+
 	}
 
 	if (PlayerState == Fighting)
@@ -1549,11 +1584,14 @@ void ARouteExample::SwapState(PlayerStates State)
 
 	if (PlayerState == Moving)
 	{
-		AudioManager->AmbientSoundComponent->Play();
+		if (AudioManager->AmbientSoundComponent->bIsPaused)
+			AudioManager->AmbientSoundComponent->SetPaused(false);
+		else
+			AudioManager->AmbientSoundComponent->Play();
 	}
 	else if(PreviousState == Moving)
 	{
-		AudioManager->AmbientSoundComponent->Stop();
+		AudioManager->AmbientSoundComponent->SetPaused(true);
 	}
 
 	if(PreviousState == Selecting)
@@ -1758,6 +1796,10 @@ void ARouteExample::StartGame()
 	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	player->AudioManager = AudioManager;
 	
+
+	Spline1->SetMaterial(1);
+	Spline2->SetMaterial(1);
+	Spline3->SetMaterial(1);
 }
 
 void ARouteExample::ChangeVisibilityOfRoute(bool toHide)
@@ -1794,15 +1836,25 @@ void ARouteExample::SetQuest()
 	if(!Planets[1])
 		return;
 
-	if(!Planets[1]->Quest)
-		return;
-
 	if(!Planets[2])
 		return;
-		
-	Planets[1]->Quest->TargetName = Planets[2]->Name;
-	// when we have more quests randomize the contents out of a set of templates
 
+	if (!Planets[1]->Quest)
+		return;
+
+	// on the first route 
+	// just store the quest
+	if (!LastQuestPreviousRoute)
+	{
+		LastQuestPreviousRoute = Planets[2]->Quest;
+	}
+	else
+	{
+		Planets[1]->Quest = LastQuestPreviousRoute;
+	}
+
+	Planets[1]->Quest->TargetName = Planets[2]->Name;
+	
 }
 
 void ARouteExample::FightScene(float DeltaTime) {
@@ -1883,11 +1935,15 @@ void ARouteExample::FightScene(float DeltaTime) {
 		GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Player is Dead"));
 		//CombatReset();
 		GameOverDelegate.Broadcast();
+		ResetCameraAfterCombat();
 	}
 	else if (!IsValid(AEnemyActor))
 	{
-		CombatReset();
-		CombatOverTransitionDelegate.Broadcast();
+		//CombatReset();
+		SwapState(Event);
+		AudioManager->VictorySoundComponent->SetWorldLocation(player->GetActorLocation());
+		AudioManager->VictorySoundComponent->Play();
+
 		// player->TopDownCamera->SetActive(true);
 		// UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetViewTargetWithBlend(this, CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
 	}
@@ -1900,11 +1956,6 @@ void ARouteExample::CombatReset() {
 	//MovingTransitionDelegate.Broadcast();
 	//SwapState(PreviousState);
 	ASpaceshipCharacter* CurrentPlayer = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	FightCamera->SetActive(false);
-	if(CurrentPlayer)
-		CurrentPlayer->TopDownCamera->SetActive(true);
-
-	PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(), CameraTransitionSpeed),0,EViewTargetBlendFunction::VTBlend_Linear);
 	AEnemyActor->ResetEnemy();
 ;
 	if(CurrentPlayer)
@@ -1913,4 +1964,21 @@ void ARouteExample::CombatReset() {
 	AEnemyActor = nullptr;
 	GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Combat Reset"));
 	SwapState(Event);
+}
+
+void ARouteExample::CallCombatOverDelegate()
+{
+	CombatReset();
+	CombatOverTransitionDelegate.Broadcast();
+	GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Audio has finished"));
+}
+
+void ARouteExample::ResetCameraAfterCombat()
+{
+	ASpaceshipCharacter* CurrentPlayer = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	FightCamera->SetActive(false);
+	if (CurrentPlayer)
+		CurrentPlayer->TopDownCamera->SetActive(true);
+
+	PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(), CameraTransitionSpeed), 0, EViewTargetBlendFunction::VTBlend_Linear);
 }

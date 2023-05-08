@@ -8,6 +8,7 @@
 #include "SpaceshipCharacter.h"
 #include "Animation/AnimInstanceProxy.h"
 
+
 APlanet::APlanet()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -53,7 +54,25 @@ APlanet::APlanet()
 	Line2 = FText::FromString("You Are Maybe Here");
 	Line3 = FText::FromString("Distance: 100 AU");
 
+}
 
+void APlanet::SetRandomQuest()
+{
+	UObject* object = nullptr;
+	int index = FMath::RandRange(0, QuestTemplates.Num() - 1);
+	if (QuestTemplates.Num() > 0 && QuestTemplates[index])
+		object = QuestTemplates[index]->GetDefaultObject();
+	//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("QUEST - Error casting from template"));
+	if (object)
+		Quest = Cast<UQuest>(object);
+	//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("QUEST - Error casting to object"));
+}
+
+
+void APlanet::OnPlanetDestroyed(AActor* Act)
+{
+	if (VendorActor)
+		VendorActor->Destroy();
 }
 
 // Called when the game starts or when spawned
@@ -63,6 +82,8 @@ void APlanet::BeginPlay()
 	/*SphereCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlanet::OnOverlapBegin);
 	SphereCollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlanet::OnOverlapEnd);*/
 
+	this->OnDestroyed.AddDynamic(this, &APlanet::OnPlanetDestroyed);
+	
 	FTransform SpawnTransform;
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
@@ -71,21 +92,11 @@ void APlanet::BeginPlay()
 	SpawnTransform.SetLocation(GetActorLocation());
 
 	CameraBoom->TargetArmLength = CameraBoom->TargetArmLength * this->GetActorScale().Length();
-	PointLight->SourceRadius = this->GetActorScale().X; // TODO set to use average or the max
+	PointLight->SourceRadius = this->GetActorScale().GetMax(); // TODO set to use average or the max
 
-	
-	VendorActor = GetWorld()->SpawnActor<AVendor>(Vendor, SpawnTransform, SpawnParams);
-	if(VendorActor)
-		VendorActor->CreateRandomInventoryFromAllItems();
 
-	UObject* object = nullptr;
-	if(QuestTemplate)
-		object = QuestTemplate->GetDefaultObject();
-		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("QUEST - Error casting from template"));
-	if(object)
-		Quest = Cast<UQuest>(object);
-		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("QUEST - Error casting to object"));
 
+	/*
 	Line1 = FText::FromString(Name);
 	if(IsFirstPlanet)
 	{
@@ -105,10 +116,11 @@ void APlanet::BeginPlay()
 		}
 
 		Line3 = FText::FromString("Distance: 100 AU");
-	}
+	}*/
 
+	
 
-
+	SetRandomQuest();
 }
 
 // Called every frame
@@ -138,3 +150,23 @@ void APlanet::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 
 }
 */
+
+void APlanet::SetPlanetIconUI()
+{
+	if (IsFirstPlanet)
+	{
+		Icon = AllIcons[0];
+
+	}
+	else
+	{
+		if (IsCheckpoint)
+		{
+			Icon = AllIcons[1];
+		}
+		else
+		{
+			Icon = AllIcons[2];
+		}
+	}
+}

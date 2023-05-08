@@ -37,11 +37,15 @@ void AVendor::Tick(float DeltaTime)
 
 void AVendor::CreateRandomInventoryFromAllItems()
 {
+	InventoryComponent->Items.Empty();
+
 	// first randomize number of items (min 4 max allItems * 0.75)
 	int maxItems = 0;
 	if (AllItemsDatabase)
 	{
 		maxItems = AllItemsDatabase->Data.Num() * 0.75;
+		if (maxItems > 8)
+			maxItems = 8;
 	}
 	else
 	{
@@ -86,7 +90,10 @@ void AVendor::CreateRandomInventoryFromAllItems()
 		while (InventoryComponent->Items.Num() < numberOfItems)
 		{
 			int index = FMath::RandRange(0, AllItems.Num() - 1);
-			InventoryComponent->Items.AddUnique(AllItems[index]);
+			UItem* itemToAdd = AllItems[index];
+
+			if(InventoryComponent->HowManyItemsOftype(itemToAdd->Type) < 2)
+				InventoryComponent->Items.AddUnique(itemToAdd);
 		}
 
 	}

@@ -79,6 +79,7 @@ void AStar::search(int beginID, int endID)
 	}
 	
 	path.Add(trail.position);
+	path.Add(start.position);
 
 }
 

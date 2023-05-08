@@ -15,6 +15,9 @@
 
 #define MAX_LEVEL 50
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLevelUpDelegate);
+
+
 USTRUCT()
 struct FPlayerSaveData
 {
@@ -62,11 +65,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) int BaseATKPower;
 
 	UPROPERTY(EditAnywhere) float DamageTakenPerHit = 50;
+
+
+	UPROPERTY(BlueprintAssignable, Category = "Custom Events", BlueprintCallable)
+	FLevelUpDelegate LevelUpDelegate;
 protected:
 	UPROPERTY(EditAnywhere) int SpeedIncrement;
 	UPROPERTY(EditAnywhere) float ShieldIncrement;
 	UPROPERTY(EditAnywhere) int HullIntegrityIncrement;
 	UPROPERTY(EditAnywhere) int ATKPowerIncrement;
+
+	int MaxSpeed = 0;
 
 public:
 	// Called every frame
@@ -103,7 +112,7 @@ UFUNCTION()
 
 	void SetStatsBasedOnLevel(int level);
 
-	int GetMaxSpeed() { return MAX_LEVEL * SpeedIncrement; };
+	int GetMaxSpeed() { return MaxSpeed; };
 
 	bool DodgeAttack();
 

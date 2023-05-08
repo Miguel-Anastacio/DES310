@@ -6,6 +6,7 @@
 #include "StatsComponent.h"
 #include "GameSave.h"
 #include "GameInstance_CPP.h"
+#include "SpaceshipCharacter.h"
 #include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 
 
@@ -53,12 +54,19 @@ void UStatsComponent::InitAllBaseStats(int hull, int classSpeed, float shields, 
 	BaseATKPower = attackPower;
 	BaseSpeed = classSpeed;
 	BaseShields = shields;
+
+	HullIntegrity = BaseHullIntegrity;
+	Shields = BaseShields;
+	ATKPower = BaseATKPower;
+	Speed = BaseSpeed;
+
+	MaxSpeed = classSpeed * 1.25 + MAX_LEVEL * SpeedIncrement;
 }
 
 void UStatsComponent::UpdateCurrentStats(float newHull, float newShields)
 {
-	CurrentHullIntegrity = HullIntegrity;
-	CurrentShields = Shields;
+	CurrentHullIntegrity = newHull;
+	CurrentShields = newShields;
 }
 
 void UStatsComponent::SetStatsBasedOnLevel(int level)
@@ -128,6 +136,7 @@ void UStatsComponent::XPSystem(int GainedXP)
 		CarryOverXP = XPToNext * -1;
 		GainedXP -= (GainedXP - CarryOverXP);
 		LevelUpStats();
+		LevelUpDelegate.Broadcast();
 		// calculate next level xp
 		XPToNext = CalcNextLevel();
 
@@ -149,6 +158,15 @@ void UStatsComponent::LevelUpStats()
 	BaseShields += ShieldIncrement ;
 	BaseHullIntegrity += HullIntegrityIncrement;
 	BaseATKPower += ATKPowerIncrement;
+
+	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(GetOwner());
+	if (player)
+	{
+		player->ApplyInventoryToStats();
+	}
+
+	CurrentShields = Shields;
+	CurrentHullIntegrity = HullIntegrity;
 }
 
 void UStatsComponent::IncreaseCurrency(int Amount)
