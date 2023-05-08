@@ -218,6 +218,8 @@ void ASpaceshipCharacter::UpdateAcceleration(int multiplier)
 
 void ASpaceshipCharacter::UpdatePlayerSpeed(float DeltaTime)
 {
+	AudioManager->TurboSoundComponent->SetWorldLocation(GetActorLocation());
+
 	switch (EngineStatus)
 	{
 	case ACCELERATING:

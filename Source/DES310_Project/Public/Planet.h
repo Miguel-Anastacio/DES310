@@ -76,6 +76,16 @@ public:
 	UQuest* Quest;
 
 	
+	// UI icons for navigation
+	// 0 - you are here 1 - checkpoint 2 - destination
+	UPROPERTY(EditAnywhere)
+	TArray<UTexture2D*> AllIcons;
+	UPROPERTY(BlueprintReadWrite)
+	UTexture2D* Icon = nullptr;
+
+	UFUNCTION(BlueprintCallable)
+		void SetPlanetIconUI();
+	
 	// keeps track if player is in this planet
 	bool CurrentPlanet = false;
 	// Sets default values for this actor's properties
