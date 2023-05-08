@@ -279,5 +279,11 @@ public:
 
 	UFUNCTION()
 	void CombatReset();
+
+	UFUNCTION()
+	void CallCombatOverDelegate();
+
+	UFUNCTION(BlueprintCallable)
+	void ResetCameraAfterCombat();
 };
 

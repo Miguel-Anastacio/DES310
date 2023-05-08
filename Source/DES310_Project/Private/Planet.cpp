@@ -8,6 +8,7 @@
 #include "SpaceshipCharacter.h"
 #include "Animation/AnimInstanceProxy.h"
 
+
 APlanet::APlanet()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -93,12 +94,9 @@ void APlanet::BeginPlay()
 	CameraBoom->TargetArmLength = CameraBoom->TargetArmLength * this->GetActorScale().Length();
 	PointLight->SourceRadius = this->GetActorScale().GetMax(); // TODO set to use average or the max
 
-	
-	//VendorActor = GetWorld()->SpawnActor<AVendor>(Vendor, SpawnTransform, SpawnParams);
-	if(VendorActor)
-		VendorActor->CreateRandomInventoryFromAllItems();
 
 
+	/*
 	Line1 = FText::FromString(Name);
 	if(IsFirstPlanet)
 	{
@@ -118,8 +116,9 @@ void APlanet::BeginPlay()
 		}
 
 		Line3 = FText::FromString("Distance: 100 AU");
-	}
+	}*/
 
+	
 
 	SetRandomQuest();
 }
@@ -151,3 +150,23 @@ void APlanet::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 
 }
 */
+
+void APlanet::SetPlanetIconUI()
+{
+	if (IsFirstPlanet)
+	{
+		Icon = AllIcons[0];
+
+	}
+	else
+	{
+		if (IsCheckpoint)
+		{
+			Icon = AllIcons[1];
+		}
+		else
+		{
+			Icon = AllIcons[2];
+		}
+	}
+}

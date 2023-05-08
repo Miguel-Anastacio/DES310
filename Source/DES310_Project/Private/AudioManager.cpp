@@ -15,6 +15,7 @@ AAudioManager::AAudioManager()
 	AlarmSoundComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Alarm Audio Component"));
 	ShootSoundComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Shoot Audio Component"));
 	TurboSoundComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Turbo Audio Component"));
+	VictorySoundComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Victory Audio Component"));
 
 }
 
@@ -46,6 +47,9 @@ void AAudioManager::BeginPlay()
 	
 	if (SoundCues[5]) {
 		TurboSoundComponent->SetSound(SoundCues[5]);
+	}
+	if (SoundCues[6]) {
+		VictorySoundComponent->SetSound(SoundCues[6]);
 	}
 }
 
