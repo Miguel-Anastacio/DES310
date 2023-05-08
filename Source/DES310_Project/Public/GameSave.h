@@ -20,6 +20,7 @@ class DES310_PROJECT_API UGameSave : public USaveGame
 	
 public:
 
+	UPROPERTY()
 	FPlayerSaveData SavedPlayerStats;
 
 	

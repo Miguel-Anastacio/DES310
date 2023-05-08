@@ -10,6 +10,8 @@
 
 #include "Kismet/KismetMathLibrary.h"
 #include "SpaceshipCharacter.h"
+
+#include "GameInstance_CPP.h"
 #include "SpaceSkyBox.h"
 #include "StatsComponent.h"
 #include "Components/AudioComponent.h"
@@ -143,9 +145,6 @@ void ARouteExample::Tick(float DeltaTime)
 		//Generate();
 	}
 
-	
-	ASpaceshipCharacter* PlayerOBJ = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-
 	//GetPlanetsOnScreenPosition(0);
 
 	
@@ -156,6 +155,7 @@ void ARouteExample::Tick(float DeltaTime)
 		SwitchCamera();
 	}
 
+	UGameInstance_CPP* GameInstance = Cast<UGameInstance_CPP>(UGameplayStatics::GetGameInstance(GetWorld()));
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple,	FString::Printf(TEXT("State Num: %i"), (int)PlayerState));
 	
 	FString StateName = "";
@@ -188,7 +188,9 @@ void ARouteExample::Tick(float DeltaTime)
 		break;
 	case PlayerStates::Orbiting: OrbitPlanet(RouteData, DeltaTime);
 		StateName = "Orbiting";
-		PlayerOBJ->SaveGame();
+
+		// to do - save route data when route generated
+		GameInstance->SaveGameData();
 		break;
 	case PlayerStates::Selecting: //SelectPath();
 		StateName = "Selecting";
