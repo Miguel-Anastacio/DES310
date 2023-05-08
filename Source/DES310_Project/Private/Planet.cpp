@@ -80,7 +80,7 @@ void APlanet::BeginPlay()
 	SpawnTransform.SetLocation(GetActorLocation());
 
 	CameraBoom->TargetArmLength = CameraBoom->TargetArmLength * this->GetActorScale().Length();
-	PointLight->SourceRadius = this->GetActorScale().X; // TODO set to use average or the max
+	PointLight->SourceRadius = this->GetActorScale().GetMax(); // TODO set to use average or the max
 
 	
 	VendorActor = GetWorld()->SpawnActor<AVendor>(Vendor, SpawnTransform, SpawnParams);

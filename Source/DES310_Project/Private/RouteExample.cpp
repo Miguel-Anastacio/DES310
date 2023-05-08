@@ -333,6 +333,19 @@ APlanet* ARouteExample::CreatePlanet(FTransform transform, int i)
 	return APlanetActor;
 }
 
+ADetails* ARouteExample::CreateDetail(FTransform transform, int Index)
+{
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	
+	Index = FMath::Clamp(Index,0,DetailBP.Num() - 1);
+
+	ADetails* Detail = GetWorld()->SpawnActor<ADetails>(DetailBP[Index], transform, SpawnParams);
+	Detail->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
+
+	return Detail;
+}
+
 
 void ARouteExample::Generate()
 {
@@ -844,10 +857,12 @@ void ARouteExample::CreatePath(TArray<FVector2D>& Path, TArray<APath*>& PathMesh
 		{
 			FTransform SpawnTransfrom;
 			SpawnTransfrom.SetRotation(Rotation.Quaternion());
-			SpawnTransfrom.SetScale3D(FVector(1, 1, 1));
+			SpawnTransfrom.SetScale3D(FVector(10, 10, 10));
 			SpawnTransfrom.SetLocation(FVector( Path[i].X - Dimensions.X / 2, Path[i].Y - Dimensions.Y / 2, UKismetMathLibrary::Sin(i) * SinWaveAmplitude));
 
-			PathMeshes.Add(CreateBasicCube(SpawnTransfrom * WorldTransform));
+			auto path = CreateBasicCube(SpawnTransfrom * WorldTransform);
+			path->SetActorScale3D(FVector(PlanetScaling/5, PlanetScaling/5, PlanetScaling/5));
+			PathMeshes.Add(path);
 		
 			SplineComponent->AddSplinePoint((SpawnTransfrom * WorldTransform).GetLocation(), ESplineCoordinateSpace::Type::World, true);
 			SpawnTransfrom.AddToTranslation(FVector(0 ,50, 50));
@@ -934,15 +949,20 @@ void ARouteExample::ResetRoute()
 
 void ARouteExample::GenerateDetails()
 {
+	bool Success = false;
 	
 	for(int i = 0; i< DetailsWanted; i++)
 	{
+		int RandomIndex = FMath::RandRange(0,DetailBP.Num() - 1);
+		ADetails* Detail = CreateDetail(FTransform(FVector(0,0,0)),RandomIndex);
+		
 		for(int j = 0; j < DetailRejectionRate; j++)
 		{
-			int RandomPlanetIndex = FMath::RandRange(0,Planets.Num() - 1);
+			
 			FVector Origin;
 			FVector Radius; // Planets are uniformly sized so only need the raidus of 1 dimension
-			Planets[RandomPlanetIndex]->GetActorBounds(true,Origin,Radius);
+			Detail->GetActorBounds(true,Origin,Radius);
+
 
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Silver, FString::Printf(TEXT("Planet Dimensions %s"), *Radius.ToString()));
 
@@ -959,7 +979,7 @@ void ARouteExample::GenerateDetails()
 			FColor Color = FColor::Green;
 
 			//Check weather the new detail is too close to the existing route
-			if(FVector::Distance(ClosestPoint1,RandomPosition) < DetailMinDistance + Radius.X || FVector::Distance(ClosestPoint2,RandomPosition)  < DetailMinDistance + Radius.X || FVector::Distance(ClosestPoint3,RandomPosition)  < DetailMinDistance + Radius.X)
+			if(FVector::Distance(ClosestPoint1,RandomPosition) < DetailMinDistance + Radius.GetMax() || FVector::Distance(ClosestPoint2,RandomPosition)  < DetailMinDistance + Radius.GetMax() || FVector::Distance(ClosestPoint3,RandomPosition)  < DetailMinDistance + Radius.GetMax())
 			{
 				Color = FColor::Red;
 				/*
@@ -979,7 +999,7 @@ void ARouteExample::GenerateDetails()
 			bool failed = false;
 			for(auto detail : Details)
 			{
-				if(FVector::Distance(RandomPosition,detail->GetActorLocation()) < DetailMinDistance + Radius.X){
+				if(FVector::Distance(RandomPosition,detail->GetActorLocation()) < DetailMinDistance + Radius.GetMax()){
 					failed = true;
 				}
 			}
@@ -987,14 +1007,13 @@ void ARouteExample::GenerateDetails()
 			if(failed)
 				continue;
 			
-			FTransform SpawnTransfrom;
-			SpawnTransfrom.SetRotation(FQuat4d(0, 0, 0, 1.f));
-			SpawnTransfrom.SetScale3D(FVector(PlanetScaling, PlanetScaling, PlanetScaling));
-			SpawnTransfrom.SetLocation(RandomPosition);
+			Detail->SetActorScale3D(FVector(DetailScaling, DetailScaling, DetailScaling));
+			Detail->SetActorLocation(RandomPosition);
 
 			//Details.Add(CreatePlanet(SpawnTransfrom * GetRootComponent()->GetComponentTransform(),RandomPlanetIndex));
-			Details.Add(CreatePlanetMainRoute(SpawnTransfrom * GetRootComponent()->GetComponentTransform()));
-
+			Details.Add(Detail);
+			Success = true;
+			
 			break;
 		}
 	}

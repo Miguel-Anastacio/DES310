@@ -19,12 +19,8 @@
 #include "PathData.h"
 #include "AudioManager.h"
 #include "Enemy.h"
+#include "Details.h"
 #include "Bullet_CPP.h"
-/*#include "BaseState.h"
-#include "FightingState.h"
-#include "MovingState.h"
-#include "SelectingState.h"
-#include "OrbitingState.h"*/
 #include "RandomEventsComponent.h"
 #include "Sound/SoundCue.h"
 
@@ -86,6 +82,7 @@ public:
 	APath* CreateBasicCube(FTransform transform);
 	APlanet* CreatePlanetMainRoute(FTransform transform);
 	APlanet* CreatePlanet(FTransform transform, int i);
+	ADetails* CreateDetail(FTransform transform, int Index);
 	
 	void SwitchCamera();
 
@@ -157,8 +154,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = Route) float PathHeightOffset = 20;
 	UPROPERTY(EditAnywhere, Category = Route) float SinWaveAmplitude = 50;
 	UPROPERTY(EditAnywhere, Category = Route) float PlanetScaling = 1;
+	UPROPERTY(EditAnywhere, Category = Route) float DetailScaling = 1;
 	
 	UPROPERTY(EditAnywhere, Category = BpActors) TArray<TSubclassOf<class APlanet>> PlanetBP;
+	UPROPERTY(EditAnywhere, Category = BpActors) TArray<TSubclassOf<class ADetails>> DetailBP;
 	UPROPERTY(EditAnywhere, Category = BpActors) TArray<TSubclassOf<class APlanet>> SpaceStationBP;
 	UPROPERTY(EditAnywhere, Category = BpActors) TSubclassOf<class APath> PathBP;
 
@@ -171,8 +170,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = Poisson) int DetailRejectionRate = 10;
 	UPROPERTY(EditAnywhere, Category = Poisson) float DetailMinDistance = 1000;
 
-
-	
 	UPROPERTY(EditAnywhere) float CombatTick = 5;
 	UPROPERTY(EditAnywhere) float CombatChance= 30;
 	float SuperTempTimer = 0;
@@ -206,7 +203,7 @@ public:
 	TArray<FVector2D> Path3;
 
 	TArray<APlanet*> Planets;
-	TArray<APlanet*> Details;
+	TArray<ADetails*> Details;
 
 
 	PlayerStates PlayerState;
