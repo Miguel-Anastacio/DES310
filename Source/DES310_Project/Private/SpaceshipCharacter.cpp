@@ -199,7 +199,7 @@ void ASpaceshipCharacter::UpdateAcceleration(int multiplier)
 	multiplier = FMath::Clamp(multiplier, -1, 1);
 
 	CurrentAcceleration += BaseAcceleration * multiplier;
-	CurrentAcceleration = FMath::Clamp(CurrentAcceleration, 0, MaxAcceleration);
+	CurrentAcceleration = FMath::Clamp(CurrentAcceleration, -100, MaxAcceleration);
 
 	if (CurrentAcceleration > 0)
 	{
@@ -209,10 +209,15 @@ void ASpaceshipCharacter::UpdateAcceleration(int multiplier)
 			AudioManager->TurboSoundComponent->Play();
 		}
 	}
-	else
+	else if( CurrentAcceleration == 0)
 	{
 		AudioManager->TurboSoundComponent->Stop();
 		EngineStatus = CRUISING;
+	}
+	else
+	{
+		AudioManager->TurboSoundComponent->Stop();
+		EngineStatus = SLOWING_DOWN;
 	}
 }
 
@@ -244,6 +249,7 @@ void ASpaceshipCharacter::UpdatePlayerSpeed(float DeltaTime)
 		if (MovementSpeed <= MinMovementSpeed)
 		{
 			EngineStatus = CRUISING;
+			CurrentAcceleration = 0;
 		}
 		break;
 	case CRUISING:
