@@ -197,18 +197,17 @@ void ASpaceshipCharacter::UpdateAcceleration(int multiplier)
 		return;
 
 	multiplier = FMath::Clamp(multiplier, -1, 1);
-	if(multiplier == 1)
-		GEngine->AddOnScreenDebugMessage(10, 15.0f, FColor::Green, TEXT("Success"));
-	else
-		GEngine->AddOnScreenDebugMessage(10, 15.0f, FColor::Red, TEXT("Miss"));
 
 	CurrentAcceleration += BaseAcceleration * multiplier;
 	CurrentAcceleration = FMath::Clamp(CurrentAcceleration, 0, MaxAcceleration);
+
 	if (CurrentAcceleration > 0)
 	{
 		EngineStatus = ACCELERATING;
 		if (!AudioManager->TurboSoundComponent->IsPlaying())
+		{
 			AudioManager->TurboSoundComponent->Play();
+		}
 	}
 	else
 	{
