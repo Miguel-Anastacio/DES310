@@ -369,10 +369,7 @@ void ASpaceshipCharacter::ApplyItemToStats(UItem* item)
 			StatsPlayerComponent->ATKPower = item->Modifiers.DamageBonus * StatsPlayerComponent->BaseATKPower + StatsPlayerComponent->BaseATKPower;
 
 		StatsPlayerComponent->CurrentShields = StatsPlayerComponent->Shields;
-
-		/*
-		if (item->Modifiers.HealthBonus > 0)
-			StatsPlayerComponent->CurrentHullIntegrity = StatsPlayerComponent->CurrentHullIntegrity + StatsPlayerComponent->BaseHullIntegrity * item->Modifiers.HealthBonus;*/
+		StatsPlayerComponent->CurrentHullIntegrity = StatsPlayerComponent->HullIntegrity;
 	}
 }
 
@@ -380,8 +377,7 @@ void ASpaceshipCharacter::UpdatePlayerStats(int xpGained)
 {
 	StatsPlayerComponent->XPSystem(xpGained);
 	ApplyInventoryToStats();
-	StatsPlayerComponent->CurrentShields = StatsPlayerComponent->Shields;
-	//StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
+	StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
 }
 
 // Called every frame
@@ -572,7 +568,6 @@ void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 		BulletOBJ->Destroy();
 		float overflowDamage;
 
-
 		if (!StatsPlayerComponent->DodgeAttack())
 		{
 			// take damage
@@ -588,12 +583,17 @@ void ASpaceshipCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 			}
 			else
 			{
+				if (!AudioManager->AlarmSoundComponent->IsPlaying())
+				{
+					AudioManager->AlarmSoundComponent->SetWorldLocation(GetActorLocation());
+					AudioManager->AlarmSoundComponent->Play();
+				}
+
 				StatsPlayerComponent->CurrentHullIntegrity -= StatsPlayerComponent->DamageTakenPerHit;
 				if (StatsPlayerComponent->CurrentHullIntegrity <= 0)
 				{
 					StatsPlayerComponent->CurrentHullIntegrity = 0;
-					Alive = false;
-					
+					Alive = false;	
 				}
 			}
 
