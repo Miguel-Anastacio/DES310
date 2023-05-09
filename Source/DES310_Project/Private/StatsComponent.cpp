@@ -59,8 +59,8 @@ void UStatsComponent::InitAllBaseStats(int hull, int classSpeed, float shields, 
 	ATKPower = BaseATKPower;
 	Speed = BaseSpeed;
 
-	// chnaged this to make speed more attractive
-	// the 70 should be the value of the class available with the higher speed
+	// changed this to make speed more attractive
+	// the 75 should be the value of the class available with the higher speed
 	MaxSpeed = MAX_LEVEL * SpeedIncrement + 75 * 1.2;
 }
 
