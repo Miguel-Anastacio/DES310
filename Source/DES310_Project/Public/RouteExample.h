@@ -75,6 +75,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	void Generate();
 	void GenerateImproved(int FirstPlanetID, FVector Offset);
+	void GenerateLoad(TArray<FVector> PlanetPositions, TArray<int> PlanetIDs);
 	void CreatePath(TArray<FVector2D>& Path, TArray<APath*>& PathMeshes,USplineComponent* SplineComponent,float PathPercentage);
 	void ResetRoute();
 	void GenerateDetails();
