@@ -223,6 +223,8 @@ void ASpaceshipCharacter::UpdateAcceleration(int multiplier)
 
 void ASpaceshipCharacter::UpdatePlayerSpeed(float DeltaTime)
 {
+	CurrentFov = FMath::Clamp(90 + ((MovementSpeed - MinMovementSpeed) / MaxMovementSpeed) * 70, 90, 140);
+	TopDownCamera->SetFieldOfView(FMath::Lerp(TopDownCamera->FieldOfView, CurrentFov, DeltaTime));
 	AudioManager->TurboSoundComponent->SetWorldLocation(GetActorLocation());
 
 	switch (EngineStatus)
@@ -384,9 +386,6 @@ void ASpaceshipCharacter::UpdatePlayerStats(int xpGained)
 void ASpaceshipCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	CurrentFov = FMath::Clamp(90 + ((MovementSpeed - MinMovementSpeed) / MaxMovementSpeed) * 70, 90 , 140);
-	TopDownCamera->SetFieldOfView(FMath::Lerp(TopDownCamera->FieldOfView, CurrentFov, DeltaTime));
 	
 
 	/*
