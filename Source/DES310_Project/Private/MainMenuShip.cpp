@@ -13,29 +13,49 @@ AMainMenuShip::AMainMenuShip()
 	root->Mobility = EComponentMobility::Type::Movable;
 	this->SetRootComponent(root);
 
-	Mesh1 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Fighter"));
-	Mesh1->SetupAttachment(RootComponent);
+	Scarab = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Scarab"));
+	Scarab->SetupAttachment(RootComponent);
 
-	Mesh2 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Heavy"));
-	Mesh2->SetupAttachment(RootComponent);
+	Pyramid = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Pyramid"));
+	Pyramid->SetupAttachment(RootComponent);
+
+	Longship = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Longship"));
+	Longship->SetupAttachment(RootComponent);
+
+	Fighter = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Fighter"));
+	Fighter->SetupAttachment(RootComponent);
 }
+
 
 // Called when the game starts or when spawned
 void AMainMenuShip::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (FMath::RandBool())
-	{
-		Mesh1->SetVisibility(false);
-		Mesh2->SetVisibility(true);
-	}
-	else
-	{
-		Mesh1->SetVisibility(true);
-		Mesh2->SetVisibility(false);
-	}
+	Scarab->SetVisibility(false);
+	Pyramid->SetVisibility(false);
+	Longship->SetVisibility(false);
+	Fighter->SetVisibility(false);
 	
+	switch (FMath::RandRange(0,4))  {
+	case 0:
+		CurrentShip = Scarab;
+		break;
+	case 1:
+		CurrentShip = Pyramid;
+		break;
+	case 2:
+		CurrentShip = Longship;
+		break;
+	case 3:
+		CurrentShip = Fighter;
+		break;
+	default:
+		CurrentShip = Scarab;
+		break;
+	}
+
+	CurrentShip->SetVisibility(true);
 	StartingLocation = GetActorLocation();
 
 }

@@ -5,6 +5,7 @@
 
 #include "StatsComponent.h"
 #include "GameSave.h"
+#include "GameInstance_CPP.h"
 #include "SpaceshipCharacter.h"
 #include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 
@@ -98,7 +99,8 @@ void UStatsComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	
+
+	AttemptLoad();
 	// ...
 	
 }
@@ -209,12 +211,12 @@ bool UStatsComponent::AttemptLoad()
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,	TEXT("SAVE NOT FOUND"));
 		return false;
 	}
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green,	TEXT("SAVE FOUND"));
-	UGameSave* GS;
-	GS = Cast<UGameSave>(UGameplayStatics::CreateSaveGameObject(UGameSave::StaticClass()));
-	GS = Cast<UGameSave>(UGameplayStatics::LoadGameFromSlot("Game_Save", 0));
 	
-	FMemoryReader MemReader(GS->SavedPlayerStats.ByteData);
+	UGameSave* GameSave = (Cast<UGameInstance_CPP>(UGameplayStatics::GetGameInstance(GetWorld())))->GetGameData();
+
+	FMemoryReader MemReader(GameSave->SavedPlayerStats.ByteData);
+	GetOwner()->SetActorLocation(GameSave->SavedPlayerStats.playerPos);
+	
 	FObjectAndNameAsStringProxyArchive Ar(MemReader, true);
 
 	Ar.ArIsSaveGame = true;
