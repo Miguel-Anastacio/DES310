@@ -2080,6 +2080,7 @@ void ARouteExample::FightScene(float DeltaTime) {
 	{
 		//CombatReset();
 		SwapState(Event);
+		AEnemyActor->ResetEnemy();
 		AudioManager->VictorySoundComponent->SetWorldLocation(player->GetActorLocation());
 		AudioManager->VictorySoundComponent->Play();
 
@@ -2095,7 +2096,6 @@ void ARouteExample::CombatReset() {
 	//MovingTransitionDelegate.Broadcast();
 	//SwapState(PreviousState);
 	ASpaceshipCharacter* CurrentPlayer = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	AEnemyActor->ResetEnemy();
 ;
 	if(CurrentPlayer)
 		CurrentPlayer->ResetCombat();
