@@ -157,6 +157,7 @@ void ARouteExample::Tick(float DeltaTime)
 
 	UGameInstance_CPP* GameInstance = Cast<UGameInstance_CPP>(UGameplayStatics::GetGameInstance(GetWorld()));
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple,	FString::Printf(TEXT("State Num: %i"), (int)PlayerState));
+	ASpaceshipCharacter* PlayerOBJ = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	
 	FString StateName = "";
 	switch (PlayerState)

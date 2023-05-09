@@ -25,9 +25,11 @@ public:
 
 	float timer = 0;
 
-
-	UPROPERTY(EditAnywhere) UStaticMeshComponent* Mesh1;
-	UPROPERTY(EditAnywhere) UStaticMeshComponent* Mesh2;
+	UPROPERTY(VisibleAnywhere) UStaticMeshComponent* Scarab;
+	UPROPERTY(VisibleAnywhere) UStaticMeshComponent* Pyramid;
+	UPROPERTY(VisibleAnywhere) UStaticMeshComponent* Longship;
+	UPROPERTY(VisibleAnywhere) UStaticMeshComponent* Fighter;
+	UPROPERTY() UStaticMeshComponent* CurrentShip;
 
 	UPROPERTY(EditAnywhere) FVector AxisSpeed = FVector(1,1,1);
 	UPROPERTY(EditAnywhere) FVector AxisRadius = FVector(1,1,1);
