@@ -27,6 +27,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere) UStaticMeshComponent* Scarab;
 	UPROPERTY(VisibleAnywhere) UStaticMeshComponent* Pyramid;
+	UPROPERTY(VisibleAnywhere) UStaticMeshComponent* PyramidRing;
 	UPROPERTY(VisibleAnywhere) UStaticMeshComponent* Longship;
 	UPROPERTY(VisibleAnywhere) UStaticMeshComponent* Fighter;
 	UPROPERTY() UStaticMeshComponent* CurrentShip;

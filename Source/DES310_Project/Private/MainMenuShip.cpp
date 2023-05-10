@@ -19,6 +19,9 @@ AMainMenuShip::AMainMenuShip()
 	Pyramid = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Pyramid"));
 	Pyramid->SetupAttachment(RootComponent);
 
+	PyramidRing = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Pyramid Ring"));
+	PyramidRing->SetupAttachment(Pyramid);
+
 	Longship = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Longship"));
 	Longship->SetupAttachment(RootComponent);
 
@@ -34,6 +37,7 @@ void AMainMenuShip::BeginPlay()
 
 	Scarab->SetVisibility(false);
 	Pyramid->SetVisibility(false);
+	PyramidRing->SetVisibility(false);
 	Longship->SetVisibility(false);
 	Fighter->SetVisibility(false);
 	
@@ -43,6 +47,7 @@ void AMainMenuShip::BeginPlay()
 		break;
 	case 1:
 		CurrentShip = Pyramid;
+		PyramidRing->SetVisibility(true);
 		break;
 	case 2:
 		CurrentShip = Longship;
