@@ -75,6 +75,7 @@ void UStatsComponent::SetStatsBasedOnLevel(int level)
 {
 	// this is used only the enemy
 	// he doesn't have items
+	CurrentReputation = level;
 	Shields = level * ShieldIncrement;
 	HullIntegrity = level * HullIntegrityIncrement;
 	Speed = level * SpeedIncrement;
