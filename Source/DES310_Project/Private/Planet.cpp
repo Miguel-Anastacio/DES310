@@ -56,6 +56,11 @@ APlanet::APlanet()
 
 }
 
+void APlanet::FloatingMovement()
+{
+	SetActorLocation(StartingLocation + FVector(cos(timer * AxisSpeed.X + 53.1) * AxisRadius.X, cos(timer * AxisSpeed.Y + 3.1) * AxisRadius.Y, sin(timer * AxisSpeed.Z + 543.1) * AxisRadius.Z));
+}
+
 void APlanet::SetRandomQuest()
 {
 	UObject* object = nullptr;
@@ -94,7 +99,7 @@ void APlanet::BeginPlay()
 	CameraBoom->TargetArmLength = CameraBoom->TargetArmLength * this->GetActorScale().Length();
 	PointLight->SourceRadius = this->GetActorScale().GetMax(); // TODO set to use average or the max
 
-
+	StartingLocation = GetActorLocation();
 
 	/*
 	Line1 = FText::FromString(Name);
