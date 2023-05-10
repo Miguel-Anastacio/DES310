@@ -18,7 +18,7 @@ class DES310_PROJECT_API UGameInstance_CPP : public UGameInstance
 
 	FString SaveSlot = "Game_Save";
 
-	class UGameSave* GameSave;
+	UPROPERTY() class UGameSave* GameSave;
 
 public:
 	void SaveGameData();

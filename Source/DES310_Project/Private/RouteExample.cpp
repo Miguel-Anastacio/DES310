@@ -755,12 +755,12 @@ void ARouteExample::GenerateImproved(int FirstPlanetID, FVector Offset)
 	
 	/////////////////////////////////////////////
 	
+		
 	if(FirstPlanetID < 0)
 	{
 		FirstPlanetID = FMath::RandRange(1,PlanetBP.Num());
 	}
 	
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Silver, FString::Printf(TEXT("Index = %i"), FirstPlanetID));
 	
 	FTransform SpawnTransfrom;
 	if (Planets.Num() < 3)
@@ -1111,9 +1111,6 @@ void ARouteExample::GenerateDetails()
 			Detail->GetActorBounds(true,Origin,Radius);
 
 
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Silver, FString::Printf(TEXT("Planet Dimensions %s"), *Radius.ToString()));
-
-	
 			//DrawDebugBox(GetWorld(), FVector((Planets[0]->GetActorLocation().X - Planets[1]->GetActorLocation().X) * 0.25,0,0), FVector((Planets[0]->GetActorLocation().X - Planets[1]->GetActorLocation().X) * 0.75,(Planets[2]->GetActorLocation().Y - Planets[1]->GetActorLocation().Y) / 2,0), FColor::Purple, true, -1, 0, 10);
 
 			FVector RandomPosition = UKismetMathLibrary::RandomPointInBoundingBox(FVector((Planets[0]->GetActorLocation().X - Planets[1]->GetActorLocation().X) * 0.25,0,0),FVector((Planets[0]->GetActorLocation().X - Planets[1]->GetActorLocation().X) * 0.75,(Planets[2]->GetActorLocation().Y - Planets[1]->GetActorLocation().Y) / 2,0));
@@ -1165,7 +1162,6 @@ void ARouteExample::GenerateDetails()
 		}
 	}
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Silver, FString::Printf(TEXT("%i Details"), Details.Num()));
 
 }
 
@@ -1520,8 +1516,7 @@ void ARouteExample::TransitionToMap()
 
 void ARouteExample::SwapToOrbiting()
 {
-
-
+	
 	//TODO change skybox color;
 	ASpaceSkyBox* SpaceSkyBox = Cast<ASpaceSkyBox>(UGameplayStatics::GetActorOfClass(GetWorld(),ASpaceSkyBox::StaticClass()));
 	SpaceSkyBox->OffsetColor();
@@ -1545,22 +1540,15 @@ void ARouteExample::SwapToOrbiting()
 
 	if(RouteData->AtFirstPlanet)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Turquoise, FString::Printf(TEXT("huh: %i"), RouteData->Index ));
 		RouteData->AtFirstPlanet = false;
 	}
 	else
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Turquoise, FString::Printf(TEXT("AAAAAAAAAAAAAA: %i"), RouteData->Index ));
-
 		RouteData->Index++;
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Turquoise, FString::Printf(TEXT("BBBBBBBBBB: %i"), RouteData->Index ));
-
 	}
 	
 	SwapState(Orbiting);
-
-
-
+	
 }
 
 //Use this when orbiting the first planet as to not mess up the routes
@@ -1791,19 +1779,34 @@ void ARouteExample::LeaveOrbit()
 	{
 		for (auto it : CubePath2)
 		{
-			it->SetActorHiddenInGame(true);
+			it->SetActorHiddenInGame(false);
 		}
 
 		for (auto it : CubePath3)
 		{
 			it->SetActorHiddenInGame(false);
 		}
-		
-	}else if(RouteData->ID == 1)
-	{
+
 		for (auto it : CubePath1)
 		{
 			it->SetActorHiddenInGame(true);
+		}
+		
+	}else if(RouteData->ID == 1)
+	{
+		for (auto it : CubePath2)
+		{
+			it->SetActorHiddenInGame(true);
+		}
+
+		for (auto it : CubePath3)
+		{
+			it->SetActorHiddenInGame(true);
+		}
+
+		for (auto it : CubePath1)
+		{
+			it->SetActorHiddenInGame(false);
 		}
 	}
 	
@@ -1820,8 +1823,8 @@ void ARouteExample::LeaveOrbit()
 
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Last Planet")));
 		//UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetViewTargetWithBlend(this, CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: %i"), RouteData->Max));
-		GenerateImproved(Planets[1]->Index,FVector(0,0,0));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBB: %i"), RouteData->Max));
+		GenerateImproved(Planets[2]->Index,FVector(0,0,0));
 
 		SelectTransitionDelegate.Broadcast();
 	}
