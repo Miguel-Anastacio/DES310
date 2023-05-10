@@ -22,6 +22,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Database)
 	UItemData* ItemDatabase;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Database)
+	UItemData* AllPossibleItemsDatabase;
 	// store the data asset as an array of items
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TArray<UItem*> Items;
@@ -47,6 +49,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool RemoveItem(FString name);
 
+	UFUNCTION(BlueprintCallable)
+	void LoadItems(TArray<int> ItemsID);
 
 	int HowManyItemsOftype(PartType type);
 
