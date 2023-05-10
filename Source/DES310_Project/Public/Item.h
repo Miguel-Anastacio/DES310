@@ -42,7 +42,7 @@ class DES310_PROJECT_API UItem : public UObject
 
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Item)
-	FName ID;
+	int ID;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Item)
 	FString Name;

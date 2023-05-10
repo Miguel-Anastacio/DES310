@@ -80,6 +80,22 @@ bool UInventoryComponent::RemoveItem(FString name)
 	return false;
 }
 
+void UInventoryComponent::LoadItems(TArray<int> ItemsID)
+{
+	TArray<UItem*> AllItems;
+	ConvertDataAsset(AllPossibleItemsDatabase, AllItems);
+
+	for (auto id : ItemsID)
+	{
+		for (auto item : AllItems)
+		{
+			if (id == item->ID)
+				Items.AddUnique(item);
+		}
+	}
+	AssignSlots();
+}
+
 int UInventoryComponent::HowManyItemsOftype(PartType type)
 {
 	int amount = 0;
