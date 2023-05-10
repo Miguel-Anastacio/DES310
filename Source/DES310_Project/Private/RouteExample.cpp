@@ -838,6 +838,12 @@ void ARouteExample::GenerateImproved(int FirstPlanetID, FVector Offset)
 		mesh->SetVisibility(false);
 	}
 
+	// remove the higlighting
+	Spline1->SetMaterial(1);
+	Spline2->SetMaterial(1);
+	Spline3->SetMaterial(1);
+
+
 }
 
 void ARouteExample::GenerateLoad(TArray<FVector> PlanetPositions, TArray<int> PlanetIDs)
