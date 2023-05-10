@@ -1284,6 +1284,9 @@ bool ARouteExample::MoveAlongPath(UPathData* PathData , float DeltaTime)
 			// reset events when we reach a planet
 			EventsComponent->ResetEvents();
 			OrbitTransitionDelegate.Broadcast();
+
+			ASpaceSkyBox* SpaceSkyBox = Cast<ASpaceSkyBox>(UGameplayStatics::GetActorOfClass(GetWorld(), ASpaceSkyBox::StaticClass()));
+			SpaceSkyBox->OffsetColor();
 		}
 		
 	}
@@ -1524,8 +1527,6 @@ void ARouteExample::SwapToOrbiting()
 {
 	
 	//TODO change skybox color;
-	ASpaceSkyBox* SpaceSkyBox = Cast<ASpaceSkyBox>(UGameplayStatics::GetActorOfClass(GetWorld(),ASpaceSkyBox::StaticClass()));
-	SpaceSkyBox->OffsetColor();
 	
 	// it would probably look better 
 	// if we made all other planets and the path invisible when we are in a planet
