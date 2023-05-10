@@ -75,12 +75,6 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	UQuest* Quest;
 
-	// variables to do floating movement in the asteroids
-	float timer = 0;
-	UPROPERTY(EditAnywhere) FVector AxisSpeed = FVector(1, 1, 1);
-	UPROPERTY(EditAnywhere) FVector AxisRadius = FVector(1, 1, 1);
-
-	FVector StartingLocation;
 
 	
 	// UI icons for navigation
@@ -106,8 +100,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	UQuest* GetQuest() { return Quest; };
 
-	UFUNCTION(BlueprintCallable)
-		void FloatingMovement();
 
 	void SetRandomQuest();
 	int Index = -1;

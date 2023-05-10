@@ -32,6 +32,7 @@ public:
 	UPROPERTY(VisibleAnywhere) UAudioComponent* ShootSoundComponent;
 	UPROPERTY(VisibleAnywhere) UAudioComponent* TurboSoundComponent;
 	UPROPERTY(VisibleAnywhere) UAudioComponent* VictorySoundComponent;
+	UPROPERTY(VisibleAnywhere) UAudioComponent* DefeatSoundComponent;
 
 	UPROPERTY(EditAnywhere, Category = Sound)  TArray <class USoundCue*> SoundCues;
 

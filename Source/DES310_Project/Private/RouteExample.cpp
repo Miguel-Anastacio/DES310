@@ -1159,6 +1159,7 @@ void ARouteExample::GenerateDetails()
 			
 			Detail->SetActorScale3D(FVector(DetailScaling, DetailScaling, DetailScaling));
 			Detail->SetActorLocation(RandomPosition);
+			Detail->StartingLocation = RandomPosition;
 
 			//Details.Add(CreatePlanet(SpawnTransfrom * GetRootComponent()->GetComponentTransform(),RandomPlanetIndex));
 			Details.Add(Detail);
@@ -1287,6 +1288,14 @@ bool ARouteExample::MoveAlongPath(UPathData* PathData , float DeltaTime)
 
 			ASpaceSkyBox* SpaceSkyBox = Cast<ASpaceSkyBox>(UGameplayStatics::GetActorOfClass(GetWorld(), ASpaceSkyBox::StaticClass()));
 			SpaceSkyBox->OffsetColor();
+
+
+			// probably better if I put a function
+			// to swap states like the route but...
+			// reset the minigame when you reach a planet
+			player->EngineStatus = CRUISING;
+			player->MovementSpeed = PlayerMovementSpeed;
+			player->CurrentAcceleration = player->BaseAcceleration;
 		}
 		
 	}
@@ -2083,6 +2092,8 @@ void ARouteExample::FightScene(float DeltaTime) {
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Player is Dead"));
 		//CombatReset();
+		AudioManager->DefeatSoundComponent->SetWorldLocation(player->GetActorLocation());
+		AudioManager->DefeatSoundComponent->Play();
 		GameOverDelegate.Broadcast();
 		ResetCameraAfterCombat();
 	}
