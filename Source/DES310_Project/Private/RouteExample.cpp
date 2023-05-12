@@ -350,7 +350,8 @@ ADetails* ARouteExample::CreateDetail(FTransform transform, int Index)
 
 	ADetails* Detail = GetWorld()->SpawnActor<ADetails>(DetailBP[Index], transform, SpawnParams);
 	Detail->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
-
+	Detail->Index = Index;
+	
 	return Detail;
 
 }

@@ -34,4 +34,6 @@ public:
 	UPROPERTY(EditAnywhere) FVector AxisSpeed = FVector(1, 1, 1);
 	UPROPERTY(EditAnywhere) FVector AxisRadius = FVector(1, 1, 1);
 	FVector StartingLocation;
+
+	int Index = -1;
 };
