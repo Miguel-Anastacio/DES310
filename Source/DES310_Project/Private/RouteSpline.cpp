@@ -50,7 +50,7 @@ void ARouteSpline::SetMaterial(int MaterialIndex)
 	}
 }
 
-void ARouteSpline::CreateSpline()
+void ARouteSpline::CreateSpline(float Scale = 1)
 {
 	for(int i = 0; i < Spline->GetNumberOfSplinePoints(); i ++)
 	{
@@ -64,6 +64,8 @@ void ARouteSpline::CreateSpline()
 			Mesh->SetStaticMesh(SplineMesh);
 			Mesh->SetMaterial(0,Materials[counter]);
 			Mesh->SetForwardAxis(ESplineMeshAxis::Z);
+			Mesh->SetStartScale(FVector2D(Scale,Scale));
+			Mesh->SetEndScale(FVector2D(Scale,Scale));
 			Mesh->SetStartAndEnd(Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::Local),Spline->GetTangentAtSplinePoint(i, ESplineCoordinateSpace::Local),Spline->GetLocationAtSplinePoint(i + 1, ESplineCoordinateSpace::Local),Spline->GetTangentAtSplinePoint(i + 1, ESplineCoordinateSpace::Local));
 			Mesh->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
 			Meshes.Add(Mesh);

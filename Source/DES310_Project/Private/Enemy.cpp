@@ -93,22 +93,22 @@ void AEnemy::Attack()
 			UpVector = Rotation.RotateVector(UpVector);
 			ForwardVector = Rotation.RotateVector(ForwardVector);
 
-			FVector NorthVector = ForwardVector.RotateAngleAxis(BulletAngleRange,UpVector);
-			FVector SouthVector = ForwardVector.RotateAngleAxis(-BulletAngleRange,UpVector);
+			//FVector NorthVector = ForwardVector.RotateAngleAxis(BulletAngleRange,UpVector);
+			//FVector SouthVector = ForwardVector.RotateAngleAxis(-BulletAngleRange,UpVector);
 			FVector WestVector = ForwardVector.RotateAngleAxis(BulletAngleRange,RightVector);
 			FVector EastVector = ForwardVector.RotateAngleAxis(-BulletAngleRange,RightVector);
 
-			/*DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + NorthVector * 1000, FColor::Emerald, false, 20, 0, 10);
-			DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + SouthVector * 1000, FColor::Emerald, false, 20, 0, 10);
+			//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + NorthVector * 1000, FColor::Emerald, false, 20, 0, 10);
+			//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + SouthVector * 1000, FColor::Emerald, false, 20, 0, 10);
 			DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + WestVector * 1000, FColor::Emerald, false, 20, 0, 10);
-			DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + EastVector * 1000, FColor::Emerald, false, 20, 0, 10);*/
+			DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + EastVector * 1000, FColor::Emerald, false, 20, 0, 10);
 			
 			float XPercent = FMath::RandRange(0.f,1.f);
 			float YPercent = FMath::RandRange(0.f,1.f);
 		
 			FVector HorizontalVector = FMath::Lerp(EastVector,WestVector,XPercent);
-			FVector VerticalVector = FMath::Lerp(NorthVector,SouthVector,YPercent);
-			FVector Direction = FMath::Lerp(HorizontalVector,VerticalVector,0.5);
+			//FVector VerticalVector = FMath::Lerp(NorthVector,SouthVector,YPercent);
+			//FVector Direction = FMath::Lerp(HorizontalVector,VerticalVector,0.5);
 			//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + Direction * 1000, FColor::Red, false, 20, 0, 10);
 			ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 			
@@ -118,7 +118,7 @@ void AEnemy::Attack()
 			ABulletActor->ProjectileMovement->HomingTargetComponent = player->GetRootComponent();
 			ABulletActor->ProjectileMovement->HomingAccelerationMagnitude = BulletSpeed * HomingStrength;
 			ABulletActor->ProjectileMovement->bIsHomingProjectile = true;
-			ABulletActor->ProjectileMovement->Velocity = Direction * BulletSpeed;
+			ABulletActor->ProjectileMovement->Velocity = HorizontalVector * BulletSpeed;
 
 			
 			BulletsFired.Add(ABulletActor);

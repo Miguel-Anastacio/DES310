@@ -35,6 +35,8 @@ void ADetails::BeginPlay()
 	AxisSpeed.X = FMath::RandRange(0.5f, 1.5f);
 	AxisSpeed.Y = FMath::RandRange(0.5f, 1.5f);
 	AxisSpeed.Z = FMath::RandRange(0.5f, 1.5f);
+
+	AxisRadius *= GetActorScale3D();
 }
 
 // Called every frame

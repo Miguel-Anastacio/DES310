@@ -85,7 +85,6 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = Camera)UCameraComponent* TopDownCamera;
 	UPROPERTY(EditAnywhere, Category = Camera)USpringArmComponent* CameraBoom;
 	UPROPERTY(VisibleAnywhere, Category = "Trigger Box")UBoxComponent* TriggerBox; // for some reason the default capsule component does not work
-	UPROPERTY(EditAnywhere, Category = "Player Mesh")UStaticMeshComponent* PlayerMesh;
 	UPROPERTY(EditAnywhere, Category = "Deflection Device") UStaticMeshComponent* DeflectionMesh;
 	UPROPERTY(VisibleAnywhere, Category = "Trigger Box") UBoxComponent* DeflectionTriggerBox;
 

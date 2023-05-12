@@ -38,7 +38,7 @@ public:
 	
 	FVector off = FVector(0.15,100,100);
 	FVector Total;
-	void CreateSpline();
+	void CreateSpline(float Scale);
 
 };
 

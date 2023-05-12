@@ -73,12 +73,9 @@ protected:
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	void Generate();
-	void GenerateImproved(int FirstPlanetID, FVector Offset);
-	void GenerateLoad(TArray<FVector> PlanetPositions, TArray<int> PlanetIDs);
+
 	void CreatePath(TArray<FVector2D>& Path, TArray<APath*>& PathMeshes,USplineComponent* SplineComponent,float PathPercentage);
-	void ResetRoute();
-	void GenerateDetails();
+
 	void ClearRouteData();
 	APath* CreateBasicCube(FTransform transform);
 	APlanet* CreatePlanetMainRoute(FTransform transform);
@@ -95,6 +92,14 @@ public:
 	MovingState* MovingState;*/
 
 
+	//---Procedural Route---
+	void Generate(); //Original Functions which isn't used, but can be used as reference
+	void GenerateImproved(int FirstPlanetID, FVector Offset); //Using Poisson,Delaunay and A* We generate a procedural route with various parameters 
+	void GenerateLoad(TArray<FVector> PlanetPositions, TArray<int> PlanetIDs); //Generates a route but using Pre-selected Planets, in order to generate a similar route from the loaded game
+	void ResetRoute(); // Reset Everything to do with the Route Data and meshes
+	void GenerateDetails(); // After Generating the Route, we run the Detail Generator which places astroids without colliding with the route
+
+	
 	UPROPERTY(EditAnywhere, Category = Poisson) float BuoysPercent = 50;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
@@ -102,7 +107,7 @@ public:
 
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite) AAudioManager* AudioManager;
-	UPROPERTY(EditAnywhere,BlueprintReadWrite) FRotator TempAngler = FRotator(0,-30,0);
+	UPROPERTY(EditAnywhere,BlueprintReadWrite) FRotator CameraAngle = FRotator(0,-30,0);
 	
 	//States for now will be do with just if statements but could possibly be deligated to their own classes
 	bool MoveAlongPath(UPathData* PathData, float DeltaTime);
@@ -124,9 +129,6 @@ public:
 	UPROPERTY(BlueprintReadWrite) bool Temp;
 	UPROPERTY(BlueprintReadWrite) bool Temp2;
 	
-	/*UPROPERTY() USplineComponent* SplineComponent1;
-	UPROPERTY() USplineComponent* SplineComponent2;
-	UPROPERTY() USplineComponent* SplineComponent3;*/
 
 	UPROPERTY(EditAnywhere, Category = BpActors) TSubclassOf<class ARouteSpline> SplineBP;
 	UPROPERTY(VisibleAnywhere) ARouteSpline* Spline1;
@@ -174,16 +176,14 @@ public:
 
 	UPROPERTY(EditAnywhere) float CombatTick = 5;
 	UPROPERTY(EditAnywhere) float CombatChance= 30;
-	float SuperTempTimer = 0;
+
 
 	UPROPERTY(VisibleAnywhere) UPathData* RouteData;
 	UPROPERTY(VisibleAnywhere) UPathData* Route1Data;
 	UPROPERTY(VisibleAnywhere) UPathData* Route2Data;
 
 
-	UPROPERTY(EditAnywhere) float RouteTickRate = 200000000;
-	UPROPERTY(EditAnywhere) float CameraRate = 2;
-	UPROPERTY(EditAnywhere) float SpinRate = 2;
+
 
 	UPROPERTY(EditAnywhere, Category = Fight) FVector ppVec = FVector(0,150,0);
 	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = Fight) FVector TempEnemyPosition = FVector(300, 600, 500);
@@ -191,54 +191,65 @@ public:
 
 	bool IsRouteGood();
 	
-	TArray<TArray<APath*>> Hello;
 
-	TArray<APath*> CubePath1;
+	UPROPERTY() TArray<APath*> StartToEndPath;
 	TArray<FVector2D> Path1;
-
-
-	TArray<APath*> CubePath2;
+	
+	UPROPERTY() TArray<APath*> StartToStationPath;
 	TArray<FVector2D> Path2;
-
-
-	TArray<APath*> CubePath3;
+	
+	UPROPERTY() TArray<APath*> StationToEndPath;
 	TArray<FVector2D> Path3;
 
-	TArray<APlanet*> Planets;
-	TArray<ADetails*> Details;
+	UPROPERTY() TArray<APlanet*> Planets;
+	UPROPERTY() TArray<ADetails*> Details;
 
 	// store the quest of the last planet of the previous route to set it as the quest of the first planet 
 	// of the next route
 	UQuest* LastQuestPreviousRoute = nullptr;
 
-	PlayerStates PlayerState;
-	PlayerStates PreviousState;
 
-	UFUNCTION(BlueprintCallable)PlayerStates GetPlayerState() { return PlayerState; };
-	UFUNCTION(BlueprintCallable)void SetPlayerState(PlayerStates State) { PlayerState = State; };
-	
+	//---Timers---
 	float timer = 0;
 	float cameraTimer = 0;
 	float splineTimer = 0;
-	float angle = 0;
-	float randomSpinRate = 1;
+
+	float CombatTimer = 0;
+	UPROPERTY(EditAnywhere) float RouteTickRate = 200000000;
+	UPROPERTY(EditAnywhere) float CameraRate = 2;
+	UPROPERTY(EditAnywhere) float SpinRate = 2;
+
 
 	// minimum time that nothing can happen after something happens during navigation
 	UPROPERTY(EditAnywhere)
 	float NavIncidentsCooldown = 3.0f;
 	float NavIncidentsTimer = 0.0f;
 
-	UStaticMesh* CubeMesh;
-	UStaticMesh* SphereMesh;
-	UFUNCTION(BlueprintCallable)
-	void SwapState(PlayerStates State);
 
+	
+	//---States---
 
+	//Variables to keep track of where the player is and was
+	PlayerStates PlayerState;
+	PlayerStates PreviousState;
+	
+	//Used to tie up previous states, depending on what state you came from
+	//E.g stop playing combat if previous state was combat
+	UFUNCTION(BlueprintCallable) void SwapState(PlayerStates State);
+	
+	//Used to prepare the next state, useful when you swap in from multiple different states
 	UFUNCTION() void SwapToOrbiting();
 	UFUNCTION() void BeginToOrbiting();
 	UFUNCTION() void SwapToMoving();
 	UFUNCTION() void SwapToSelecting();
 	UFUNCTION() void SwapToCombat();
+
+	//Blueprint Functionality
+	UFUNCTION(BlueprintCallable)PlayerStates GetPlayerState() { return PlayerState; };
+	UFUNCTION(BlueprintCallable)void SetPlayerState(PlayerStates State) { PlayerState = State; };
+
+
+
 	
 	UFUNCTION(BlueprintCallable) void GetPathSelected(UPathData* path);
 	UFUNCTION(BlueprintCallable) void LeaveOrbit();
@@ -246,7 +257,7 @@ public:
 	UFUNCTION(BlueprintCallable) void FinalSelectRoute();
 	bool SelectedPath = false;
 	
-	
+	//---Delegates---
 	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)FOrbitTransitionDelegate OrbitTransitionDelegate;
 	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable) FBeginOrbitTransitionDelegate BeginOrbitTransitionDelegate;
 	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable)	FMovingTransitionDelegate MovingTransitionDelegate;
@@ -257,11 +268,7 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable )FCombatTransitionDelegate CombatOverTransitionDelegate;
 	UPROPERTY(BlueprintAssignable, Category = "Transitions", BlueprintCallable )FCombatTransitionDelegate GameOverDelegate;
 
-	UPROPERTY(VisibleAnywhere, Category = Camera)
-		UCameraComponent* FightCamera;
 
-	UPROPERTY() AEnemy* AEnemyActor; // Could be turned into a array and have multiple enemies
-	UPROPERTY(EditAnywhere) TSubclassOf<class AEnemy> MyEnemy;
 
 	
 	UFUNCTION(BlueprintCallable)
@@ -275,16 +282,14 @@ public:
 
 	void SetQuest();
 
-	UFUNCTION()
-	void FightScene(float DeltaTime);
+	//---Combat---
+	UFUNCTION() void FightScene(float DeltaTime);
+	UFUNCTION() void CombatReset();
+	UFUNCTION() void CallCombatOverDelegate();
+	UFUNCTION(BlueprintCallable) void ResetCameraAfterCombat();
 
-	UFUNCTION()
-	void CombatReset();
-
-	UFUNCTION()
-	void CallCombatOverDelegate();
-
-	UFUNCTION(BlueprintCallable)
-	void ResetCameraAfterCombat();
+	UPROPERTY(EditAnywhere) TSubclassOf<class AEnemy> MyEnemy;
+	UPROPERTY(VisibleAnywhere, Category = Camera) UCameraComponent* FightCamera;
+	UPROPERTY() AEnemy* AEnemyActor; // Could be turned into a array and have multiple enemies
 };
 

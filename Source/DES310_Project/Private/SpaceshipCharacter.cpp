@@ -52,10 +52,6 @@ ASpaceshipCharacter::ASpaceshipCharacter()
 	TriggerBox->SetCollisionProfileName(TEXT("Trigger"));
 	TriggerBox->SetupAttachment(GetMesh());
 
-	// declare static player mesh
-	PlayerMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	PlayerMesh->SetupAttachment(RootComponent);
-
 	DeflectionMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Deflection Mesh"));
 	DeflectionMesh->SetupAttachment(RootComponent);
 

@@ -27,8 +27,6 @@ ARouteExample::ARouteExample()
 	root->Mobility = EComponentMobility::Type::Movable;
 	this->SetRootComponent(root);
 
-	CubeMesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Cube.Cube'")).Object;
-	SphereMesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Sphere.Sphere'")).Object;
 
 	//moved to begin play because it wasnt really working in constructor
 	/*Spline1 = CreateDefaultSubobject<ARouteSpline>(TEXT("Spline Short Path 1"));
@@ -94,7 +92,7 @@ void ARouteExample::BeginPlay()
 		PlanetIndex.push_back();
 	}*/
 
-	SuperTempTimer = 0;
+	CombatTimer = 0;
 	
 	AudioManager->AmbientSoundComponent->Play();
 	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
@@ -169,18 +167,18 @@ void ARouteExample::Tick(float DeltaTime)
 		PlayerOBJ->UpdatePlayerSpeed(DeltaTime);
 		// passing the current path is cleaner
 		// pass the values for now
-		SuperTempTimer += DeltaTime;
+		CombatTimer += DeltaTime;
 		if (NavIncidentsTimer > NavIncidentsCooldown)
 		{
 			if (EventsComponent->RollForEvent(RouteData->EventChance, DeltaTime, RouteData->StoryEventChance, RouteData->RandomEventChance))
 			{
 				SwapState(Event);
 			}
-			else if (SuperTempTimer > CombatTick)
+			else if (CombatTimer > CombatTick)
 			{
 				if (FMath::RandRange(0, 100) < RouteData->CombatEventChance)
 				{
-					SuperTempTimer = 0;
+					CombatTimer = 0;
 					CombatTransitionDelegate.Broadcast();
 					SwapState(Event);
 				}
@@ -350,7 +348,8 @@ ADetails* ARouteExample::CreateDetail(FTransform transform, int Index)
 
 	ADetails* Detail = GetWorld()->SpawnActor<ADetails>(DetailBP[Index], transform, SpawnParams);
 	Detail->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
-
+	Detail->Index = Index;
+	
 	return Detail;
 
 }
@@ -536,9 +535,9 @@ void ARouteExample::Generate()
 		SpawnTransfrom.SetLocation(FVector( Path1[i].X - Dimensions.X / 2, Path1[i].Y - Dimensions.Y / 2, UKismetMathLibrary::Sin(i) * SinWaveAmplitude));
 
 
-		if (i >= CubePath1.Num())
+		if (i >= StartToEndPath.Num())
 		{
-			CubePath1.Add(CreateBasicCube(SpawnTransfrom * WorldLocation));
+			StartToEndPath.Add(CreateBasicCube(SpawnTransfrom * WorldLocation));
 		}
 
 		SplineComponent1->AddSplinePoint((SpawnTransfrom * WorldLocation).GetLocation(), ESplineCoordinateSpace::Type::World, true);
@@ -558,9 +557,9 @@ void ARouteExample::Generate()
 		SpawnTransfrom.SetLocation(FVector( Path2[i].X - Dimensions.X / 2, Path2[i].Y - Dimensions.Y / 2, UKismetMathLibrary::Sin(i) * SinWaveAmplitude));
 
 
-		if (i >= CubePath2.Num())
+		if (i >= StartToStationPath.Num())
 		{
-			CubePath2.Add(CreateBasicCube(SpawnTransfrom * WorldLocation));
+			StartToStationPath.Add(CreateBasicCube(SpawnTransfrom * WorldLocation));
 		}
 
 		SplineComponent2->AddSplinePoint((SpawnTransfrom * WorldLocation).GetLocation(), ESplineCoordinateSpace::Type::World, true);
@@ -580,9 +579,9 @@ void ARouteExample::Generate()
 		SpawnTransfrom.SetLocation(FVector( Path3[i].X - Dimensions.X / 2, Path3[i].Y - Dimensions.Y / 2,UKismetMathLibrary::Sin(i) * SinWaveAmplitude));
 
 
-		if (i >= CubePath3.Num())
+		if (i >= StationToEndPath.Num())
 		{
-			CubePath3.Add(CreateBasicCube(SpawnTransfrom * WorldLocation));
+			StationToEndPath.Add(CreateBasicCube(SpawnTransfrom * WorldLocation));
 		}
 
 		SplineComponent3->AddSplinePoint((SpawnTransfrom * WorldLocation).GetLocation(), ESplineCoordinateSpace::Type::World, true);
@@ -746,9 +745,9 @@ void ARouteExample::GenerateImproved(int FirstPlanetID, FVector Offset)
 	Path3 = astar.path;
 	FVector2D SpaceStation = astar.begin.position;
 
-	CreatePath(Path1,CubePath1,Spline1->Spline, BuoysPercent);
-	CreatePath(Path2,CubePath2,Spline2->Spline, BuoysPercent);
-	CreatePath(Path3,CubePath3,Spline3->Spline, BuoysPercent);
+	CreatePath(Path1,StartToEndPath,Spline1->Spline, BuoysPercent);
+	CreatePath(Path2,StartToStationPath,Spline2->Spline, BuoysPercent);
+	CreatePath(Path3,StationToEndPath,Spline3->Spline, BuoysPercent);
 
 	FTransform WorldTransform;
 	WorldTransform = GetRootComponent()->GetComponentTransform();
@@ -819,11 +818,11 @@ void ARouteExample::GenerateImproved(int FirstPlanetID, FVector Offset)
 		
 	// set quests
 	SetQuest();
-		
-
-	Spline1->CreateSpline();
-	Spline2->CreateSpline();
-	Spline3->CreateSpline();
+	
+	
+	Spline1->CreateSpline(DetailScaling);
+	Spline2->CreateSpline(DetailScaling);
+	Spline3->CreateSpline(DetailScaling);
 
 	for(auto mesh : Spline1->Meshes)
 	{
@@ -913,9 +912,9 @@ void ARouteExample::GenerateLoad(TArray<FVector> PlanetPositions, TArray<int> Pl
 	Path3 = astar.path;
 	FVector2D SpaceStation = astar.begin.position;
 
-	CreatePath(Path1,CubePath1,Spline1->Spline, BuoysPercent);
-	CreatePath(Path2,CubePath2,Spline2->Spline, BuoysPercent);
-	CreatePath(Path3,CubePath3,Spline3->Spline, BuoysPercent);
+	CreatePath(Path1,StartToEndPath,Spline1->Spline, BuoysPercent);
+	CreatePath(Path2,StartToStationPath,Spline2->Spline, BuoysPercent);
+	CreatePath(Path3,StationToEndPath,Spline3->Spline, BuoysPercent);
 
 	FTransform WorldTransform;
 	WorldTransform = GetRootComponent()->GetComponentTransform();
@@ -966,9 +965,9 @@ void ARouteExample::GenerateLoad(TArray<FVector> PlanetPositions, TArray<int> Pl
 	SetQuest();
 		
 
-	Spline1->CreateSpline();
-	Spline2->CreateSpline();
-	Spline3->CreateSpline();
+	Spline1->CreateSpline(DetailScaling);
+	Spline2->CreateSpline(DetailScaling);
+	Spline3->CreateSpline(DetailScaling);
 
 	for(auto mesh : Spline1->Meshes)
 	{
@@ -1006,23 +1005,24 @@ void ARouteExample::CreatePath(TArray<FVector2D>& Path, TArray<APath*>& PathMesh
 	
 	for (int i = 0; i < Path.Num(); i++)
 	{
+		FTransform SpawnTransfrom;
+		SpawnTransfrom.SetRotation(Rotation.Quaternion());
+		SpawnTransfrom.SetScale3D(FVector(10, 10, 10));
+		SpawnTransfrom.SetLocation(FVector( Path[i].X - Dimensions.X / 2, Path[i].Y - Dimensions.Y / 2, UKismetMathLibrary::Sin(i) * SinWaveAmplitude));
+		
 		if(i >= Counter)
 		{
-			FTransform SpawnTransfrom;
-			SpawnTransfrom.SetRotation(Rotation.Quaternion());
-			SpawnTransfrom.SetScale3D(FVector(10, 10, 10));
-			SpawnTransfrom.SetLocation(FVector( Path[i].X - Dimensions.X / 2, Path[i].Y - Dimensions.Y / 2, UKismetMathLibrary::Sin(i) * SinWaveAmplitude));
-
 			auto path = CreateBasicCube(SpawnTransfrom * WorldTransform);
 			path->SetActorScale3D(FVector(PlanetScaling/5, PlanetScaling/5, PlanetScaling/5));
 			PathMeshes.Add(path);
-		
-			SplineComponent->AddSplinePoint((SpawnTransfrom * WorldTransform).GetLocation(), ESplineCoordinateSpace::Type::World, true);
-			SpawnTransfrom.AddToTranslation(FVector(0 ,50, 50));
-			SpawnTransfrom *= WorldTransform;
-
+			
 			Counter += Step;
 		}
+
+		SplineComponent->AddSplinePoint((SpawnTransfrom * WorldTransform).GetLocation(), ESplineCoordinateSpace::Type::World, true);
+		SpawnTransfrom.AddToTranslation(FVector(0 ,50, 50));
+		SpawnTransfrom *= WorldTransform;
+
 	}
 }
 
@@ -1072,23 +1072,23 @@ void ARouteExample::ResetRoute()
 	}
 	Planets.Empty();
 
-	for (auto& CubePath : CubePath1)
+	for (auto& CubePath : StartToEndPath)
 	{
 		CubePath->Destroy();
 	}
-	CubePath1.Empty();
+	StartToEndPath.Empty();
 
-	for (auto& CubePath : CubePath2)
+	for (auto& CubePath : StartToStationPath)
 	{
 		CubePath->Destroy();
 	}
-	CubePath2.Empty();
+	StartToStationPath.Empty();
 
-	for (auto& CubePath : CubePath3)
+	for (auto& CubePath : StationToEndPath)
 	{
 		CubePath->Destroy();
 	}
-	CubePath3.Empty();
+	StationToEndPath.Empty();
 
 	for (auto& CubePath : Details)
 	{
@@ -1107,7 +1107,10 @@ void ARouteExample::GenerateDetails()
 	for(int i = 0; i< DetailsWanted; i++)
 	{
 		int RandomIndex = FMath::RandRange(0,DetailBP.Num() - 1);
-		ADetails* Detail = CreateDetail(FTransform(FVector(0,0,0)),RandomIndex);
+		FTransform transform(FVector(0,0,0));
+		transform.SetScale3D(FVector(DetailScaling, DetailScaling, DetailScaling));
+		
+		ADetails* Detail = CreateDetail(transform,RandomIndex);
 		
 		for(int j = 0; j < DetailRejectionRate; j++)
 		{
@@ -1120,30 +1123,24 @@ void ARouteExample::GenerateDetails()
 			//DrawDebugBox(GetWorld(), FVector((Planets[0]->GetActorLocation().X - Planets[1]->GetActorLocation().X) * 0.25,0,0), FVector((Planets[0]->GetActorLocation().X - Planets[1]->GetActorLocation().X) * 0.75,(Planets[2]->GetActorLocation().Y - Planets[1]->GetActorLocation().Y) / 2,0), FColor::Purple, true, -1, 0, 10);
 
 			FVector RandomPosition = UKismetMathLibrary::RandomPointInBoundingBox(FVector((Planets[0]->GetActorLocation().X - Planets[1]->GetActorLocation().X) * 0.25,0,0),FVector((Planets[0]->GetActorLocation().X - Planets[1]->GetActorLocation().X) * 0.75,(Planets[2]->GetActorLocation().Y - Planets[1]->GetActorLocation().Y) / 2,0));
-		
+
 			FVector ClosestPoint1 = Spline1->Spline->FindLocationClosestToWorldLocation(RandomPosition, ESplineCoordinateSpace::World);
 			FVector ClosestPoint2 = Spline2->Spline->FindLocationClosestToWorldLocation(RandomPosition, ESplineCoordinateSpace::World);
 			FVector ClosestPoint3 = Spline3->Spline->FindLocationClosestToWorldLocation(RandomPosition, ESplineCoordinateSpace::World);
 
-	
 			FColor Color = FColor::Green;
 
 			//Check weather the new detail is too close to the existing route
 			if(FVector::Distance(ClosestPoint1,RandomPosition) < DetailMinDistance + Radius.GetMax() || FVector::Distance(ClosestPoint2,RandomPosition)  < DetailMinDistance + Radius.GetMax() || FVector::Distance(ClosestPoint3,RandomPosition)  < DetailMinDistance + Radius.GetMax())
 			{
 				Color = FColor::Red;
-				/*
-				DrawDebugLine(GetWorld(),ClosestPoint1,RandomPosition,Color, true,-1,0,50);
-				DrawDebugLine(GetWorld(),ClosestPoint2,RandomPosition, Color, true,-1,0,50);
-				DrawDebugLine(GetWorld(),ClosestPoint3,RandomPosition, Color, true,-1,0,50);
-				*/
-
 				continue;
 			}
 
-			/*DrawDebugLine(GetWorld(),ClosestPoint1,RandomPosition,Color, true,-1,0,50);
-			DrawDebugLine(GetWorld(),ClosestPoint2,RandomPosition, Color, true,-1,0,50);
-			DrawDebugLine(GetWorld(),ClosestPoint3,RandomPosition, Color, true,-1,0,50);*/
+			if(FVector::Distance(FVector(0,0,0),RandomPosition) + 600 < DetailMinDistance + Radius.GetMax())
+			{
+				//continue;
+			}
 
 			//Check weather the new detail is too close to another detail
 			bool failed = false;
@@ -1157,7 +1154,6 @@ void ARouteExample::GenerateDetails()
 			if(failed)
 				continue;
 			
-			Detail->SetActorScale3D(FVector(DetailScaling, DetailScaling, DetailScaling));
 			Detail->SetActorLocation(RandomPosition);
 			Detail->StartingLocation = RandomPosition;
 
@@ -1329,7 +1325,7 @@ void ARouteExample::SelectPath()
 
 	bool WhichPath = false; // TODO if we stick to 2 paths this is fine but could be improved
 
-	for (auto path : CubePath1)
+	for (auto path : StartToEndPath)
 	{
 		float distance = FVector::Distance(UKismetMathLibrary::FindClosestPointOnLine(path->GetActorLocation(), LookPosition, LookDirection), path->GetActorLocation());
 		if (distance < Path1Distance)
@@ -1338,7 +1334,7 @@ void ARouteExample::SelectPath()
 		}
 	}
 
-	for (auto path : CubePath2)
+	for (auto path : StartToStationPath)
 	{
 		float distance = FVector::Distance(UKismetMathLibrary::FindClosestPointOnLine(path->GetActorLocation(), LookPosition, LookDirection), path->GetActorLocation());
 		if (distance < Path2Distance)
@@ -1347,7 +1343,7 @@ void ARouteExample::SelectPath()
 		}
 	}
 
-	for (auto path : CubePath3)
+	for (auto path : StationToEndPath)
 	{
 		float distance = FVector::Distance(UKismetMathLibrary::FindClosestPointOnLine(path->GetActorLocation(), LookPosition, LookDirection), path->GetActorLocation());
 		if (distance < Path2Distance)
@@ -1359,14 +1355,14 @@ void ARouteExample::SelectPath()
 
 	if (Path1Distance < Path2Distance)
 	{
-		/*for (auto cube : CubePath1)
+		/*for (auto cube : StartToEndPath)
 		{
 			if (cube)
 			{
 				cube->SetActorScale3D(FVector(4, 4, 4));
 			}
 		}
-		for (auto cube : CubePath2)
+		for (auto cube : StartToStationPath)
 		{
 			if (cube)
 			{
@@ -1374,7 +1370,7 @@ void ARouteExample::SelectPath()
 			}
 		}
 
-		for (auto cube : CubePath3)
+		for (auto cube : StationToEndPath)
 		{
 			if (cube)
 			{
@@ -1394,14 +1390,14 @@ void ARouteExample::SelectPath()
 	{
 		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Left Side")));
 
-		/*for (auto cube : CubePath2)
+		/*for (auto cube : StartToStationPath)
 		{
 			if (cube)
 			{
 				cube->SetActorScale3D(FVector(4, 4, 4));
 			}
 		}
-		for (auto cube : CubePath3)
+		for (auto cube : StationToEndPath)
 		{
 			if (cube)
 			{
@@ -1409,7 +1405,7 @@ void ARouteExample::SelectPath()
 			}
 		}
 
-		for (auto cube : CubePath1)
+		for (auto cube : StartToEndPath)
 		{
 			if (cube)
 			{
@@ -1436,14 +1432,14 @@ void ARouteExample::SelectPath()
 	if (Charac->Selected)
 	{
 
-		for (auto cube : CubePath2)
+		for (auto cube : StartToStationPath)
 		{
 			if (cube)
 			{
 				cube->SetActorScale3D(FVector(1, 1, 1));
 			}
 		}
-		for (auto cube : CubePath3)
+		for (auto cube : StationToEndPath)
 		{
 			if (cube)
 			{
@@ -1451,7 +1447,7 @@ void ARouteExample::SelectPath()
 			}
 		}
 
-		for (auto cube : CubePath1)
+		for (auto cube : StartToEndPath)
 		{
 			if (cube)
 			{
@@ -1607,7 +1603,7 @@ void ARouteExample::SwapToMoving()
 	FVector StartPoint = RouteData->Splines[RouteData->Index]->GetLocationAtDistanceAlongSpline(0, ESplineCoordinateSpace::Type::World);
 	FVector EndPoint = RouteData->Splines[RouteData->Index]->GetLocationAtDistanceAlongSpline(SplineLength, ESplineCoordinateSpace::Type::World) - FVector(0,0,-50);
 	
-	Charac->CameraBoom->SetWorldRotation(UKismetMathLibrary::FindLookAtRotation(EndPoint, StartPoint) + TempAngler);
+	Charac->CameraBoom->SetWorldRotation(UKismetMathLibrary::FindLookAtRotation(EndPoint, StartPoint) + CameraAngle);
 	//Charac->CameraBoom->AddWorldRotation(FRotator(0,0,15));
 	
 	
@@ -1793,34 +1789,34 @@ void ARouteExample::LeaveOrbit()
 
 	if(RouteData->ID == 0)
 	{
-		for (auto it : CubePath2)
+		for (auto it : StartToStationPath)
 		{
 			it->SetActorHiddenInGame(false);
 		}
 
-		for (auto it : CubePath3)
+		for (auto it : StationToEndPath)
 		{
 			it->SetActorHiddenInGame(false);
 		}
 
-		for (auto it : CubePath1)
+		for (auto it : StartToEndPath)
 		{
 			it->SetActorHiddenInGame(true);
 		}
 		
 	}else if(RouteData->ID == 1)
 	{
-		for (auto it : CubePath2)
+		for (auto it : StartToStationPath)
 		{
 			it->SetActorHiddenInGame(true);
 		}
 
-		for (auto it : CubePath3)
+		for (auto it : StationToEndPath)
 		{
 			it->SetActorHiddenInGame(true);
 		}
 
-		for (auto it : CubePath1)
+		for (auto it : StartToEndPath)
 		{
 			it->SetActorHiddenInGame(false);
 		}
@@ -1907,7 +1903,7 @@ void ARouteExample::FinalSelectRoute()
 		RouteData->AtFirstPlanet = false;
 		RouteData->ID = 0;
 
-		for (auto it : CubePath1)
+		for (auto it : StartToEndPath)
 		{
 			it->SetActorHiddenInGame(true);
 		}
@@ -1923,12 +1919,12 @@ void ARouteExample::FinalSelectRoute()
 		RouteData->AtFirstPlanet = false;
 		RouteData->ID = 0;
 		
-		for (auto it : CubePath2)
+		for (auto it : StartToStationPath)
 		{
 			it->SetActorHiddenInGame(true);
 		}
 
-		for (auto it : CubePath3)
+		for (auto it : StationToEndPath)
 		{
 			it->SetActorHiddenInGame(true);
 		}
@@ -1940,7 +1936,6 @@ void ARouteExample::FinalSelectRoute()
 void ARouteExample::StartGame()
 {
 	GenerateImproved(-1,FVector(0,0,0));
-	randomSpinRate = FMath::RandRange(1, 100);
 
 	UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetViewTargetWithBlend(Planets[1], CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
 	Planets[1]->CurrentPlanet = true;
@@ -1967,16 +1962,16 @@ void ARouteExample::ChangeVisibilityOfRoute(bool toHide)
 		it->SetActorHiddenInGame(toHide);
 	}
 
-	for (auto it : CubePath1)
+	for (auto it : StartToEndPath)
 	{
 		it->SetActorHiddenInGame(toHide);
 	}
 
-	for (auto it : CubePath2)
+	for (auto it : StartToStationPath)
 	{
 		it->SetActorHiddenInGame(toHide);
 	}
-	for (auto it : CubePath3)
+	for (auto it : StationToEndPath)
 	{
 		it->SetActorHiddenInGame(toHide);
 	}
@@ -2054,7 +2049,7 @@ void ARouteExample::FightScene(float DeltaTime) {
 
 		AEnemyActor->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
 		FVector ActorSize, ActorOrigin;
-		AEnemyActor->GetActorBounds(false, ActorOrigin, ActorSize, false);
+		AEnemyActor->GetActorBounds(true, ActorOrigin, ActorSize, false);
 		AEnemyActor->SetActorLocation(player->GetActorLocation() + TempEnemyPosition);
 		AEnemyActor->SetActorRotation(FRotator(UKismetMathLibrary::FindLookAtRotation(player->GetActorLocation(), AEnemyActor->GetActorLocation())));
 
