@@ -820,11 +820,11 @@ void ARouteExample::GenerateImproved(int FirstPlanetID, FVector Offset)
 		
 	// set quests
 	SetQuest();
-		
-
-	Spline1->CreateSpline();
-	Spline2->CreateSpline();
-	Spline3->CreateSpline();
+	
+	
+	Spline1->CreateSpline(DetailScaling);
+	Spline2->CreateSpline(DetailScaling);
+	Spline3->CreateSpline(DetailScaling);
 
 	for(auto mesh : Spline1->Meshes)
 	{
@@ -967,9 +967,9 @@ void ARouteExample::GenerateLoad(TArray<FVector> PlanetPositions, TArray<int> Pl
 	SetQuest();
 		
 
-	Spline1->CreateSpline();
-	Spline2->CreateSpline();
-	Spline3->CreateSpline();
+	Spline1->CreateSpline(DetailScaling);
+	Spline2->CreateSpline(DetailScaling);
+	Spline3->CreateSpline(DetailScaling);
 
 	for(auto mesh : Spline1->Meshes)
 	{
@@ -1007,23 +1007,24 @@ void ARouteExample::CreatePath(TArray<FVector2D>& Path, TArray<APath*>& PathMesh
 	
 	for (int i = 0; i < Path.Num(); i++)
 	{
+		FTransform SpawnTransfrom;
+		SpawnTransfrom.SetRotation(Rotation.Quaternion());
+		SpawnTransfrom.SetScale3D(FVector(10, 10, 10));
+		SpawnTransfrom.SetLocation(FVector( Path[i].X - Dimensions.X / 2, Path[i].Y - Dimensions.Y / 2, UKismetMathLibrary::Sin(i) * SinWaveAmplitude));
+		
 		if(i >= Counter)
 		{
-			FTransform SpawnTransfrom;
-			SpawnTransfrom.SetRotation(Rotation.Quaternion());
-			SpawnTransfrom.SetScale3D(FVector(10, 10, 10));
-			SpawnTransfrom.SetLocation(FVector( Path[i].X - Dimensions.X / 2, Path[i].Y - Dimensions.Y / 2, UKismetMathLibrary::Sin(i) * SinWaveAmplitude));
-
 			auto path = CreateBasicCube(SpawnTransfrom * WorldTransform);
 			path->SetActorScale3D(FVector(PlanetScaling/5, PlanetScaling/5, PlanetScaling/5));
 			PathMeshes.Add(path);
-		
-			SplineComponent->AddSplinePoint((SpawnTransfrom * WorldTransform).GetLocation(), ESplineCoordinateSpace::Type::World, true);
-			SpawnTransfrom.AddToTranslation(FVector(0 ,50, 50));
-			SpawnTransfrom *= WorldTransform;
-
+			
 			Counter += Step;
 		}
+
+		SplineComponent->AddSplinePoint((SpawnTransfrom * WorldTransform).GetLocation(), ESplineCoordinateSpace::Type::World, true);
+		SpawnTransfrom.AddToTranslation(FVector(0 ,50, 50));
+		SpawnTransfrom *= WorldTransform;
+
 	}
 }
 
@@ -1108,7 +1109,10 @@ void ARouteExample::GenerateDetails()
 	for(int i = 0; i< DetailsWanted; i++)
 	{
 		int RandomIndex = FMath::RandRange(0,DetailBP.Num() - 1);
-		ADetails* Detail = CreateDetail(FTransform(FVector(0,0,0)),RandomIndex);
+		FTransform transform(FVector(0,0,0));
+		transform.SetScale3D(FVector(DetailScaling, DetailScaling, DetailScaling));
+		
+		ADetails* Detail = CreateDetail(transform,RandomIndex);
 		
 		for(int j = 0; j < DetailRejectionRate; j++)
 		{
@@ -1121,30 +1125,24 @@ void ARouteExample::GenerateDetails()
 			//DrawDebugBox(GetWorld(), FVector((Planets[0]->GetActorLocation().X - Planets[1]->GetActorLocation().X) * 0.25,0,0), FVector((Planets[0]->GetActorLocation().X - Planets[1]->GetActorLocation().X) * 0.75,(Planets[2]->GetActorLocation().Y - Planets[1]->GetActorLocation().Y) / 2,0), FColor::Purple, true, -1, 0, 10);
 
 			FVector RandomPosition = UKismetMathLibrary::RandomPointInBoundingBox(FVector((Planets[0]->GetActorLocation().X - Planets[1]->GetActorLocation().X) * 0.25,0,0),FVector((Planets[0]->GetActorLocation().X - Planets[1]->GetActorLocation().X) * 0.75,(Planets[2]->GetActorLocation().Y - Planets[1]->GetActorLocation().Y) / 2,0));
-		
+
 			FVector ClosestPoint1 = Spline1->Spline->FindLocationClosestToWorldLocation(RandomPosition, ESplineCoordinateSpace::World);
 			FVector ClosestPoint2 = Spline2->Spline->FindLocationClosestToWorldLocation(RandomPosition, ESplineCoordinateSpace::World);
 			FVector ClosestPoint3 = Spline3->Spline->FindLocationClosestToWorldLocation(RandomPosition, ESplineCoordinateSpace::World);
 
-	
 			FColor Color = FColor::Green;
 
 			//Check weather the new detail is too close to the existing route
 			if(FVector::Distance(ClosestPoint1,RandomPosition) < DetailMinDistance + Radius.GetMax() || FVector::Distance(ClosestPoint2,RandomPosition)  < DetailMinDistance + Radius.GetMax() || FVector::Distance(ClosestPoint3,RandomPosition)  < DetailMinDistance + Radius.GetMax())
 			{
 				Color = FColor::Red;
-				/*
-				DrawDebugLine(GetWorld(),ClosestPoint1,RandomPosition,Color, true,-1,0,50);
-				DrawDebugLine(GetWorld(),ClosestPoint2,RandomPosition, Color, true,-1,0,50);
-				DrawDebugLine(GetWorld(),ClosestPoint3,RandomPosition, Color, true,-1,0,50);
-				*/
-
 				continue;
 			}
 
-			/*DrawDebugLine(GetWorld(),ClosestPoint1,RandomPosition,Color, true,-1,0,50);
-			DrawDebugLine(GetWorld(),ClosestPoint2,RandomPosition, Color, true,-1,0,50);
-			DrawDebugLine(GetWorld(),ClosestPoint3,RandomPosition, Color, true,-1,0,50);*/
+			if(FVector::Distance(FVector(0,0,0),RandomPosition) + 600 < DetailMinDistance + Radius.GetMax())
+			{
+				//continue;
+			}
 
 			//Check weather the new detail is too close to another detail
 			bool failed = false;
@@ -1158,7 +1156,6 @@ void ARouteExample::GenerateDetails()
 			if(failed)
 				continue;
 			
-			Detail->SetActorScale3D(FVector(DetailScaling, DetailScaling, DetailScaling));
 			Detail->SetActorLocation(RandomPosition);
 			Detail->StartingLocation = RandomPosition;
 
@@ -2055,7 +2052,7 @@ void ARouteExample::FightScene(float DeltaTime) {
 
 		AEnemyActor->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
 		FVector ActorSize, ActorOrigin;
-		AEnemyActor->GetActorBounds(false, ActorOrigin, ActorSize, false);
+		AEnemyActor->GetActorBounds(true, ActorOrigin, ActorSize, false);
 		AEnemyActor->SetActorLocation(player->GetActorLocation() + TempEnemyPosition);
 		AEnemyActor->SetActorRotation(FRotator(UKismetMathLibrary::FindLookAtRotation(player->GetActorLocation(), AEnemyActor->GetActorLocation())));
 
