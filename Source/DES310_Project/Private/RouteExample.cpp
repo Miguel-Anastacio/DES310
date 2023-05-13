@@ -119,7 +119,7 @@ void ARouteExample::BeginPlay()
 	MovingTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToMoving);
 	SelectTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToSelecting);
 	CombatTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToCombat);
-	GameOverDelegate.AddUniqueDynamic(this, &ARouteExample::CombatReset);
+	GameOverDelegate.AddUniqueDynamic(this, &ARouteExample::GameOver);
 
 
 	PlayerState = Event;
@@ -2073,7 +2073,7 @@ void ARouteExample::FightScene(float DeltaTime) {
 	player->SetActorLocation(FightCamera->GetComponentLocation() + FVector(600, -300, 0) + FVector(cos(timer + 53.1) * 30,cos(timer+ 3.1) * 30,sin(timer+  543.1) * 30));
 	player->SetActorRotation(FRotator(UKismetMathLibrary::FindLookAtRotation(AEnemyActor->GetActorLocation(), player->GetActorLocation())));
 
-	if(player)
+	if(player && !isDead)
 	{
 		player->Attack(DeltaTime,AEnemyActor);
 	}
@@ -2083,22 +2083,28 @@ void ARouteExample::FightScene(float DeltaTime) {
 		AEnemyActor->Attack();
 	}
 	player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	if (!(player->Alive))
+	if (!(player->Alive) && !isDead)
 	{
+		player->SetActorHiddenInGame(true);
 		GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Player is Dead"));
 		//CombatReset();
+		AudioManager->ExplosionSoundComponent->Play();
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(),AEnemyActor->ParticalSystem,player->GetActorLocation(),player->GetActorRotation(),player->GetActorScale() * 2);
 		AudioManager->DefeatSoundComponent->SetWorldLocation(player->GetActorLocation());
 		AudioManager->DefeatSoundComponent->Play();
 		GameOverDelegate.Broadcast();
-		ResetCameraAfterCombat();
+		//ResetCameraAfterCombat();
+
+		isDead = true;
 	}
-	else if (!IsValid(AEnemyActor))
+	else if (!IsValid(AEnemyActor) && !isDead)
 	{
 		//CombatReset();
 		SwapState(Event);
 		AEnemyActor->ResetEnemy();
 		AudioManager->VictorySoundComponent->SetWorldLocation(player->GetActorLocation());
 		AudioManager->VictorySoundComponent->Play();
+		AudioManager->ExplosionSoundComponent->Play();
 
 		// player->TopDownCamera->SetActive(true);
 		// UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetViewTargetWithBlend(this, CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
@@ -2112,12 +2118,24 @@ void ARouteExample::CombatReset() {
 	//MovingTransitionDelegate.Broadcast();
 	//SwapState(PreviousState);
 	ASpaceshipCharacter* CurrentPlayer = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-;
+
 	if(CurrentPlayer)
 		CurrentPlayer->ResetCombat();
 	
 	AEnemyActor = nullptr;
 	GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Combat Reset"));
+	SwapState(Event);
+}
+
+void ARouteExample::GameOver()
+{
+
+	ASpaceshipCharacter* CurrentPlayer = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+
+	if(CurrentPlayer)
+		CurrentPlayer->ResetCombat();
+	
+	
 	SwapState(Event);
 }
 
