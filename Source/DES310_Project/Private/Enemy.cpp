@@ -19,6 +19,10 @@ AEnemy::AEnemy()
 	
 	EnemyCube = CreateDefaultSubobject<UBoxComponent>(TEXT("Enemy Cube Collision"));
 	EnemyCube->SetupAttachment(CubeMesh);
+
+	/*ParticalSystem = CreateDefaultSubobject<UParticleSystem>(TEXT("Partical System"));
+	ParticalSystem->SetupAttachment(CubeMesh);*/
+
 	
 	static ConstructorHelpers::FObjectFinder<UStaticMesh>CubeVisualAsset(TEXT("/Game/StarterContent/Shapes/Shape_Cube.Shape_Cube"));
 	if (CubeVisualAsset.Succeeded())
@@ -64,9 +68,12 @@ void AEnemy::Attack()
 			}
 		}
 	}
+
+
 	
 	if (FireRateTimer <= 0.f)
 	{
+		
 		FActorSpawnParameters SpawnInfo;
 		SpawnInfo.Owner = this;
 
@@ -100,8 +107,8 @@ void AEnemy::Attack()
 
 			//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + NorthVector * 1000, FColor::Emerald, false, 20, 0, 10);
 			//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + SouthVector * 1000, FColor::Emerald, false, 20, 0, 10);
-			DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + WestVector * 1000, FColor::Emerald, false, 20, 0, 10);
-			DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + EastVector * 1000, FColor::Emerald, false, 20, 0, 10);
+			//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + WestVector * 1000, FColor::Emerald, false, 20, 0, 10);
+			//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + EastVector * 1000, FColor::Emerald, false, 20, 0, 10);
 			
 			float XPercent = FMath::RandRange(0.f,1.f);
 			float YPercent = FMath::RandRange(0.f,1.f);
@@ -199,6 +206,7 @@ void AEnemy::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AAc
 
 		if(EnemyStats->CurrentHullIntegrity <= 0)
 		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(),ParticalSystem,GetActorLocation(),GetActorRotation(),GetActorScale());
 			this->Destroy();
 		}
 	}

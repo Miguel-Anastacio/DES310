@@ -9,7 +9,9 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Actor.h"
 #include "StatsComponent.h"
+#include "Particles/ParticleSystemComponent.h"
 #include "Enemy.generated.h"
+
 
 UCLASS()
 class DES310_PROJECT_API AEnemy : public AActor
@@ -23,6 +25,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* CubeMesh;
 	void SetPlayerLocation(FVector location) { PlayerLocation = location; };
+
+	UPROPERTY(EditAnywhere) UParticleSystem* ParticalSystem;
+
 
 protected:
 	// Called when the game starts or when spawned

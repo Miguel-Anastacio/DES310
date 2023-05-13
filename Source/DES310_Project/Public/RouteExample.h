@@ -182,7 +182,7 @@ public:
 	UPROPERTY(VisibleAnywhere) UPathData* Route1Data;
 	UPROPERTY(VisibleAnywhere) UPathData* Route2Data;
 
-
+	bool isDead = false;
 
 
 	UPROPERTY(EditAnywhere, Category = Fight) FVector ppVec = FVector(0,150,0);
@@ -285,6 +285,7 @@ public:
 	//---Combat---
 	UFUNCTION() void FightScene(float DeltaTime);
 	UFUNCTION() void CombatReset();
+	UFUNCTION() void GameOver();
 	UFUNCTION() void CallCombatOverDelegate();
 	UFUNCTION(BlueprintCallable) void ResetCameraAfterCombat();
 
