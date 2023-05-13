@@ -15,6 +15,7 @@ UInventoryComponent::UInventoryComponent()
 
 	// ...
 	ItemDatabase = CreateDefaultSubobject<UItemData>(TEXT("Database"));
+	AllPossibleItemsDatabase = CreateDefaultSubobject<UItemData>(TEXT("AllItemsDatabase"));
 }
 
 
@@ -195,20 +196,16 @@ void UInventoryComponent::AssignSlots()
 			switch (it->Type)
 			{
 			case HULL:
-				if (HullSlot == nullptr)
 					HullSlot = it;
 				break;
 			case SHIELD:
-				if (ShieldSlot == nullptr)
 					ShieldSlot = it;
 				break;
 
 			case BLASTER:
-				if (BlasterSlot == nullptr)
 					BlasterSlot = it;
 				break;
 			case ENGINE:
-				if (EngineSlot == nullptr)
 					EngineSlot = it;
 				break;
 			default:
