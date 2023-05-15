@@ -4,6 +4,7 @@
 	Author: MIGUEL ANASTACIO 15/02/2023
 */
 
+#include "GameInstance_CPP.h"
 #include "SpaceshipCharacter.h"
 
 // Sets default values for this component's properties
@@ -176,13 +177,35 @@ bool UInventoryComponent::SwapShipParts(PartType type, UItem* newItem)
 void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	if(IsSaveLoadSuccessful())
+	{
+		return;
+	}
+	
 	if (ItemDatabase)
 	{
 		ConvertDataAsset(ItemDatabase, Items);
+
+		GEngine->AddOnScreenDebugMessage(-1, 25.f, FColor::Red,	TEXT("DEFAULT ASSIGNMENT OF ITEMS"));
 		AssignSlots();
 	}
 	// ...
 	
+}
+
+bool UInventoryComponent::IsSaveLoadSuccessful()
+{
+	if (!UGameplayStatics::DoesSaveGameExist(TEXT("Game_Save"), 0))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,	TEXT("SAVE NOT FOUND"));
+		return false;
+	}
+
+	UGameSave* GameSave = (Cast<UGameInstance_CPP>(UGameplayStatics::GetGameInstance(GetWorld())))->GetGameData();
+	
+	LoadItems(GameSave->SavedPlayerStats.InventoryItemIDs);
+	return true;
 }
 
 
