@@ -1292,6 +1292,18 @@ bool ARouteExample::MoveAlongPath(UPathData* PathData , float DeltaTime)
 			player->EngineStatus = CRUISING;
 			player->MovementSpeed = PlayerMovementSpeed;
 			player->CurrentAcceleration = player->BaseAcceleration;
+
+			// only check for quest completed when is a planet
+			for (auto it : Planets)
+			{
+				if (it->CurrentPlanet)
+				{
+					CurrentPlanet = it;
+					it->SetActorHiddenInGame(false);
+					// see if player completed quest
+					player->WasQuestCompleted(it->Name);
+				}
+			}
 		}
 		
 	}
@@ -1537,16 +1549,12 @@ void ARouteExample::SwapToOrbiting()
 	// if we made all other planets and the path invisible when we are in a planet
 	// either do this or make the UI more opaque
 	ChangeVisibilityOfRoute(true);
-
 	for (auto it : Planets)
 	{
 		if (it->CurrentPlanet)
 		{
 			CurrentPlanet = it;
 			it->SetActorHiddenInGame(false);
-			// see if player completed quest
-			ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-			player->WasQuestCompleted(it->Name);
 		}
 	}
 

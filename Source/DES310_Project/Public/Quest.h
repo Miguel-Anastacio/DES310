@@ -20,7 +20,7 @@ class DES310_PROJECT_API UQuest : public UObject
 
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Quest)
-	FName ID;
+	int32 ID;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Quest)
 	FString Name;
