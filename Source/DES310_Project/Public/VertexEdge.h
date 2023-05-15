@@ -7,9 +7,7 @@
 
 #include "CoreMinimal.h"
 
-/**
- * 
- */
+//Vertex Edge represents a line between two points
 class DES310_PROJECT_API VertexEdge
 {
 public:
@@ -17,6 +15,7 @@ public:
 	VertexEdge(FVector2D newA, FVector2D newB);
 	~VertexEdge();
 
+	//Various Ways to test if they are equal
 	static bool AlmostEqual(VertexEdge left, VertexEdge right);
 	static bool AlmostEqual(float x, float y) ;
 	static bool AlmostEqual(FVector2D left, FVector2D right) ;

@@ -23,26 +23,27 @@ Triangle::~Triangle()
 }
 
 
+//Circum Circle is a circle within the triangle that touches all edges
 bool Triangle::IsInCircumCircle(FVector2D position)
 {
-	FVector2D a = Vertex[0];
-	FVector2D b = Vertex[1];
-	FVector2D c = Vertex[2];
+	const FVector2D A = Vertex[0];
+	const FVector2D B = Vertex[1];
+	const FVector2D C = Vertex[2];
 
-	float ab = a.SquaredLength();
-	float cd = b.SquaredLength();
-	float ef = c.SquaredLength();
+	const float LengthA = A.SquaredLength();
+	const float LengthB = B.SquaredLength();
+	const float LengthC = C.SquaredLength();
 
-	float circumX = (ab * (c.Y - b.Y) + cd * (a.Y- c.Y) + ef * (b.Y- a.Y)) / (a.X * (c.Y- b.Y) + b.X * (a.Y - c.Y) + c.X * (b.Y - a.Y));
-	float circumY = (ab * (c. X- b.X) + cd * (a.X - c.X) + ef * (b.X - a.X)) / (a.Y * (c.X - b.X) + b.Y * (a.X - c.X) + c.Y * (b.X - a.X));
+	const float CircumX = (LengthA * (C.Y - B.Y) + LengthB * (A.Y- C.Y) + LengthC * (B.Y- A.Y)) / (A.X * (C.Y- B.Y) + B.X * (A.Y - C.Y) + C.X * (B.Y - A.Y));
+	const float CircumY = (LengthA * (C. X- B.X) + LengthB * (A.X - C.X) + LengthC * (B.X - A.X)) / (A.Y * (C.X - B.X) + B.Y * (A.X - C.X) + C.Y * (B.X - A.X));
 
-	FVector2D circum(circumX / 2, circumY / 2);
-	float circumRadius = FVector2D(a - circum).SquaredLength();
-	float dist = FVector2D(position - circum).SquaredLength();
-	return dist <= circumRadius;
+	FVector2D Center(CircumX / 2, CircumY / 2); // Get the Center Point of the circle
+	float Radius = FVector2D(A - Center).SquaredLength(); // Get distance from A to center, i.e the radius
+	float Distance = FVector2D(position - Center).SquaredLength();
+	return Distance <= Radius;
 
 
-	/////////////////////
+	///////////////////// old implementation, is useful for context
 	
 	FVector2D midpoint1(Vertex[0] - Vertex[1]);
 	midpoint1 = midpoint1 / 2;
