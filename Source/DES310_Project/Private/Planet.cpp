@@ -155,7 +155,6 @@ void APlanet::SetPlanetIconUI()
 	if (IsFirstPlanet)
 	{
 		Icon = AllIcons[0];
-
 	}
 	else
 	{

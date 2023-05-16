@@ -77,11 +77,11 @@ void ARouteExample::BeginPlay()
 	AudioManager->AmbientSoundComponent->Play();
 	
 	//Initialize Cameras
-	CameraBoom->TargetArmLength = CameraBoom->TargetArmLength * this->GetActorScale().GetMax() * 1.5; 
+	CameraBoom->TargetArmLength = CameraBoom->TargetArmLength * this->GetActorScale().GetMax() * 2; 
 	FightCamera->SetWorldLocation(FVector(0, 0, 3000.f));
 	FightCamera->SetActive(false);
-	
 
+	
 	//Initialize Splines to represent the routes 
 	FActorSpawnParameters SpawnParam;
 	SpawnParam.Owner = this;
@@ -132,18 +132,18 @@ void ARouteExample::Tick(float DeltaTime)
 			if (EventsComponent->RollForEvent(RouteData->EventChance, DeltaTime, RouteData->StoryEventChance, RouteData->RandomEventChance)) // if it passes,swap to event
 			{
 				SwapState(Event);
-				CombatTick = 0;
 			}
+			else if (CombatTimer > CombatTick) // Roll for a combat event after a certain time
+				{
+					if (FMath::RandRange(0, 100) < RouteData->CombatEventChance) // if it passes then swap to combat
+					{
+						CombatTimer = 0;
+						CombatTransitionDelegate.Broadcast();
+						SwapState(Event);
+					}	
+				}
 		}
-		else if (CombatTimer > NavIncidentsCooldown) // Roll for a combat event after a certain time
-		{
-			if (FMath::RandRange(0, 100) < RouteData->CombatEventChance) // if it passes then swap to combat
-			{
-				CombatTimer = 0;
-				CombatTransitionDelegate.Broadcast();
-				SwapState(Event);
-			}
-		}
+		
 		break;
 	case PlayerStates::Orbiting: OrbitPlanet(RouteData, DeltaTime);
 		// to do - save route data when route generated
