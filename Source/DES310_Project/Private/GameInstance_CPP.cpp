@@ -97,7 +97,7 @@ void UGameInstance_CPP::SaveGameData(ARouteExample* CurrentRoute)
 		}
 
 		GameSave->SavedRouteData.SkyboxHue = CurrentRoute->GetCurrentSkyboxHue();	
-		GameSave->SavedRouteData.CurrentQuestID = CurrentRoute->CurrentQuest->ID;
+		//GameSave->SavedRouteData.CurrentQuestID = CurrentRoute->CurrentQuest->ID;
 		
 
 		UGameplayStatics::SaveGameToSlot(GameSave, SaveSlot, 0);

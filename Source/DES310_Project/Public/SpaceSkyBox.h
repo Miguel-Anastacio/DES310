@@ -24,6 +24,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	void OffsetColor();
+	UFUNCTION(BlueprintCallable) void SetColor(float Hue);
 
 	UPROPERTY(EditAnywhere, Category = Skybox) UMaterialInterface* Material;
 	UPROPERTY(EditAnywhere, Category = Skybox) UStaticMeshComponent* SkyMesh;

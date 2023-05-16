@@ -84,6 +84,7 @@ bool UInventoryComponent::RemoveItem(FString name)
 
 void UInventoryComponent::LoadItems(TArray<int> ItemsID)
 {
+	
 	TArray<UItem*> AllItems;
 	ConvertDataAsset(AllPossibleItemsDatabase, AllItems);
 

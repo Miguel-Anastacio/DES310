@@ -94,7 +94,7 @@ public:
 	//---Procedural Route---
 
 	void GenerateImproved(int FirstPlanetID, FVector Offset); //Using Poisson,Delaunay and A* We generate a procedural route with various parameters 
-	void GenerateLoad(TArray<FRouteObjectPair> SavedPlanets, TArray<FRouteObjectPair> SavedDetails); //Generates a route but using Pre-selected Planets, in order to generate a similar route from the loaded game
+	void GenerateLoad(FRouteData* Data); //Generates a route but using Pre-selected Planets, in order to generate a similar route from the loaded game
 	void ResetRoute(); // Reset Everything to do with the Route Data and meshes
 	void GenerateDetails(); // After Generating the Route, we run the Detail Generator which places astroids without colliding with the route
 
@@ -288,7 +288,7 @@ public:
 	UFUNCTION() void CallCombatOverDelegate();
 	UFUNCTION(BlueprintCallable) void ResetCameraAfterCombat();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	bool IsLoadSaveSuccessful();
 	float GetCurrentSkyboxHue();
 

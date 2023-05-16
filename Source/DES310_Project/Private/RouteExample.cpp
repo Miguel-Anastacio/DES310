@@ -468,129 +468,59 @@ void ARouteExample::GenerateImproved(int FirstPlanetID, FVector Offset)
 
 }
 
-void ARouteExample::GenerateLoad(TArray<FRouteObjectPair> SavedPlanets, TArray<FRouteObjectPair> SavedDetails)
+void ARouteExample::GenerateLoad(FRouteData* Data)
 {
-	
-	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(),0));
-	
-	do
-	{
-	
+
 	ResetRoute();
 	
-
-	TArray<FVector2D> vect = PoissonDiscSampling::PoissonDiscGenerator(PointRadius, FVector2D((int)Dimensions.X, (int)Dimensions.Y), RejectionRate);
-		FVector2D SSPosition = FVector2D(SavedPlanets[0].ObjectPosition.X + Dimensions.X / 2,SavedPlanets[0].ObjectPosition.Y  + Dimensions.Y / 2);	
-		FVector2D FirstPosition = FVector2D(SavedPlanets[1].ObjectPosition.X + Dimensions.X / 2,SavedPlanets[1].ObjectPosition.Y + Dimensions.Y / 2);
-		FVector2D LastPosition = FVector2D(SavedPlanets[2].ObjectPosition.X + Dimensions.X / 2,SavedPlanets[2].ObjectPosition.Y  + Dimensions.Y / 2);	
-
-	vect.Add(FirstPosition); // First Planet
-	vect.Add(SSPosition); // Space Station 
-	vect.Add(LastPosition); // Last Planet		
-		
-	TArray<Triangle> triangleList = DelaunayTriangulation::GenerateTriangulation(vect);
-
-	AStar astar;
-
-
-	for (int i = 0; i < vect.Num(); i++) // pass all the vertex points to astar
+	TArray<FRouteObjectPair> SavedPlanets = Data->Planets;
+	TArray<FRouteObjectPair> SavedDetails = Data->Details;
+	TArray<FVector> Spline1Points = Data->Spline1Points;
+	TArray<FVector> Spline2Points = Data->Spline2Points;
+	TArray<FVector> Spline3Points = Data->Spline3Points;
+	
+	
+	for(auto point : Spline1Points)
 	{
-		astar.AddPoint(vect[i]);
+		Spline1->Spline->AddSplinePoint(point, ESplineCoordinateSpace::Type::World, true);
 	}
-		
-	int FirstID = astar.findPoint(FirstPosition);
-	int LastID = astar.findPoint(SSPosition);
-	int SSID = astar.findPoint(LastPosition);
-	
 
-	//Loop Through all triangles in the list and add their connections to the a star points
-	for (int i = 0; i < triangleList.Num(); i++)
+	for(auto point : Spline2Points)
 	{
-		TArray<FVector2D> Points;
-		TArray<int> IDs;
-		for(int j = 0; j < 3 ;j++)
-		{
-			Points.Add(triangleList[i].Vertex[j]);
-			IDs.Add( astar.AddPoint(Points[j]));
-		}
-		
-		//Connect the each point, since they are points of a triangle
-		astar.ConnectPoints(IDs[0], IDs[1]);
-		astar.ConnectPoints(IDs[1], IDs[2]);
-		astar.ConnectPoints(IDs[2], IDs[0]);
-	
+		Spline2->Spline->AddSplinePoint(point, ESplineCoordinateSpace::Type::World, true);
 	}
 
-
-	astar.search(FirstID,LastID); // Find a route from Start to End planet
-	astar.LockCurrentPath();
-	Path1 = astar.path;
-	
-	astar.search(LastID, SSID); // Find a route to the start planet and space station
-	astar.LockCurrentPath();
-	Path2 = astar.path;
-
-	astar.search(SSID, LastID); // Find a route to the space station and end planet
-	astar.LockCurrentPath();
-	Path3 = astar.path;
-	FVector2D SpaceStation = astar.begin.position;
-
-	CreatePath(Path1,StartToEndPath,Spline1->Spline, BuoysPercent);
-	CreatePath(Path2,StartToStationPath,Spline2->Spline, BuoysPercent);
-	CreatePath(Path3,StationToEndPath,Spline3->Spline, BuoysPercent);
-
-	FTransform WorldTransform;
-	WorldTransform = GetRootComponent()->GetComponentTransform();
-	
-
-	FTransform SpawnTransfrom;
-	if (Planets.Num() < 3)
+	for(auto point : Spline3Points)
 	{
-		SpawnTransfrom.SetRotation(FQuat4d(0, 0, 0, 1.f));
-		SpawnTransfrom.SetScale3D(FVector(PlanetScaling, PlanetScaling, PlanetScaling));
-		SpawnTransfrom.SetLocation(SavedPlanets[1].ObjectPosition);
-		Planets.Add(CreatePlanet(SpawnTransfrom * WorldTransform,SavedPlanets[1].Index));
-		SpawnTransfrom.SetLocation(SavedPlanets[0].ObjectPosition);
-		Planets.Add(CreatePlanet(SpawnTransfrom * WorldTransform,SavedPlanets[0].Index));
-		SpawnTransfrom.SetLocation(SavedPlanets[2].ObjectPosition);
-		Planets.Add(CreatePlanet(SpawnTransfrom * WorldTransform,SavedPlanets[2].Index));
+		Spline3->Spline->AddSplinePoint(point, ESplineCoordinateSpace::Type::World, true);
 	}
-
-	//GenerateDetails();
-	
-
-	SpawnTransfrom *= WorldTransform;
-
-	auto playerController = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-	if (playerController)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Player Moved")));
-
-		playerController->SetActorLocation(FVector(SpawnTransfrom.GetLocation().X, SpawnTransfrom.GetLocation().Y, 1000));
-	}
-
-	std::string Line = "Distance: ";
-	int length = Spline2->Spline->GetSplineLength() / 20;
-	Line += std::to_string(length);
-	Line += " AU";
-	Planets[1]->Line3 = FText::FromString(FString(Line.c_str()));
-
-	Line = "Distance: ";
-	length = Spline1->Spline->GetSplineLength() / 20;
-	Line += std::to_string(length);
-	Line += " AU";
-	Planets[2]->Line3 = FText::FromString(FString(Line.c_str()));
-
-	}
-	while (!IsRouteGood());
-		
-	// set quest
-	//SetRandomQuest();
-	
 
 	Spline1->CreateSpline(DetailScaling);
 	Spline2->CreateSpline(DetailScaling);
 	Spline3->CreateSpline(DetailScaling);
+	
+	FTransform WorldTransform;
+	WorldTransform = GetRootComponent()->GetComponentTransform();
+	FTransform SpawnTransform;
+	SpawnTransform.SetRotation(FQuat4d(0, 0, 0, 1.f));
+	SpawnTransform.SetScale3D(FVector(PlanetScaling, PlanetScaling, PlanetScaling));
+
+	
+	for(auto Planet : SavedPlanets)
+	{
+		SpawnTransform.SetLocation(Planet.ObjectPosition);
+		APlanet* newPlanet = CreatePlanet(SpawnTransform * WorldTransform,Planet.Index);
+		newPlanet->Name = Planet.PlanetName;
+		Planets.Add(newPlanet);
+	}
+
+	SpawnTransform.SetScale3D(FVector(DetailScaling, DetailScaling, DetailScaling));
+	for(auto Detail : SavedDetails)
+	{
+		SpawnTransform.SetLocation(Detail.ObjectPosition);
+		ADetails* newDetail = CreateDetail(SpawnTransform * WorldTransform,Detail.Index);
+		Details.Add(newDetail);
+	}
 
 	for(auto mesh : Spline1->Meshes)
 	{
@@ -604,6 +534,13 @@ void ARouteExample::GenerateLoad(TArray<FRouteObjectPair> SavedPlanets, TArray<F
 	{
 		mesh->SetVisibility(false);
 	}
+
+	ASpaceSkyBox* SpaceSkyBox = Cast<ASpaceSkyBox>(UGameplayStatics::GetActorOfClass(GetWorld(), ASpaceSkyBox::StaticClass())); 
+	SpaceSkyBox->SetColor(Data->SkyboxHue);
+
+	Planets[0]->CurrentPlanet = true;
+	CurrentPlanet = Planets[0];
+	
 }
 
 //Create Bouys along the procedural path and fill the spline points
@@ -1706,7 +1643,8 @@ bool ARouteExample::IsLoadSaveSuccessful()
 	
 	UGameSave* GameSave = (Cast<UGameInstance_CPP>(UGameplayStatics::GetGameInstance(GetWorld())))->GetGameData();
 
-	GenerateLoad(GameSave->SavedRouteData.Planets, GameSave->SavedRouteData.Details);
+	
+	GenerateLoad(&GameSave->SavedRouteData);
 	
 	return true;
 	

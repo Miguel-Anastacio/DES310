@@ -76,7 +76,7 @@ protected:
 
 	// Called when the game starts
 	virtual void BeginPlay() override;
-	bool IsSaveLoadSuccessful();
+	UFUNCTION(BlueprintCallable) bool IsSaveLoadSuccessful();
 	// goes through the database and attaches each part to a slot
 	// maybe move to player inventory class or change it to be more versatile
 	void AssignSlots();

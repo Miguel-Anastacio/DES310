@@ -76,3 +76,9 @@ void ASpaceSkyBox::OffsetColor()
 
 }
 
+void ASpaceSkyBox::SetColor(float Hue)
+{
+	CurrentHue = Hue;
+	DynamicMaterial->SetScalarParameterValue(FName(TEXT("Hue-slide")),CurrentHue);
+}
+
