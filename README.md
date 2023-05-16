@@ -2,7 +2,7 @@ Master Gold Version
 Space Nomads
 Idle RPG
 Wombat Rampage
-Split Milk Studios
+Spilt Milk Studios
 
 
 
