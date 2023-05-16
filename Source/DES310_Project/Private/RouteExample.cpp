@@ -107,6 +107,7 @@ void ARouteExample::BeginPlay()
 	PathClickedDelegate.AddUniqueDynamic(this, &ARouteExample::GetPathSelected);
 	AudioManager->VictorySoundComponent->OnAudioFinished.AddUniqueDynamic(this, &ARouteExample::CallCombatOverDelegate);
 
+	SetRandomQuest();
 }
 
 // Called every frame
@@ -439,8 +440,6 @@ void ARouteExample::GenerateImproved(int FirstPlanetID, FVector Offset)
 	}
 	while (!IsRouteGood()); // Check the route look correct / is valid
 		
-	// set quests
-	SetQuest();
 	
 	//Create the splines that highlight on selection
 	Spline1->CreateSpline(DetailScaling);
@@ -585,9 +584,9 @@ void ARouteExample::GenerateLoad(TArray<FRouteObjectPair> SavedPlanets, TArray<F
 	}
 	while (!IsRouteGood());
 		
-	// set quests
-	SetQuest();
-		
+	// set quest
+	//SetRandomQuest();
+	
 
 	Spline1->CreateSpline(DetailScaling);
 	Spline2->CreateSpline(DetailScaling);
@@ -856,22 +855,11 @@ bool ARouteExample::MoveAlongPath(UPathData* PathData , float DeltaTime)
 			player->EngineStatus = CRUISING;
 			player->MovementSpeed = PlayerMovementSpeed;
 			player->CurrentAcceleration = player->BaseAcceleration;
+			player->WasQuestCompleted(CurrentQuest);
 
-			// only check for quest completed when is a planet
-			for (auto it : Planets)
-			{
-				if (it->CurrentPlanet)
-				{
-					CurrentPlanet = it;
-					it->SetActorHiddenInGame(false);
-					// see if player completed quest
-					player->WasQuestCompleted(it->Name);
-				}
-			}
 		}
 		
 	}
-
 	return false; // The Movement is still in progress
 
 }
@@ -1152,9 +1140,6 @@ void ARouteExample::BeginToOrbiting()
 		{
 			CurrentPlanet = it;
 			it->SetActorHiddenInGame(false);
-			// see if player completed quest
-			ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-			player->WasQuestCompleted(it->Name);
 		}
 	}
 
@@ -1245,6 +1230,33 @@ bool ARouteExample::IsRouteGood()
 
 
 	return true; 
+}
+
+void ARouteExample::SetRandomQuest()
+{
+	UObject* object = nullptr;
+	int index = FMath::RandRange(0, QuestTemplates.Num() - 1);
+	if (QuestTemplates.Num() > 0 && QuestTemplates[index])
+		object = QuestTemplates[index]->GetDefaultObject();
+	//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("QUEST - Error casting from template"));
+	if (object)
+		CurrentQuest = Cast<UQuest>(object);
+	//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("QUEST - Error casting to object"));
+}
+
+void ARouteExample::LoadQuestFromID(int ID)
+{
+	UObject* object = nullptr;
+	for (auto it : QuestTemplates)
+	{
+		UQuest* tempQuest = nullptr;
+		if (QuestTemplates.Num() > 0)
+			object = it->GetDefaultObject();
+		if (object)
+			tempQuest = Cast<UQuest>(object);
+		if (tempQuest->ID == ID)
+			CurrentQuest = tempQuest;
+	}
 }
 
 //Swap state is used to handle closing previous states properly
@@ -1535,33 +1547,6 @@ void ARouteExample::ChangeVisibilityOfRoute(bool toHide)
 		it->SetActorHiddenInGame(toHide);
 	}
 
-}
-
-void ARouteExample::SetQuest()
-{
-	// On the starting planet a quest for the last one of the route?
-	if(!Planets[1])
-		return;
-
-	if(!Planets[2])
-		return;
-
-	if (!Planets[1]->Quest)
-		return;
-
-	// on the first route 
-	// just store the quest
-	if (!LastQuestPreviousRoute)
-	{
-		LastQuestPreviousRoute = Planets[2]->Quest;
-	}
-	else
-	{
-		Planets[1]->Quest = LastQuestPreviousRoute;
-	}
-
-	Planets[1]->Quest->TargetName = Planets[2]->Name;
-	
 }
 
 //Main combat loop

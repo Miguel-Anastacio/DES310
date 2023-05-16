@@ -56,18 +56,6 @@ APlanet::APlanet()
 
 }
 
-void APlanet::SetRandomQuest()
-{
-	UObject* object = nullptr;
-	int index = FMath::RandRange(0, QuestTemplates.Num() - 1);
-	if (QuestTemplates.Num() > 0 && QuestTemplates[index])
-		object = QuestTemplates[index]->GetDefaultObject();
-	//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("QUEST - Error casting from template"));
-	if (object)
-		Quest = Cast<UQuest>(object);
-	//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("QUEST - Error casting to object"));
-}
-
 
 void APlanet::OnPlanetDestroyed(AActor* Act)
 {
@@ -119,7 +107,7 @@ void APlanet::BeginPlay()
 
 	
 
-	SetRandomQuest();
+	//SetRandomQuest();
 }
 
 // Called every frame

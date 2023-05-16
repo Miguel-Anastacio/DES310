@@ -282,7 +282,6 @@ void ASpaceshipCharacter::BeginPlay()
 	ShieldMesh->SetVisibility(false);
 
 	CompleteQuestDelegate.AddUniqueDynamic(this, &ASpaceshipCharacter::CompleteQuest);
-	StartQuestDelegate.AddUniqueDynamic(this, &ASpaceshipCharacter::StartQuest);
 	TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ASpaceshipCharacter::OnOverlapBegin);
 	DeflectionTriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ASpaceshipCharacter::OnDeflectOverlapBegin);
 	
@@ -378,71 +377,16 @@ void ASpaceshipCharacter::UpdatePlayerStats(int xpGained)
 	StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
 }
 
-void ASpaceshipCharacter::LoadQuestBasedOnID(int ID)
-{
-	UObject* object = nullptr;
-	for (auto it : QuestTemplates)
-	{
-		UQuest* tempQuest = nullptr;
-		if (QuestTemplates.Num() > 0)
-			object = it->GetDefaultObject();
-		if (object)
-			tempQuest = Cast<UQuest>(object);
-		if (tempQuest->ID == ID)
-			ActiveQuest = tempQuest;	
-	}
-}
-
 // Called every frame
 void ASpaceshipCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
 
-	/*
-	if(isFireRate)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Fire Rate Increased"));
-
-		FireRateCharge -= DeltaTime;
-		if(FireRateCharge < 0)
-		{
-			isFireRate = false;
-		}
-	}
-	
-	if(isShielding)
-	{
-		shieldingCharge -= DeltaTime;
-		if(shieldingCharge < 0)
-		{
-			isShielding = false;
-			ShieldMesh->SetVisibility(isShielding);
-			ShieldMesh->SetActive(isShielding);
-			ShieldMesh->SetCollisionEnabled( ECollisionEnabled::NoCollision);
-		}
-	}
-	*/
 	
 	if(isDeflecting)
 	{
 		DeflectionMesh->AddRelativeRotation(FRotator(0,0,DeltaTime * 200));
-		/*
-		if(DeflectionTimer > DeflectionLength)
-		{
-			isDeflecting = false;
-
-			DeflectionMesh->SetActive(false);
-			DeflectionMesh->SetCollisionEnabled( ECollisionEnabled::NoCollision);
-			DeflectionMesh->SetVisibility(false);
-	
-			DeflectionTriggerBox->SetActive(false);
-			DeflectionTriggerBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			DeflectionTriggerBox->SetVisibility(false);
-
-			DeflectionTimer = 0;
-			
-		}*/
 	}
 }
 
@@ -513,23 +457,6 @@ void ASpaceshipCharacter::DeflectPressed()
 	{
 		Selected = true;
 	}
-	/*
-	if(deflectCharges <= 0 || isDeflecting || !isAttacking)
-		return;
-	
-	deflectCharges--;
-	isDeflecting = true;
-
-	DeflectionMesh->SetActive(true);
-	DeflectionMesh->SetCollisionEnabled( ECollisionEnabled::QueryAndPhysics);
-	DeflectionMesh->SetVisibility(true);
-	
-	DeflectionTriggerBox->SetActive(true);
-	DeflectionTriggerBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	DeflectionTriggerBox->SetVisibility(true);
-	
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Deflection Enabled"));*/
-
 
 }
 
@@ -631,12 +558,6 @@ void ASpaceshipCharacter::OnDeflectOverlapBegin(UPrimitiveComponent* OverlappedC
 }
 
 
-void ASpaceshipCharacter::StartQuest(UQuest* QuestStarted)
-{
-	ActiveQuest = QuestStarted;
-}
-
-
 void ASpaceshipCharacter::MoveCameraTo(AActor* Actor)
 {
 	/*
@@ -653,22 +574,20 @@ void ASpaceshipCharacter::MoveTowards(FVector Target)
 	GetCharacterMovement()->Velocity = Direction * 400;
 }
 
-void ASpaceshipCharacter::WasQuestCompleted(FString planetName)
+void ASpaceshipCharacter::WasQuestCompleted(UQuest* quest)
 {
-	if (ActiveQuest)
-	{
-		LastCompletedQuest = ActiveQuest;
-		StatsPlayerComponent->IncreaseCurrency(LastCompletedQuest->CreditsGained);
+	//if (ActiveQuest)
+	//{
+		StatsPlayerComponent->IncreaseCurrency(quest->CreditsGained);
 		GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("XP"));
-		StatsPlayerComponent->XPSystem(LastCompletedQuest->XPGained);
+		StatsPlayerComponent->XPSystem(quest->XPGained);
 		ApplyInventoryToStats();
 		CompleteQuestDelegate.Broadcast();
-	}
+	//}
 }
 
 void ASpaceshipCharacter::CompleteQuest()
 {
 	GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("XP"));
 	GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("Quest Completed"));
-	ActiveQuest = nullptr;
 }

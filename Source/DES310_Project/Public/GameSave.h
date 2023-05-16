@@ -52,7 +52,7 @@ struct FRouteData
 	float SkyboxHue;
 
 	UPROPERTY()
-	FName CurrentQuestID;
+	int32 CurrentQuestID;
 };
 
 USTRUCT()

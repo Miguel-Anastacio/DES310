@@ -119,9 +119,6 @@ public:
 
 
 	UPROPERTY(BlueprintReadWrite)APlanet* CurrentPlanet;
-	// this is the quest you should save
-	UPROPERTY(BlueprintReadWrite)UQuest* ActiveQuest = nullptr;
-	UPROPERTY(EditAnywhere)TArray<TSubclassOf<UQuest>> QuestTemplates;
 
 	UPROPERTY(BlueprintReadWrite)UQuest* LastCompletedQuest = nullptr;
 	UPROPERTY(BlueprintReadWrite) int Credits = 100.0f;
@@ -198,8 +195,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UpdatePlayerStats(int xpGained);
 
-	UFUNCTION()
-		void LoadQuestBasedOnID(int ID);
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -223,7 +218,7 @@ public:
 	// helper function to move towards a location
 	void MoveTowards(FVector target);
 
-	void WasQuestCompleted(FString planetName);
+	void WasQuestCompleted(UQuest* quest);
 
 	// Events delegates and fucntions binded to events
 	UFUNCTION()
@@ -233,9 +228,6 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Custom Events", BlueprintCallable)
 	FQuestCompletedDelegate CompleteQuestDelegate;
 
-
-	UFUNCTION(BlueprintCallable)
-	void StartQuest(UQuest* QuestStarted);
 
 	UPROPERTY(BlueprintAssignable, Category = "Custom Events", BlueprintCallable)
 	FQuestStartedDelegate StartQuestDelegate;

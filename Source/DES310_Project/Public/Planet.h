@@ -69,13 +69,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = Camera)
 	float CameraDistance = 4000;
 
-	// 
-	UPROPERTY(EditAnywhere)
-	TArray<TSubclassOf<UQuest>> QuestTemplates;
-	UPROPERTY(VisibleAnywhere)
-	UQuest* Quest;
-
-
 	
 	// UI icons for navigation
 	// 0 - you are here 1 - checkpoint 2 - destination
@@ -94,14 +87,11 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool IsCurrentPlanet() { return CurrentPlanet; };
+	// this could be removed
+	// no longer in use
 	UFUNCTION(BlueprintCallable)
 	AVendor* GetVendor() { return VendorActor; };
 
-	UFUNCTION(BlueprintCallable)
-	UQuest* GetQuest() { return Quest; };
-
-
-	void SetRandomQuest();
 	int Index = -1;
 	
 	/*UFUNCTION()

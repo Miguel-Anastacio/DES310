@@ -96,8 +96,9 @@ void UGameInstance_CPP::SaveGameData(ARouteExample* CurrentRoute)
 			GameSave->SavedRouteData.Spline3Points.Add(PointOnSpline);
 		}
 
-		GameSave->SavedRouteData.SkyboxHue = CurrentRoute->GetCurrentSkyboxHue();
-		GameSave->SavedRouteData.CurrentQuestID = CurrentRoute->LastQuestPreviousRoute->ID;
+		GameSave->SavedRouteData.SkyboxHue = CurrentRoute->GetCurrentSkyboxHue();	
+		GameSave->SavedRouteData.CurrentQuestID = CurrentRoute->CurrentQuest->ID;
+		
 		UGameplayStatics::SaveGameToSlot(GameSave, SaveSlot, 0);
 
 	}
@@ -105,7 +106,5 @@ void UGameInstance_CPP::SaveGameData(ARouteExample* CurrentRoute)
 
 UGameSave* UGameInstance_CPP::GetGameData()
 {
-	
 	return GameSave;
-
 }

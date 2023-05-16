@@ -21,6 +21,8 @@ class DES310_PROJECT_API UGameInstance_CPP : public UGameInstance
 	UPROPERTY() class UGameSave* GameSave;
 
 public:
+	// added this soe the UI can also call it
+	UFUNCTION(BlueprintCallable)
 	void SaveGameData(ARouteExample* CurrentRoute);
 	UGameSave* GetGameData();
 

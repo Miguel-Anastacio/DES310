@@ -203,10 +203,6 @@ public:
 	UPROPERTY() TArray<APlanet*> Planets;
 	UPROPERTY() TArray<ADetails*> Details;
 
-	// store the quest of the last planet of the previous route to set it as the quest of the first planet 
-	// of the next route
-	UQuest* LastQuestPreviousRoute = nullptr;
-
 
 	//---Timers---
 	float timer = 0;
@@ -221,6 +217,15 @@ public:
 	float NavIncidentsCooldown = 3.0f;
 	float NavIncidentsTimer = 0.0f;
 
+	// Quests
+	UPROPERTY(EditAnywhere)
+	TArray<TSubclassOf<UQuest>> QuestTemplates;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UQuest* CurrentQuest;
+	UFUNCTION(BlueprintCallable)
+	void SetRandomQuest();
+	UFUNCTION(BlueprintCallable)
+	void LoadQuestFromID(int ID);
 
 	
 	//---States---
@@ -275,8 +280,6 @@ public:
 
 	// used to make sure that we don't repeat planets on the same route
 	std::vector<int> indexOfPlanetsInUse;
-
-	void SetQuest();
 
 	//---Combat---
 	UFUNCTION() void FightScene(float DeltaTime);
