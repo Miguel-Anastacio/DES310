@@ -182,28 +182,6 @@ void UStatsComponent::DecreaseCurrency(int Amount)
 	CurrentCurrency -= Amount;
 }
 
-void UStatsComponent::SaveStats()
-{
-	
-	FPlayerSaveData StatsData;
-
-	StatsData.playerName = GetOwner()->GetFName();
-	FMemoryWriter MemoryWriter(StatsData.ByteData);
-
-	FObjectAndNameAsStringProxyArchive Ar(MemoryWriter, true);
-	// Find only variables with UPROPERTY(SaveGame)
-	Ar.ArIsSaveGame = true;
-	// Converts Actor's SaveGame UPROPERTIES into binary array
-	this->Serialize(Ar);
-
-	UGameSave* GS;
-	GS = Cast<UGameSave>(UGameplayStatics::CreateSaveGameObject(UGameSave::StaticClass()));
-	GS->SavedPlayerStats = StatsData;
-
-	UGameplayStatics::SaveGameToSlot(GS, TEXT("Game_Save"), 0);
-	
-}
-
 bool UStatsComponent::AttemptLoad()
 {
 
@@ -215,8 +193,7 @@ bool UStatsComponent::AttemptLoad()
 	
 	UGameSave* GameSave = (Cast<UGameInstance_CPP>(UGameplayStatics::GetGameInstance(GetWorld())))->GetGameData();
 
-	FMemoryReader MemReader(GameSave->SavedPlayerStats.ByteData);
-	GetOwner()->SetActorLocation(GameSave->SavedPlayerStats.playerPos);
+	FMemoryReader MemReader(GameSave->SavedPlayerStats.StatsByteData);
 	
 	FObjectAndNameAsStringProxyArchive Ar(MemReader, true);
 

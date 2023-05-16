@@ -7,6 +7,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "GameSave.h"
 #include "Kismet/GameplayStatics.h"
 #include "Serialization/MemoryWriter.h"
 #include "Containers/Array.h"
@@ -16,25 +17,6 @@
 #define MAX_LEVEL 50
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLevelUpDelegate);
-
-
-USTRUCT()
-struct FPlayerSaveData
-{
-	GENERATED_BODY()
-
-public:
-
-	UPROPERTY()
-	FName playerName;
-	
-	/* Contains all 'SaveGame' marked variables of the Actor */
-	UPROPERTY()
-	TArray<uint8> ByteData;
-
-	UPROPERTY()
-		FVector playerPos;
-};
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), Blueprintable)
 class DES310_PROJECT_API UStatsComponent : public UActorComponent
@@ -95,9 +77,6 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void DecreaseCurrency(int Amount);
-
-	UFUNCTION()
-	void SaveStats();
 
 UFUNCTION()
 	bool AttemptLoad();
