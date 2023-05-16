@@ -104,6 +104,7 @@ void UStatsComponent::BeginPlay()
 	AttemptLoad();
 	// ...
 	
+
 }
 
 

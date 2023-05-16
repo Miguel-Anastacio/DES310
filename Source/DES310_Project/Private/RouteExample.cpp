@@ -147,8 +147,6 @@ void ARouteExample::Tick(float DeltaTime)
 		
 		break;
 	case PlayerStates::Orbiting: OrbitPlanet(RouteData, DeltaTime);
-		// to do - save route data when route generated
-		GameInstance->SaveGameData(this);
 		break;
 	case PlayerStates::Selecting: //SelectPath();
 		break;

@@ -206,6 +206,14 @@ bool UInventoryComponent::IsSaveLoadSuccessful()
 	UGameSave* GameSave = (Cast<UGameInstance_CPP>(UGameplayStatics::GetGameInstance(GetWorld())))->GetGameData();
 	
 	LoadItems(GameSave->SavedPlayerStats.InventoryItemIDs);
+
+	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(GetOwner());
+	if (player)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Problem casting"));
+		player->ApplyInventoryToStats();
+	}
+
 	return true;
 }
 
@@ -225,7 +233,6 @@ void UInventoryComponent::AssignSlots()
 			case SHIELD:
 					ShieldSlot = it;
 				break;
-
 			case BLASTER:
 					BlasterSlot = it;
 				break;
