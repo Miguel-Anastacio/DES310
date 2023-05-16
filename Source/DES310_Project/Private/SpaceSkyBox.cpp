@@ -70,8 +70,8 @@ void ASpaceSkyBox::OffsetColor()
 	TargetHue = CurrentHue + RandomHue;*/
 
 	TargetHue = FMath::RandRange(0.0,1.0);
-	
-	DynamicMaterial->SetScalarParameterValue(FName(TEXT("Hue-slide")),TargetHue);
+	CurrentHue = TargetHue;
+	DynamicMaterial->SetScalarParameterValue(FName(TEXT("Hue-slide")),CurrentHue);
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Turquoise, FString::Printf(TEXT("Skybox Color Changed")));
 
 }

@@ -189,7 +189,7 @@ void ARouteExample::Tick(float DeltaTime)
 		StateName = "Orbiting";
 
 		// to do - save route data when route generated
-		GameInstance->SaveGameData();
+		GameInstance->SaveGameData(this);
 		break;
 	case PlayerStates::Selecting: //SelectPath();
 		StateName = "Selecting";
@@ -845,7 +845,7 @@ void ARouteExample::GenerateImproved(int FirstPlanetID, FVector Offset)
 
 }
 
-void ARouteExample::GenerateLoad(TArray<FVector> PlanetPositions, TArray<int> PlanetIDs)
+void ARouteExample::GenerateLoad(TArray<FRouteObjectPair> SavedPlanets, TArray<FRouteObjectPair> SavedDetails)
 {
 	
 	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(),0));
@@ -857,9 +857,9 @@ void ARouteExample::GenerateLoad(TArray<FVector> PlanetPositions, TArray<int> Pl
 	
 
 	TArray<FVector2D> vect = PoissonDiscSampling::PoissonDiscGenerator(PointRadius, FVector2D((int)Dimensions.X, (int)Dimensions.Y), RejectionRate);
-	FVector2D FirstPosition = FVector2D(PlanetPositions[0].X + Dimensions.X / 2,PlanetPositions[0].Y + Dimensions.Y / 2);
-		FVector2D SSPosition = FVector2D(PlanetPositions[1].X + Dimensions.X / 2,PlanetPositions[1].Y + Dimensions.Y / 2);	
-		FVector2D LastPosition = FVector2D(PlanetPositions[2].X + Dimensions.X / 2,PlanetPositions[2].Y + Dimensions.Y / 2);	
+		FVector2D SSPosition = FVector2D(SavedPlanets[0].ObjectPosition.X + Dimensions.X / 2,SavedPlanets[0].ObjectPosition.Y  + Dimensions.Y / 2);	
+		FVector2D FirstPosition = FVector2D(SavedPlanets[1].ObjectPosition.X + Dimensions.X / 2,SavedPlanets[1].ObjectPosition.Y + Dimensions.Y / 2);
+		FVector2D LastPosition = FVector2D(SavedPlanets[2].ObjectPosition.X + Dimensions.X / 2,SavedPlanets[2].ObjectPosition.Y  + Dimensions.Y / 2);	
 
 	vect.Add(FirstPosition); // First Planet
 	vect.Add(SSPosition); // Space Station 
@@ -925,15 +925,15 @@ void ARouteExample::GenerateLoad(TArray<FVector> PlanetPositions, TArray<int> Pl
 	{
 		SpawnTransfrom.SetRotation(FQuat4d(0, 0, 0, 1.f));
 		SpawnTransfrom.SetScale3D(FVector(PlanetScaling, PlanetScaling, PlanetScaling));
-		SpawnTransfrom.SetLocation(PlanetPositions[1]);
-		Planets.Add(CreatePlanet(SpawnTransfrom * WorldTransform,PlanetIDs[1]));
-		SpawnTransfrom.SetLocation(PlanetPositions[0]);
-		Planets.Add(CreatePlanet(SpawnTransfrom * WorldTransform,PlanetIDs[0]));
-		SpawnTransfrom.SetLocation(PlanetPositions[2]);
-		Planets.Add(CreatePlanet(SpawnTransfrom * WorldTransform,PlanetIDs[2]));
+		SpawnTransfrom.SetLocation(SavedPlanets[1].ObjectPosition);
+		Planets.Add(CreatePlanet(SpawnTransfrom * WorldTransform,SavedPlanets[1].Index));
+		SpawnTransfrom.SetLocation(SavedPlanets[0].ObjectPosition);
+		Planets.Add(CreatePlanet(SpawnTransfrom * WorldTransform,SavedPlanets[0].Index));
+		SpawnTransfrom.SetLocation(SavedPlanets[2].ObjectPosition);
+		Planets.Add(CreatePlanet(SpawnTransfrom * WorldTransform,SavedPlanets[2].Index));
 	}
 
-	GenerateDetails();
+	//GenerateDetails();
 	
 
 	SpawnTransfrom *= WorldTransform;
@@ -950,7 +950,7 @@ void ARouteExample::GenerateLoad(TArray<FVector> PlanetPositions, TArray<int> Pl
 	int length = Spline2->Spline->GetSplineLength() / 20;
 	Line += std::to_string(length);
 	Line += " AU";
-	Planets[0]->Line3 = FText::FromString(FString(Line.c_str()));
+	Planets[1]->Line3 = FText::FromString(FString(Line.c_str()));
 
 	Line = "Distance: ";
 	length = Spline1->Spline->GetSplineLength() / 20;
@@ -1943,7 +1943,10 @@ void ARouteExample::FinalSelectRoute()
 
 void ARouteExample::StartGame()
 {
-	GenerateImproved(-1,FVector(0,0,0));
+	//if(!IsLoadSaveSuccessful())
+	//{
+		GenerateImproved(-1,FVector(0,0,0));
+	//}
 
 	UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetViewTargetWithBlend(Planets[1], CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
 	Planets[1]->CurrentPlanet = true;
@@ -1952,7 +1955,7 @@ void ARouteExample::StartGame()
 	PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	PlayerController->SetShowMouseCursor(true);
 
-	FightCamera->SetWorldLocation(FVector(0, 0, 3000.0));
+	FightCamera->SetWorldLocation(FVector(0, 0, 6000.0));
 
 	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	player->AudioManager = AudioManager;
@@ -2162,4 +2165,29 @@ void ARouteExample::ResetCameraAfterCombat()
 		CurrentPlayer->TopDownCamera->SetActive(true);
 
 	PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(), CameraTransitionSpeed), 0, EViewTargetBlendFunction::VTBlend_Linear);
+}
+
+bool ARouteExample::IsLoadSaveSuccessful()
+{
+
+	if (!UGameplayStatics::DoesSaveGameExist(TEXT("Game_Save"), 0))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,	TEXT("SAVE NOT FOUND"));
+		return false;
+	}
+	
+	UGameSave* GameSave = (Cast<UGameInstance_CPP>(UGameplayStatics::GetGameInstance(GetWorld())))->GetGameData();
+
+	GenerateLoad(GameSave->SavedRouteData.Planets, GameSave->SavedRouteData.Details);
+	
+	return true;
+	
+}
+
+float ARouteExample::GetCurrentSkyboxHue()
+{
+
+	ASpaceSkyBox* SpaceSkyBox = Cast<ASpaceSkyBox>(UGameplayStatics::GetActorOfClass(GetWorld(), ASpaceSkyBox::StaticClass()));
+	return SpaceSkyBox->CurrentHue;
+	
 }

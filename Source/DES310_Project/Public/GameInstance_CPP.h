@@ -21,7 +21,7 @@ class DES310_PROJECT_API UGameInstance_CPP : public UGameInstance
 	UPROPERTY() class UGameSave* GameSave;
 
 public:
-	void SaveGameData();
+	void SaveGameData(ARouteExample* CurrentRoute);
 	UGameSave* GetGameData();
 
 };
