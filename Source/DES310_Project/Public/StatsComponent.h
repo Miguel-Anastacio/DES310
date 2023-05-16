@@ -37,12 +37,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, SaveGame) int CurrentCurrency;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, SaveGame) int Speed;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) int BaseSpeed;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly) float Shields;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, SaveGame) float Shields;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) float BaseShields;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame) float CurrentShields;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly) int HullIntegrity;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) float CurrentShields;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, SaveGame) int HullIntegrity;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) int BaseHullIntegrity;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame) int CurrentHullIntegrity;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) int CurrentHullIntegrity;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SaveGame) int ATKPower;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) int BaseATKPower;
 

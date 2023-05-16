@@ -82,7 +82,7 @@ bool UInventoryComponent::RemoveItem(FString name)
 	return false;
 }
 
-void UInventoryComponent::LoadItems(TArray<int> ItemsID)
+void UInventoryComponent::LoadItemsFromSave(TArray<int> ItemsID)
 {
 	TArray<UItem*> AllItems;
 	ConvertDataAsset(AllPossibleItemsDatabase, AllItems);
@@ -178,8 +178,9 @@ void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	if(IsSaveLoadSuccessful())
+	if(UGameInstance_CPP::DoesGameSaveExist())
 	{
+		LoadSave();
 		return;
 	}
 	
@@ -194,18 +195,10 @@ void UInventoryComponent::BeginPlay()
 	
 }
 
-bool UInventoryComponent::IsSaveLoadSuccessful()
+void UInventoryComponent::LoadSave()
 {
-	if (!UGameplayStatics::DoesSaveGameExist(TEXT("Game_Save"), 0))
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,	TEXT("SAVE NOT FOUND"));
-		return false;
-	}
-
 	UGameSave* GameSave = (Cast<UGameInstance_CPP>(UGameplayStatics::GetGameInstance(GetWorld())))->GetGameData();
-	
-	LoadItems(GameSave->SavedPlayerStats.InventoryItemIDs);
-	return true;
+	LoadItemsFromSave(GameSave->SavedPlayerStats.InventoryItemIDs);
 }
 
 

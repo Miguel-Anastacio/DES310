@@ -16,7 +16,7 @@ class DES310_PROJECT_API UGameInstance_CPP : public UGameInstance
 	GENERATED_BODY()
 	void Init() override;
 
-	FString SaveSlot = "Game_Save";
+	static FString SaveSlot = "Game_Save";
 
 	UPROPERTY() class UGameSave* GameSave;
 
@@ -25,5 +25,5 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SaveGameData(ARouteExample* CurrentRoute);
 	UGameSave* GetGameData();
-
+	static bool DoesGameSaveExist();
 };

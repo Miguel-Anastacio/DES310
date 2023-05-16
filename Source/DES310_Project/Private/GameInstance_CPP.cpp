@@ -97,9 +97,8 @@ void UGameInstance_CPP::SaveGameData(ARouteExample* CurrentRoute)
 		}
 
 		GameSave->SavedRouteData.SkyboxHue = CurrentRoute->GetCurrentSkyboxHue();	
-		GameSave->SavedRouteData.CurrentQuestID = CurrentRoute->CurrentQuest->ID;
+		//GameSave->SavedRouteData.CurrentQuestID = CurrentRoute->CurrentQuest->ID;
 		
-
 		UGameplayStatics::SaveGameToSlot(GameSave, SaveSlot, 0);
 
 	}
@@ -108,4 +107,16 @@ void UGameInstance_CPP::SaveGameData(ARouteExample* CurrentRoute)
 UGameSave* UGameInstance_CPP::GetGameData()
 {
 	return GameSave;
+}
+
+bool UGameInstance_CPP::DoesGameSaveExist()
+{
+	
+	if (!UGameplayStatics::DoesSaveGameExist(SaveSlot, 0))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,	TEXT("SAVE NOT FOUND"));
+		return false;
+	}
+
+	return true;
 }

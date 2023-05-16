@@ -50,7 +50,7 @@ public:
 	bool RemoveItem(FString name);
 
 	UFUNCTION(BlueprintCallable)
-	void LoadItems(TArray<int> ItemsID);
+	void LoadItemsFromSave(TArray<int> ItemsID);
 
 	int HowManyItemsOftype(PartType type);
 
@@ -76,7 +76,7 @@ protected:
 
 	// Called when the game starts
 	virtual void BeginPlay() override;
-	bool IsSaveLoadSuccessful();
+	void LoadSave();
 	// goes through the database and attaches each part to a slot
 	// maybe move to player inventory class or change it to be more versatile
 	void AssignSlots();

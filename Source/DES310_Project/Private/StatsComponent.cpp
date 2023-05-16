@@ -100,8 +100,11 @@ void UStatsComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-
-	AttemptLoad();
+	if (UGameInstance_CPP::DoesGameSaveExist())
+	{
+		AttemptLoad();
+	}
+	
 	// ...
 	
 }
@@ -184,12 +187,6 @@ void UStatsComponent::DecreaseCurrency(int Amount)
 
 bool UStatsComponent::AttemptLoad()
 {
-
-	if (!UGameplayStatics::DoesSaveGameExist(TEXT("Game_Save"), 0))
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,	TEXT("SAVE NOT FOUND"));
-		return false;
-	}
 	
 	UGameSave* GameSave = (Cast<UGameInstance_CPP>(UGameplayStatics::GetGameInstance(GetWorld())))->GetGameData();
 
@@ -200,7 +197,7 @@ bool UStatsComponent::AttemptLoad()
 	Ar.ArIsSaveGame = true;
 	// Convert binary array back into actor's variables
 	this->Serialize(Ar);
-
+	
 	return true;
 	
 }
