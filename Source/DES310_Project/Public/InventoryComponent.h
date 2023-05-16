@@ -60,6 +60,9 @@ public:
 	bool SwapShipParts(PartType type, UItem* newItem);
 
 
+	UFUNCTION()
+	TArray<UItem*> GetInventoryItems(){ return {ShieldSlot, HullSlot, BlasterSlot, EngineSlot}; }
+	
 	// converts database into an array of items
 	void ConvertDataAsset(UItemData* AItemDatabase, TArray<UItem*>&ArrayOfItems);
 protected:
@@ -73,6 +76,7 @@ protected:
 
 	// Called when the game starts
 	virtual void BeginPlay() override;
+	bool IsSaveLoadSuccessful();
 	// goes through the database and attaches each part to a slot
 	// maybe move to player inventory class or change it to be more versatile
 	void AssignSlots();

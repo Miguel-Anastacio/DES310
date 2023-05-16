@@ -378,6 +378,21 @@ void ASpaceshipCharacter::UpdatePlayerStats(int xpGained)
 	StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
 }
 
+void ASpaceshipCharacter::LoadQuestBasedOnID(int ID)
+{
+	UObject* object = nullptr;
+	for (auto it : QuestTemplates)
+	{
+		UQuest* tempQuest = nullptr;
+		if (QuestTemplates.Num() > 0)
+			object = it->GetDefaultObject();
+		if (object)
+			tempQuest = Cast<UQuest>(object);
+		if (tempQuest->ID == ID)
+			ActiveQuest = tempQuest;	
+	}
+}
+
 // Called every frame
 void ASpaceshipCharacter::Tick(float DeltaTime)
 {
@@ -642,16 +657,12 @@ void ASpaceshipCharacter::WasQuestCompleted(FString planetName)
 {
 	if (ActiveQuest)
 	{
-		if (ActiveQuest->TargetName == planetName)
-		{
-			LastCompletedQuest = ActiveQuest;
-			StatsPlayerComponent->IncreaseCurrency(LastCompletedQuest->CreditsGained);
-			GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("XP"));
-			StatsPlayerComponent->XPSystem(LastCompletedQuest->XPGained);
-			ApplyInventoryToStats();
-			CompleteQuestDelegate.Broadcast();
-		}
-	
+		LastCompletedQuest = ActiveQuest;
+		StatsPlayerComponent->IncreaseCurrency(LastCompletedQuest->CreditsGained);
+		GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("XP"));
+		StatsPlayerComponent->XPSystem(LastCompletedQuest->XPGained);
+		ApplyInventoryToStats();
+		CompleteQuestDelegate.Broadcast();
 	}
 }
 
@@ -660,11 +671,4 @@ void ASpaceshipCharacter::CompleteQuest()
 	GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("XP"));
 	GEngine->AddOnScreenDebugMessage(10, 5.0f, FColor::Blue, TEXT("Quest Completed"));
 	ActiveQuest = nullptr;
-}
-
-void ASpaceshipCharacter::SaveGame()
-{
-
-	StatsPlayerComponent->SaveStats();
-	
 }
