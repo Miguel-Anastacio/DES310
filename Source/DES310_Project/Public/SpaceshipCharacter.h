@@ -80,8 +80,9 @@ public:
 	bool Selected = false;
 	bool IsInSelectScreen = false;
 	bool Alive = true;
-
+	
 	// this index is used to set the right blueprint when loading
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	int Index = 0;
 
 	//Actor Components
@@ -218,6 +219,8 @@ public:
 	                           class UPrimitiveComponent* OtherComp,
 	                           int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	
+	
 	// change camera 
 	void MoveCameraTo(AActor* Actors);
 

@@ -325,16 +325,16 @@ void ASpaceshipCharacter::SetStatsBasedOnClass()
 	switch (PlayerShip.Type)
 	{
 	case FIGHTER_EGYPTIAN: PlayerFaction = false;
-		Index = 0;
+
 		break;
 	case HEAVY_EGYPTIAN: PlayerFaction = false;
-		Index = 1;
+
 		break;
 	case FIGHTER_VIKING: PlayerFaction = true;
-		Index = 2;
+
 		break;
 	case HEAVY_VIKING: PlayerFaction = true;
-		Index = 3;
+
 		break;
 	default:
 		break;

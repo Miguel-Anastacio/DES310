@@ -88,6 +88,7 @@ void UStatsComponent::SetStatsBasedOnLevel(int level)
 
 bool UStatsComponent::DodgeAttack()
 {
+	MaxSpeed = MAX_LEVEL * SpeedIncrement + 75 * 1.2;
 	if (Speed > FMath::RandRange(0, GetMaxSpeed()))
 	{
 		return true;
