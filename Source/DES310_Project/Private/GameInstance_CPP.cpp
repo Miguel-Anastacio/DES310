@@ -11,13 +11,14 @@ void UGameInstance_CPP::Init()
 	// check if there is game data to load it
 	// or create a new one if the game is just starting
 
-	if (!UGameplayStatics::DoesSaveGameExist(TEXT("Game_Save"), 0))
+	if (UGameplayStatics::DoesSaveGameExist(TEXT("Game_Save"), 0))
 	{
-		// create a new game data
-		GameSave = Cast<UGameSave>(UGameplayStatics::CreateSaveGameObject(UGameSave::StaticClass()));
+		// load game data
+		GameSave = Cast<UGameSave>(UGameplayStatics::LoadGameFromSlot(SaveSlot, 0));
 	}
 	else {
-		GameSave = Cast<UGameSave>(UGameplayStatics::LoadGameFromSlot(SaveSlot, 0));
+		// create a new game data
+		GameSave = Cast<UGameSave>(UGameplayStatics::CreateSaveGameObject(UGameSave::StaticClass()));
 	}
 
 }
@@ -26,6 +27,7 @@ void UGameInstance_CPP::SaveGameData(ARouteExample* CurrentRoute)
 {
 	if (GameSave)
 	{
+		// empty vector containers
 		GameSave->SavedPlayerStats.StatsByteData.Empty();
 		GameSave->SavedPlayerStats.InventoryItemIDs.Empty();
 		GameSave->SavedRouteData.Planets.Empty();
@@ -34,6 +36,8 @@ void UGameInstance_CPP::SaveGameData(ARouteExample* CurrentRoute)
 		GameSave->SavedRouteData.Spline1Points.Empty();
 		GameSave->SavedRouteData.Spline2Points.Empty();
 		GameSave->SavedRouteData.Spline3Points.Empty();
+
+
 		
 		ASpaceshipCharacter* Player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
@@ -41,16 +45,19 @@ void UGameInstance_CPP::SaveGameData(ARouteExample* CurrentRoute)
 		GameSave->SavedPlayerStats.PlayerPos = Player->GetActorLocation();
 		GameSave->SavedPlayerStats.PlayerIndex = Player->Index;
 
+		// setup player byte array writer
 		FMemoryWriter MemoryWriter(GameSave->SavedPlayerStats.StatsByteData);
 
 		FObjectAndNameAsStringProxyArchive Ar(MemoryWriter, true);
+
 		// Find only variables with UPROPERTY(SaveGame)
 		Ar.ArIsSaveGame = true;
+		
 		// Converts Actor's SaveGame UPROPERTIES into binary array
 		Player->StatsPlayerComponent->Serialize(Ar);
 
+		// get inventory and save item IDs
 		auto InventoryArray = Player->PlayerInventoryComponent->GetInventoryItems();
-
 		for(auto i : InventoryArray)
 		{
 			
@@ -58,23 +65,26 @@ void UGameInstance_CPP::SaveGameData(ARouteExample* CurrentRoute)
 			
 		}
 
+		// ------------ ROUTE DATA ---------- //
 		FRouteObjectPair RouteObject;
-		
+
+		// save planet info
 		for(auto planet : CurrentRoute->Planets)
 		{
 			RouteObject = {planet->GetName(), planet->Index, planet->GetActorLocation()};
 			GameSave->SavedRouteData.Planets.Add(RouteObject);
 		}
 
+		// save route detail info
 		for(auto detail : CurrentRoute->Details)
 		{
 			RouteObject = {detail->GetName(), detail->Index, detail->GetActorLocation()};
 			GameSave->SavedRouteData.Details.Add(RouteObject);
 		}
-
-		auto Spline1Points = CurrentRoute->Spline1->Spline->SplineCurves.Position.Points;
-		auto Spline2Points = CurrentRoute->Spline2->Spline->SplineCurves.Position.Points;
-		auto Spline3Points = CurrentRoute->Spline3->Spline->SplineCurves.Position.Points;
+	
+		TArray<FInterpCurvePoint<UE::Math::TVector<double>>> Spline1Points = CurrentRoute->Spline1->Spline->SplineCurves.Position.Points;
+		TArray<FInterpCurvePoint<UE::Math::TVector<double>>> Spline2Points = CurrentRoute->Spline2->Spline->SplineCurves.Position.Points;
+		TArray<FInterpCurvePoint<UE::Math::TVector<double>>> Spline3Points = CurrentRoute->Spline3->Spline->SplineCurves.Position.Points;
 
 		// Iterate over each spline point and convert it to world space
 		for (auto SplinePoint : Spline1Points)
@@ -82,15 +92,13 @@ void UGameInstance_CPP::SaveGameData(ARouteExample* CurrentRoute)
 			FVector PointOnSpline = CurrentRoute->Spline1->Spline->GetComponentTransform().TransformPosition(SplinePoint.OutVal);
 			GameSave->SavedRouteData.Spline1Points.Add(PointOnSpline);
 		}
-
-		// Iterate over each spline point and convert it to world space
+		
 		for (auto SplinePoint : Spline2Points)
 		{
 			FVector PointOnSpline = CurrentRoute->Spline2->Spline->GetComponentTransform().TransformPosition(SplinePoint.OutVal);
 			GameSave->SavedRouteData.Spline2Points.Add(PointOnSpline);
 		}
-
-		// Iterate over each spline point and convert it to world space
+		
 		for (auto SplinePoint : Spline3Points)
 		{
 			FVector PointOnSpline = CurrentRoute->Spline3->Spline->GetComponentTransform().TransformPosition(SplinePoint.OutVal);

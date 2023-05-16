@@ -1571,10 +1571,10 @@ void ARouteExample::FightScene(float DeltaTime) {
 	FVector Radius;
 	player->GetActorBounds(true,Origin,Radius);
 	
-	
 	FActorSpawnParameters SpawnParameters;
 	SpawnParameters.Owner = this;
-	
+
+	// if we're not using fight cam yet, then use it, and setup the fight scenario
 	if (!FightCamera->IsActive())
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 2.5f, FColor::Red, TEXT("Camera swap"));
@@ -1589,7 +1589,7 @@ void ARouteExample::FightScene(float DeltaTime) {
 
 	}
 
-	
+	// if enemy hasn't spawned yet
 	if (!AEnemyActor)
 	{
 		FRotator Rotation(0.0f, 0.0f, 0.0f);
@@ -1624,16 +1624,21 @@ void ARouteExample::FightScene(float DeltaTime) {
 	player->SetActorLocation(FightCamera->GetComponentLocation() + FVector(600, -300, 0) + FVector(cos(timer + 53.1) * 30,cos(timer+ 3.1) * 30,sin(timer+  543.1) * 30));
 	player->SetActorRotation(FRotator(UKismetMathLibrary::FindLookAtRotation(AEnemyActor->GetActorLocation(), player->GetActorLocation())));
 
+	// if player alive
 	if(player && !isDead)
 	{
 		player->Attack(DeltaTime,AEnemyActor);
 	}
 
+	// if enemy actor alive
 	if (AEnemyActor)
 	{
 		AEnemyActor->Attack();
 	}
+	
 	player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+
+	// if player is dead
 	if (!(player->Alive) && !isDead)
 	{
 		player->SetActorHiddenInGame(true);
@@ -1648,7 +1653,7 @@ void ARouteExample::FightScene(float DeltaTime) {
 
 		isDead = true;
 	}
-	else if (!IsValid(AEnemyActor) && !isDead)
+	else if (!IsValid(AEnemyActor) && !isDead)		// if enemy dead
 	{
 		//CombatReset();
 		SwapState(Event);
@@ -1671,10 +1676,12 @@ void ARouteExample::CombatReset() {
 	ASpaceshipCharacter* CurrentPlayer = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
 	if(CurrentPlayer)
+	{
 		CurrentPlayer->ResetCombat();
-	
+	}
+		
 	AEnemyActor = nullptr;
-	GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Combat Reset"));
+	//GEngine->AddOnScreenDebugMessage(-1, 20.0f, FColor::Green, TEXT("Combat Reset"));
 	SwapState(Event);
 }
 
@@ -1683,9 +1690,11 @@ void ARouteExample::GameOver()
 
 	ASpaceshipCharacter* CurrentPlayer = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
+	// prevent possible nullptr issue 
 	if(CurrentPlayer)
+	{
 		CurrentPlayer->ResetCombat();
-	
+	}
 	
 	SwapState(Event);
 }
@@ -1718,7 +1727,7 @@ bool ARouteExample::IsLoadSaveSuccessful()
 	
 	UGameSave* GameSave = (Cast<UGameInstance_CPP>(UGameplayStatics::GetGameInstance(GetWorld())))->GetGameData();
 
-	
+	// generate route from game save data
 	GenerateLoad(&GameSave->SavedRouteData);
 	
 	return true;
