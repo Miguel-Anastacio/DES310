@@ -505,14 +505,22 @@ void ARouteExample::GenerateLoad(FRouteData* Data)
 	SpawnTransform.SetRotation(FQuat4d(0, 0, 0, 1.f));
 	SpawnTransform.SetScale3D(FVector(PlanetScaling, PlanetScaling, PlanetScaling));
 
-	
-	for(auto Planet : SavedPlanets)
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnTransform.SetLocation(SavedPlanets[0].ObjectPosition);
+	APlanet* newPlanet = GetWorld()->SpawnActor<APlanet>(SpaceStationBP[0], SpawnTransform, SpawnParams);
+	newPlanet->Name = SavedPlanets[0].PlanetName;
+	Planets.Add(newPlanet);
+
+	for(int i = 1; i < SavedPlanets.Num(); i++)
 	{
-		SpawnTransform.SetLocation(Planet.ObjectPosition);
-		APlanet* newPlanet = CreatePlanet(SpawnTransform * WorldTransform,Planet.Index);
-		newPlanet->Name = Planet.PlanetName;
+		SpawnTransform.SetLocation(SavedPlanets[i].ObjectPosition);
+		newPlanet = CreatePlanet(SpawnTransform * WorldTransform,SavedPlanets[i].Index);
+		newPlanet->Name = SavedPlanets[i].PlanetName;
 		Planets.Add(newPlanet);
 	}
+
 
 	SpawnTransform.SetScale3D(FVector(DetailScaling, DetailScaling, DetailScaling));
 	for(auto Detail : SavedDetails)
@@ -540,6 +548,22 @@ void ARouteExample::GenerateLoad(FRouteData* Data)
 
 	Planets[0]->CurrentPlanet = true;
 	CurrentPlanet = Planets[0];
+
+	RouteData->Splines.Add(Spline2->Spline);
+	RouteData->Splines.Add(Spline3->Spline);
+	RouteData->Stops.Add(Planets[0]);
+	RouteData->Stops.Add(Planets[2]);
+	RouteData->Max = RouteData->Splines.Num();
+	RouteData->Index = 1;
+	RouteData->RouteName = "Long Route";
+	RouteData->AtFirstPlanet = true;
+	RouteData->ID = 0;
+	RouteData->AssignRouteValues();
+	
+	PlayerController->SetViewTargetWithBlend(Planets[0], CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
+
+	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	player->AudioManager = AudioManager;
 	
 }
 
