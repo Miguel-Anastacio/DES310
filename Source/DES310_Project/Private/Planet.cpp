@@ -9,6 +9,7 @@
 #include "Animation/AnimInstanceProxy.h"
 
 
+//Set up all the Actor Components
 APlanet::APlanet()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -17,11 +18,6 @@ APlanet::APlanet()
 	DummyRoot = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	RootComponent = DummyRoot;
 	
-	/*SphereCollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("Collision Sphere"));
-	SphereCollisionComponent->SetupAttachment(RootComponent);
-	SphereCollisionComponent->InitSphereRadius(20.0f);
-	SphereCollisionComponent->SetGenerateOverlapEvents(true);*/
-
 	PointLight = CreateDefaultSubobject<UPointLightComponent>(TEXT("Point"));
 	PointLight->SetupAttachment(RootComponent);
 	
@@ -34,8 +30,6 @@ APlanet::APlanet()
 
 	RotationPerFrame = FRotator(0.0, 0.0, 0.0f);
 
-
-
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->SetUsingAbsoluteRotation(true); // Don't want arm to rotate when character does
@@ -43,8 +37,6 @@ APlanet::APlanet()
 	CameraBoom->TargetArmLength = 3000.f;
 	CameraBoom->bDoCollisionTest = false; // Don't want to pull camera in when it collides with level
 	CameraBoom->SetWorldRotation(FRotator(FMath::RandRange(300, 360), FMath::RandRange(0, 360), 0));
-
-
 
 	FocusPlanetCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Planet Camera"));
 	FocusPlanetCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
@@ -59,7 +51,7 @@ APlanet::APlanet()
 
 void APlanet::OnPlanetDestroyed(AActor* Act)
 {
-	if (VendorActor)
+	if (VendorActor) // Properly Destroy Vendor alongside planet
 		VendorActor->Destroy();
 }
 
@@ -67,8 +59,6 @@ void APlanet::OnPlanetDestroyed(AActor* Act)
 void APlanet::BeginPlay()
 {
 	Super::BeginPlay();
-	/*SphereCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlanet::OnOverlapBegin);
-	SphereCollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlanet::OnOverlapEnd);*/
 
 	this->OnDestroyed.AddDynamic(this, &APlanet::OnPlanetDestroyed);
 	
@@ -79,33 +69,11 @@ void APlanet::BeginPlay()
 	SpawnTransform.SetScale3D(FVector(1.0f, 1.0f, 1.0f));
 	SpawnTransform.SetLocation(GetActorLocation());
 
+	//Make it so the camera and light scale with the actor
 	CameraBoom->TargetArmLength = CameraBoom->TargetArmLength * this->GetActorScale().Length();
-	PointLight->SourceRadius = this->GetActorScale().GetMax(); // TODO set to use average or the max
+	PointLight->SourceRadius = this->GetActorScale().GetMax(); 
 
 
-	/*
-	Line1 = FText::FromString(Name);
-	if(IsFirstPlanet)
-	{
-		Line2 = FText::FromString("You Are Here!");
-		Line3 = FText::FromString(" ");
-
-	}
-	else
-	{
-		if(IsCheckpoint)
-		{
-			Line2 = FText::FromString("Shop Available");
-		}
-		else
-		{
-			Line2 = FText::FromString("Destination");
-		}
-
-		Line3 = FText::FromString("Distance: 100 AU");
-	}*/
-
-	
 
 	//SetRandomQuest();
 }
@@ -114,32 +82,16 @@ void APlanet::BeginPlay()
 void APlanet::Tick(float DeltaTime)
 {
 	// on every frame change rotationg for a smooth rotating actor
-	FQuat QuatRotation = RotationPerFrame.Quaternion();
-
-	PlanetMeshComponent->AddWorldRotation(QuatRotation, false, 0, ETeleportType::None);
+	PlanetMeshComponent->AddWorldRotation(RotationPerFrame.Quaternion(), false, 0, ETeleportType::None);
+	
 	Super::Tick(DeltaTime);
 
 }
 
-/*
-void APlanet::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	CurrentPlanet = true;
-	ASpaceshipCharacter* Player = Cast<ASpaceshipCharacter>(OtherActor);
-	if (Player)
-	{
-		Player->MoveCameraTo(this);
-	}
-}
-
-void APlanet::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyInde)
-{
-
-}
-*/
 
 void APlanet::SetPlanetIconUI()
 {
+	//Set Appropriate Icon Depend on the Planet
 	if (IsFirstPlanet)
 	{
 		Icon = AllIcons[0];

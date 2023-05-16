@@ -19,31 +19,26 @@ void ASpaceSkyBox::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if(!RandomizeSkyBox)
+	if(!RandomizeSkyBox) // Keep default skybox
 		return;
-	
+
+	//Create Dynamic Material from default
 	Material = SkyMesh->GetMaterial(0);
 	DynamicMaterial = UMaterialInstanceDynamic::Create(Material,this);
 
-	float RandomFloat = FMath::RandRange(0.0,1.0);
+	//Get random color
+	const float RandomFloat = FMath::RandRange(0.0,1.0);
 	CurrentHue = RandomFloat;
-	DynamicMaterial->SetScalarParameterValue(FName(TEXT("Hue-slide")),RandomFloat);
-	if(RandomizeEverything)
+	
+	DynamicMaterial->SetScalarParameterValue(FName(TEXT("Hue-slide")),CurrentHue);
+	if(RandomizeEverything) // Randomize every aspect
 	{
 		DynamicMaterial->SetScalarParameterValue(FName(TEXT("power")),FMath::RandRange(0.0,1.0));
 		DynamicMaterial->SetScalarParameterValue(FName(TEXT("Scene Brightness")),FMath::RandRange(0.0,1.0));
 		DynamicMaterial->SetScalarParameterValue(FName(TEXT("starBrightness")),FMath::RandRange(0.0,1.0));
 	}
-	else
-	{
-		/*DynamicMaterial->SetScalarParameterValue(FName(TEXT("power")),0.45);
-		DynamicMaterial->SetScalarParameterValue(FName(TEXT("Scene Brightness")),0.6);
-		DynamicMaterial->SetScalarParameterValue(FName(TEXT("starBrightness")),0.2);*/
-	}
 
-
-	SkyMesh->SetMaterial(0,DynamicMaterial);
-
+	SkyMesh->SetMaterial(0,DynamicMaterial); // Apply custom material
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Material Made: %f"), RandomFloat));
 }
 
@@ -52,7 +47,7 @@ void ASpaceSkyBox::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if(Blend)
+	if(Blend) // Make the color shift in hue
 	{
 		CurrentHue += Offset * DeltaTime;
 		DynamicMaterial->SetScalarParameterValue(FName(TEXT("Hue-slide")),CurrentHue);
@@ -64,11 +59,12 @@ void ASpaceSkyBox::Tick(float DeltaTime)
 
 void ASpaceSkyBox::OffsetColor()
 {
-	//Picks a Color that isn't the current color
+
 	/*int RandomMultiplier = FMath::RandRange(1,5);
 	float RandomHue = (1.0/6.0) * RandomMultiplier; 
 	TargetHue = CurrentHue + RandomHue;*/
 
+	//Picks a Color that isn't the current color
 	TargetHue = FMath::RandRange(0.0,1.0);
 	CurrentHue = TargetHue;
 	DynamicMaterial->SetScalarParameterValue(FName(TEXT("Hue-slide")),CurrentHue);
