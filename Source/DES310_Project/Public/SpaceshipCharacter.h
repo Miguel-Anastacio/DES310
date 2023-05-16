@@ -196,6 +196,9 @@ public:
 	void UpdatePlayerStats(int xpGained);
 
 
+	UFUNCTION(BlueprintCallable)
+	FName GetPlayerNameFromSave();
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

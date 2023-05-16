@@ -15,6 +15,7 @@
 #include "StatsComponent.h"
 #include "Bullet_CPP.h"
 #include "AbilityComponent.h"
+#include "GameInstance_CPP.h"
 
 // Sets default values
 ASpaceshipCharacter::ASpaceshipCharacter()
@@ -376,6 +377,18 @@ void ASpaceshipCharacter::UpdatePlayerStats(int xpGained)
 	StatsPlayerComponent->XPSystem(xpGained);
 	ApplyInventoryToStats();
 	StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
+}
+
+FName ASpaceshipCharacter::GetPlayerNameFromSave()
+{
+	if (!UGameplayStatics::DoesSaveGameExist(TEXT("Game_Save"), 0))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("SAVE NOT FOUND"));
+	}
+
+	UGameSave* GameSave = (Cast<UGameInstance_CPP>(UGameplayStatics::GetGameInstance(GetWorld())))->GetGameData();
+
+	return GameSave->SavedPlayerStats.playerName;
 }
 
 // Called every frame

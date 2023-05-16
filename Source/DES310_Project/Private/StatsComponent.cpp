@@ -29,10 +29,10 @@ void UStatsComponent::Init(int StarterLevel, int Currency)
 	XPToNext = CalcNextLevel();
 	CurrentCurrency = Currency;
 
-	SpeedIncrement = 5;
+	SpeedIncrement = 10;
 	ShieldIncrement = 15;
-	HullIntegrityIncrement = 50;
-	ATKPowerIncrement = 18;
+	HullIntegrityIncrement = 15;
+	ATKPowerIncrement = 15;
 	
 	Speed = 100 + (CurrentReputation-1) * 5;				// max = 300, min = 100
 	Shields = 20 + (CurrentReputation-1) * 15;				// max = 620, min = 20 (20% of HP -> 29.5% of HP)
