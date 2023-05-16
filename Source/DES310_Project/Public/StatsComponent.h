@@ -32,6 +32,10 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	// Player has 4 stats that are related to it's current level (reputation)
+	// These stats have 2 or 3 types
+	// 
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, SaveGame) int CurrentReputation;
 	UPROPERTY(EditAnywhere) int XPToNext;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, SaveGame) int CurrentCurrency;

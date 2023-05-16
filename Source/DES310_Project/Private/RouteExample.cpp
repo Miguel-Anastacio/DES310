@@ -176,7 +176,6 @@ APath* ARouteExample::CreateBasicCube(FTransform transform)
 //Create A Randomly selected Planet to be on the main route
 APlanet* ARouteExample::CreatePlanetMainRoute(FTransform transform)
 {
-
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
 

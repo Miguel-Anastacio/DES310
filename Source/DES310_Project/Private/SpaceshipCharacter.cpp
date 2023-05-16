@@ -263,9 +263,7 @@ void ASpaceshipCharacter::UpdatePlayerSpeed(float DeltaTime)
 		GEngine->AddOnScreenDebugMessage(10,15.0f, FColor::Red, TEXT("Reached MaxSpeed"));
 	}
 
-
 	MovementSpeed = FMath::Clamp(MovementSpeed, MinMovementSpeed, MaxSpeed);
-
 
 }
 
