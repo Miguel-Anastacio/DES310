@@ -898,7 +898,7 @@ void ARouteExample::SelectPath()
 	
 	float mouseX, mouseY;
 	player->GetMousePosition(mouseX, mouseY);
-	float Path1Distance = 10000000000000000; // TODO maybe do a distance test with the first element but i cba
+	float Path1Distance = 10000000000000000; // TODO maybe do a distance test with the first element but 
 	float Path2Distance = 10000000000000000;
 
 	bool WhichPath = false; // TODO if we stick to 2 paths this is fine but could be improved

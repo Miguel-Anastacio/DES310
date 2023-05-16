@@ -23,13 +23,14 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void OffsetColor();
+	void OffsetColor(); // Give a Random Skybox Color
 	UFUNCTION(BlueprintCallable) void SetColor(float Hue);
 
-	UPROPERTY(EditAnywhere, Category = Skybox) UMaterialInterface* Material;
+	UPROPERTY(EditAnywhere, Category = Skybox) UMaterialInterface* Material; // Base Material Reference
 	UPROPERTY(EditAnywhere, Category = Skybox) UStaticMeshComponent* SkyMesh;
-	UPROPERTY(EditAnywhere, Category = Skybox) UMaterialInstanceDynamic* DynamicMaterial;
-	
+	UPROPERTY(EditAnywhere, Category = Skybox) UMaterialInstanceDynamic* DynamicMaterial; // Material that changes during runtime
+
+	//Skybox Properties
 	UPROPERTY(EditAnywhere, Category = Skybox) bool RandomizeSkyBox;
 	UPROPERTY(EditAnywhere, Category = Skybox) bool RandomizeEverything;
 	UPROPERTY(EditAnywhere, Category = Skybox) bool Blend;
