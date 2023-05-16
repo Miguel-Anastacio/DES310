@@ -325,12 +325,16 @@ void ASpaceshipCharacter::SetStatsBasedOnClass()
 	switch (PlayerShip.Type)
 	{
 	case FIGHTER_EGYPTIAN: PlayerFaction = false;
+		Index = 0;
 		break;
 	case HEAVY_EGYPTIAN: PlayerFaction = false;
+		Index = 1;
 		break;
 	case FIGHTER_VIKING: PlayerFaction = true;
+		Index = 2;
 		break;
 	case HEAVY_VIKING: PlayerFaction = true;
+		Index = 3;
 		break;
 	default:
 		break;
@@ -377,7 +381,7 @@ void ASpaceshipCharacter::UpdatePlayerStats(int xpGained)
 	StatsPlayerComponent->UpdateCurrentStats(StatsPlayerComponent->HullIntegrity, StatsPlayerComponent->Shields);
 }
 
-FName ASpaceshipCharacter::GetPlayerNameFromSave()
+int ASpaceshipCharacter::GetPlayerIndexFromSave()
 {
 	if (!UGameplayStatics::DoesSaveGameExist(TEXT("Game_Save"), 0))
 	{
@@ -386,7 +390,7 @@ FName ASpaceshipCharacter::GetPlayerNameFromSave()
 
 	UGameSave* GameSave = (Cast<UGameInstance_CPP>(UGameplayStatics::GetGameInstance(GetWorld())))->GetGameData();
 
-	return GameSave->SavedPlayerStats.playerName;
+	return GameSave->SavedPlayerStats.PlayerIndex;
 }
 
 // Called every frame

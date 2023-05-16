@@ -81,6 +81,9 @@ public:
 	bool IsInSelectScreen = false;
 	bool Alive = true;
 
+	// this index is used to set the right blueprint when loading
+	int Index = 0;
+
 	//Actor Components
 	UPROPERTY(VisibleAnywhere, Category = Camera)UCameraComponent* TopDownCamera;
 	UPROPERTY(EditAnywhere, Category = Camera)USpringArmComponent* CameraBoom;
@@ -197,7 +200,7 @@ public:
 
 
 	UFUNCTION(BlueprintCallable)
-	FName GetPlayerNameFromSave();
+	int GetPlayerIndexFromSave();
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

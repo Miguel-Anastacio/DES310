@@ -73,6 +73,9 @@ public:
 	FVector PlayerPos;
 
 	UPROPERTY()
+	int PlayerIndex;
+
+	UPROPERTY()
 	TArray<int> InventoryItemIDs;
 	
 };
