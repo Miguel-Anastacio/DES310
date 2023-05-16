@@ -75,6 +75,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	void CreatePath(TArray<FVector2D>& Path, TArray<APath*>& PathMeshes,USplineComponent* SplineComponent,float PathPercentage);
+	void CreatePath(TArray<FVector>& Path, TArray<APath*>& PathMeshes,USplineComponent* SplineComponent,float PathPercentage);
 
 	void ClearRouteData();
 	APath* CreateBasicCube(FTransform transform);

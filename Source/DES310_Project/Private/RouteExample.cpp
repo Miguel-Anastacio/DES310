@@ -479,8 +479,12 @@ void ARouteExample::GenerateLoad(FRouteData* Data)
 	TArray<FVector> Spline2Points = Data->Spline2Points;
 	TArray<FVector> Spline3Points = Data->Spline3Points;
 	
+	CreatePath(Spline1Points,StartToEndPath,Spline1->Spline, BuoysPercent);
+	CreatePath(Spline2Points,StartToStationPath,Spline2->Spline, BuoysPercent);
+	CreatePath(Spline3Points,StationToEndPath,Spline3->Spline, BuoysPercent);
+
 	
-	for(auto point : Spline1Points)
+	/*for(auto point : Spline1Points)
 	{
 		Spline1->Spline->AddSplinePoint(point, ESplineCoordinateSpace::Type::World, true);
 	}
@@ -494,6 +498,7 @@ void ARouteExample::GenerateLoad(FRouteData* Data)
 	{
 		Spline3->Spline->AddSplinePoint(point, ESplineCoordinateSpace::Type::World, true);
 	}
+	*/
 
 	Spline1->CreateSpline(DetailScaling);
 	Spline2->CreateSpline(DetailScaling);
@@ -564,6 +569,17 @@ void ARouteExample::GenerateLoad(FRouteData* Data)
 
 	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	player->AudioManager = AudioManager;
+
+	float SplineLength = RouteData->Splines[0]->GetSplineLength();
+	splineTimer = 0.1;
+	//Get where we are on the spline and lerp the player towards it
+	float DistanceTraveled = FMath::Lerp(SplineLength, 0, 0.98);
+	FVector PlayerPosition = RouteData->Splines[0]->GetLocationAtDistanceAlongSpline(DistanceTraveled, ESplineCoordinateSpace::Type::World);
+	FRotator PlayerRotation = RouteData->Splines[0]->GetRotationAtDistanceAlongSpline(DistanceTraveled, ESplineCoordinateSpace::Type::World);
+
+	player->SetActorLocation(PlayerPosition);
+	player->SetActorRotation(PlayerRotation);
+	player->SetActorHiddenInGame(false);
 	
 }
 
@@ -609,6 +625,44 @@ void ARouteExample::CreatePath(TArray<FVector2D>& Path, TArray<APath*>& PathMesh
 		SpawnTransfrom.AddToTranslation(FVector(0 ,50, 50));
 		SpawnTransfrom *= WorldTransform;
 
+	}
+}
+
+void ARouteExample::CreatePath(TArray<FVector>& Path, TArray<APath*>& PathMeshes, USplineComponent* SplineComponent,float PathPercentage)
+{
+	FTransform WorldTransform;
+	WorldTransform = GetRootComponent()->GetComponentTransform();
+	
+	FRotator Rotation;
+	
+	if( Path.Num() > 2)// Make the bouys point towards the destination
+		Rotation = UKismetMathLibrary::FindLookAtRotation(FVector(Path[0].X,Path[0].Y,0),FVector(Path[Path.Num() - 1].X,Path[Path.Num() - 1].Y,0));
+
+	float NumberOfPoints = Path.Num();
+	float PointsWanted = NumberOfPoints * (PathPercentage / 100);
+	float Step = NumberOfPoints/PointsWanted; // if we have 100 points but want only 10, then every 10 loops we spawn a bouy, so they are spread out evenly
+	float Counter = 0;
+
+
+	
+	for (int i = 0; i < Path.Num(); i++)
+	{
+		FTransform SpawnTransfrom;
+		SpawnTransfrom.SetRotation(Rotation.Quaternion());
+		SpawnTransfrom.SetScale3D(FVector(10, 10, 10));
+		SpawnTransfrom.SetLocation(Path[i]);
+		
+		if(i >= Counter) 
+		{
+			APath* path = CreateBasicCube(SpawnTransfrom * WorldTransform);
+			path->SetActorScale3D(FVector(PlanetScaling/5, PlanetScaling/5, PlanetScaling/5)); //Bouys are always 5 time smaller than planets
+			PathMeshes.Add(path);
+			
+			Counter += Step;
+		}
+
+		//We add all points to the spline so its not disconnected at the end sometimes
+		SplineComponent->AddSplinePoint(Path[i], ESplineCoordinateSpace::Type::World, true);
 	}
 }
 
