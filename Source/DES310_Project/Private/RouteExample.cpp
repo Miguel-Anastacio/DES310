@@ -23,48 +23,37 @@ ARouteExample::ARouteExample()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	//Give the Route a "root" so it can be moved about in the scene
 	USceneComponent* root = this->CreateDefaultSubobject<USceneComponent>(TEXT("Scene Root"));
 	root->Mobility = EComponentMobility::Type::Movable;
 	this->SetRootComponent(root);
 
-
-	//moved to begin play because it wasnt really working in constructor
-	/*Spline1 = CreateDefaultSubobject<ARouteSpline>(TEXT("Spline Short Path 1"));
-	Spline1->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-
-	Spline2 = CreateDefaultSubobject<ARouteSpline>(TEXT("Spline Long Path 2"));
-	Spline2->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-
-	Spline3 = CreateDefaultSubobject<ARouteSpline>(TEXT("Spline Long Path 3"));
-	Spline3->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);*/
-	
+	//Set up Camera Boom, giving it independent rotation
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("Camera Boom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->SetUsingAbsoluteRotation(true);
 	CameraBoom->SetUsingAbsoluteScale(false);
-
 	CameraBoom->bDoCollisionTest = false;
-
+	CameraBoom->SetWorldRotation(FRotator(-90, 180, 0));
+	
+	//Set up camera and attach to boom
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Route Camera"));
 	Camera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	Camera->bUsePawnControlRotation = false;
 
+	//Set up a separate camera for when a combat event takes place
 	FightCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Fight Camera"));
 	FightCamera->SetupAttachment(RootComponent);
 
+	//Create Route Data to Store all necessary data about the current route
 	RouteData = CreateDefaultSubobject<UPathData>(TEXT("Route Data"));
-	// just hold the values for the chances of each route
+	//These hold the default data for the short and long route
 	Route1Data = CreateDefaultSubobject<UPathData>(TEXT("Route1 Data"));
 	Route2Data = CreateDefaultSubobject<UPathData>(TEXT("Route2 Data"));
 	
-	CameraBoom->SetWorldRotation(FRotator(-90, 180, 0));
-
-	PlayerState = PlayerStates::Selecting;
-
-	// create event component
+	// Create Event Component
 	EventsComponent = CreateDefaultSubobject<URandomEventsComponent>(TEXT("Events Component"));
-
-
+	
 }
 
 // Called when the game starts or when spawned
@@ -72,32 +61,28 @@ void ARouteExample::BeginPlay()
 {
 	Super::BeginPlay();
 
-	splineTimer = PathStartEndPercent.X;
-	/*Generate();
-	randomSpinRate = FMath::RandRange(1, 100);
-	PlayerState = Selecting;*/
-	UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetViewTargetWithBlend(this, CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
+	//Initialize Timers
+	splineTimer = PathStartEndPercent.X; // Initialize Timer at Start point
+	CombatTimer = 0;
+	
 	PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	PlayerController->SetShowMouseCursor(true);
+	PlayerController->SetShowMouseCursor(true); // We want a cursed to displayed for most of the game
 
-	SpaceshipCharacter = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-
-	CameraBoom->TargetArmLength = CameraBoom->TargetArmLength * this->GetActorScale().Length(); // TODO change to use Highest x/y/z instead of the pythag
+	//Initialize Player
+	SpaceshipCharacter = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)); // Create pointer reference to player
+	SpaceshipCharacter->AudioManager = AudioManager;
+	PlayerState = None; // Dont want to begin the main loop if its not been generated
+	
+	//Start the ambient music as soon as we start
+	AudioManager->AmbientSoundComponent->Play();
+	
+	//Initialize Cameras
+	CameraBoom->TargetArmLength = CameraBoom->TargetArmLength * this->GetActorScale().GetMax() * 2; 
 	FightCamera->SetWorldLocation(FVector(0, 0, 3000.f));
 	FightCamera->SetActive(false);
 
-	/*
-	for (int i = 0; i < PlanetsBP.Num(); i++)
-	{
-		PlanetIndex.push_back();
-	}*/
-
-	CombatTimer = 0;
 	
-	AudioManager->AmbientSoundComponent->Play();
-	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	player->AudioManager = AudioManager;
-
+	//Initialize Splines to represent the routes 
 	FActorSpawnParameters SpawnParam;
 	SpawnParam.Owner = this;
 	
@@ -110,24 +95,16 @@ void ARouteExample::BeginPlay()
 	Spline3 = GetWorld()->SpawnActor<ARouteSpline>(SplineBP,GetTransform(),SpawnParam);
 	Spline3->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
 
-	
+	//Set up Delegates, They are used to allow c++ funcs to call blueprint functionality 
+	//is useful for telling UI when to enabled/disable ect..
 	OrbitTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToOrbiting);
 	BeginOrbitTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::BeginToOrbiting);
-	// transition to checkpoint is the same as to orbiting for now
-	// the different delegate is just to bind different functionality in blueprint
 	CheckpointTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToOrbiting);
 	MovingTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToMoving);
 	SelectTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToSelecting);
 	CombatTransitionDelegate.AddUniqueDynamic(this, &ARouteExample::SwapToCombat);
 	GameOverDelegate.AddUniqueDynamic(this, &ARouteExample::GameOver);
-
-
-	PlayerState = Event;
-	//PlayerState = Selecting;
-	//SelectTransitionDelegate.Broadcast();
 	PathClickedDelegate.AddUniqueDynamic(this, &ARouteExample::GetPathSelected);
-
-
 	AudioManager->VictorySoundComponent->OnAudioFinished.AddUniqueDynamic(this, &ARouteExample::CallCombatOverDelegate);
 
 }
@@ -137,90 +114,54 @@ void ARouteExample::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	timer += DeltaTime;
-	if (timer >= RouteTickRate)
-	{
-		timer = 0;
-		//Generate();
-	}
 
-	//GetPlanetsOnScreenPosition(0);
 
-	
-	cameraTimer += DeltaTime;
-	if (cameraTimer >= CameraRate)
-	{
-		cameraTimer = 0;
-		SwitchCamera();
-	}
-
-	UGameInstance_CPP* GameInstance = Cast<UGameInstance_CPP>(UGameplayStatics::GetGameInstance(GetWorld()));
+	UGameInstance_CPP* GameInstance = Cast<UGameInstance_CPP>(UGameplayStatics::GetGameInstance(GetWorld())); // Get a reference to the game instance
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple,	FString::Printf(TEXT("State Num: %i"), (int)PlayerState));
 	ASpaceshipCharacter* PlayerOBJ = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	
-	FString StateName = "";
+	//tODO do psudo after save stuff is in
 	switch (PlayerState)
 	{
 	case PlayerStates::Moving:
-		NavIncidentsTimer += DeltaTime;
-		StateName = "Moving";
-		MoveAlongPath(RouteData, DeltaTime);
-		PlayerOBJ->UpdatePlayerSpeed(DeltaTime);
-		// passing the current path is cleaner
-		// pass the values for now
+		NavIncidentsTimer += DeltaTime; // Increase timer for events
+		MoveAlongPath(RouteData, DeltaTime); // Update the players position
+		PlayerOBJ->UpdatePlayerSpeed(DeltaTime); // Update Mini-game Speed
 		CombatTimer += DeltaTime;
-		if (NavIncidentsTimer > NavIncidentsCooldown)
+		if (NavIncidentsTimer > NavIncidentsCooldown) //Roll for an event after a certain time
 		{
-			if (EventsComponent->RollForEvent(RouteData->EventChance, DeltaTime, RouteData->StoryEventChance, RouteData->RandomEventChance))
+			if (EventsComponent->RollForEvent(RouteData->EventChance, DeltaTime, RouteData->StoryEventChance, RouteData->RandomEventChance)) // if it passes,swap to event
 			{
 				SwapState(Event);
 			}
-			else if (CombatTimer > CombatTick)
-			{
-				if (FMath::RandRange(0, 100) < RouteData->CombatEventChance)
+			else if (CombatTimer > CombatTick) // Roll for a combat event after a certain time
 				{
-					CombatTimer = 0;
-					CombatTransitionDelegate.Broadcast();
-					SwapState(Event);
+					if (FMath::RandRange(0, 100) < RouteData->CombatEventChance) // if it passes then swap to combat
+					{
+						CombatTimer = 0;
+						CombatTransitionDelegate.Broadcast();
+						SwapState(Event);
+					}	
 				}
-			}
 		}
+		
 		break;
 	case PlayerStates::Orbiting: OrbitPlanet(RouteData, DeltaTime);
-		StateName = "Orbiting";
-
 		// to do - save route data when route generated
 		GameInstance->SaveGameData(this);
 		break;
 	case PlayerStates::Selecting: //SelectPath();
-		StateName = "Selecting";
 		break;
 	case PlayerStates::Event:
-		StateName = "Event";
 		break;
 	case PlayerStates::Fighting: FightScene(DeltaTime);
-		StateName = "Fighting";
 		break;
 	default:
 		break;
 	}
 
-	/*if(RouteData->AtFirstPlanet)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple,	TEXT("True"));
-
-	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green,	TEXT("False"));
-
-	}*/
-	/*GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple, FString::Printf(TEXT("Index: %i"), RouteData->Index));*/
 }
 
-//An example of how to use the route system
-//instead of including this example just copy the code and remove the debug lines from them
-//from there the points given out by A* can be used however you want
-
+//Create a Buoy 
 APath* ARouteExample::CreateBasicCube(FTransform transform)
 {
 	FActorSpawnParameters SpawnParam;
@@ -233,6 +174,7 @@ APath* ARouteExample::CreateBasicCube(FTransform transform)
 	return MyNewActor;
 }
 
+//Create A Randomly selected Planet to be on the main route
 APlanet* ARouteExample::CreatePlanetMainRoute(FTransform transform)
 {
 
@@ -284,38 +226,27 @@ APlanet* ARouteExample::CreatePlanetMainRoute(FTransform transform)
 		
 
 	APlanetActor->Index = planetIndex;
-	//if (PlanetIndex.Num() < 1)
-	//{
-
-	//	for (int i = 0; i < PlanetsBP.Num(); i++)
-	//	{
-	//		PlanetIndex.push_back(i);
-	//	}
-
-	//}
-
-
-	//int numChosen = rand() % PlanetBP.Num();
-	//int numSelected = arr[numChosen];
-
-	//arr.RemoveAt(numChosen);
-
-
-	//APlanet* APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[FMath::RandRange(0, PlanetBP.Num() - 1)], transform, SpawnParams);
-
 	APlanetActor->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
 	
 	return APlanetActor;
 }
 
+//Create a specific Planet
 APlanet* ARouteExample::CreatePlanet(FTransform transform, int i)
 {
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
 
 	i = FMath::Clamp(i,1,PlanetBP.Num() - 1);
+
+	APlanet* APlanetActor;
 	
-	APlanet* APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[i], transform, SpawnParams);
+	if(i == 0)
+		APlanetActor = GetWorld()->SpawnActor<APlanet>(SpaceStationBP[i], transform, SpawnParams);
+	else
+		APlanetActor = GetWorld()->SpawnActor<APlanet>(PlanetBP[i], transform, SpawnParams);
+		
+	
 	APlanetActor->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
 
 
@@ -338,7 +269,7 @@ APlanet* ARouteExample::CreatePlanet(FTransform transform, int i)
 	return APlanetActor;
 }
 
-
+//Create a random detail from the list of available
 ADetails* ARouteExample::CreateDetail(FTransform transform, int Index)
 {
 	FActorSpawnParameters SpawnParams;
@@ -351,327 +282,41 @@ ADetails* ARouteExample::CreateDetail(FTransform transform, int Index)
 	Detail->Index = Index;
 	
 	return Detail;
-
 }
 
-
-void ARouteExample::Generate()
-{
-	/*ResetRoute();
-
-	FVector2D Max(Dimensions.X / 2, Dimensions.Y + PointRadius);
-	FVector2D Min(Dimensions.X / 2, 0 - PointRadius);
-
-	TArray<FVector2D> vect = PoissonDiscSampling::PoissonDiscGenerator(PointRadius, FVector2D((int)Dimensions.X, (int)Dimensions.Y), RejectionRate);
-	vect.Add(Max);
-	vect.Add(Min);
-
-	//Probably could do this more efficiently... basically making it so in the engine the actual route isnt really far away from the route
-
-	/*for(auto &point : vect)
-	{
-		point -= Dimensions / 2;
-	}#1#
-
-	TArray<Triangle> triangleList = DelaunayTriangulation::GenerateTriangulation(vect);
-
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("%i Positions"), vect.Num()));
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("%i triangles "), triangleList.Num()));
-
-	AStar astar;
-
-	FVector2D min = vect[0];
-	FVector2D max = vect[0];
-	float maxX = abs(vect[0].X);
-
-	int minID = 0;
-	int maxID = 0;
-	int maxXID = 0;
-
-	int sign = 1;
-	if(FMath::RandBool())
-	{
-		sign = -1;
-	}
-	
-	
-	for (int i = 0; i < vect.Num(); i++)
-	{
-		astar.AddPoint(vect[i]);
-	}
-
-	for (int i = 0; i < triangleList.Num(); i++)
-	{
-		FVector2D p1 = triangleList[i].Vertex[0];
-		FVector2D p2 = triangleList[i].Vertex[1];
-		FVector2D p3 = triangleList[i].Vertex[2];
-		int id1 = astar.AddPoint(p1);
-		int id2 = astar.AddPoint(p2);
-		int id3 = astar.AddPoint(p3);
-
-
-		astar.ConnectPoints(id1, id2);
-		astar.ConnectPoints(id2, id3);
-		astar.ConnectPoints(id3, id1);
-
-		if (min.Y > p1.Y)
-		{
-			minID = id1;
-		}
-		else if (max.Y < p1.Y)
-		{
-			maxID = id1;
-		}
-
-		if (sign * abs(p1.X + 5) > sign * maxX && p1.Y < Dimensions.Y - 50 && p1.Y > 50)
-		{
-			maxX = abs(p1.X);
-			maxXID = id1;
-		}
-
-		if (sign * abs(p2.X + 5) > sign * maxX && p2.Y <  Dimensions.Y - 50 && p2.Y > 50)
-		{
-			maxX = abs(p2.X);
-			maxXID = id2;
-		}
-
-		if (sign * abs(p3.X + 5) > sign * maxX && p3.Y <  Dimensions.Y - 50 && p3.Y > 50)
-		{
-			maxX = abs(p3.X);
-			maxXID = id3;
-		}
-
-		if (min.Y > p2.Y)
-		{
-			minID = id2;
-		}
-		else if (max.Y < p2.Y)
-		{
-			maxID = id2;
-		}
-
-		if (min.Y > p3.Y)
-		{
-			minID = id3;
-		}
-		else if (max.Y < p3.Y)
-		{
-			maxID = id3;
-		}
-	}
-
-	for (auto point : astar.points)
-	{
-		if (FMath::RandBool())
-		{
-			point.blocked = true;
-		}
-	}
-
-
-	FTransform WorldLocation;
-	float scale = 1;
-	if (GetRootComponent())
-	{
-		WorldLocation = GetRootComponent()->GetComponentTransform();
-		FVector Scaling = GetRootComponent()->GetComponentScale();
-		scale = Scaling.X + Scaling.Y + Scaling.Z;
-		scale /= 3;
-	}
-
-
-	astar.search(minID, maxID);
-	FVector2D checkPoint = astar.begin.position;
-	for (int j = 0; j < astar.path.Num() - 1; j++)
-	{
-		int id = astar.findPoint(astar.path[j]);
-		if (id != -1 && j != 0)
-		{
-			astar.points[id].blocked = true;
-		}
-	}
-	Path1 = astar.path;
-	astar.search(minID, maxXID);
-	Path2 = astar.path;
-	astar.search(maxXID, maxID);
-	Path3 = astar.path;
-
-	for (int j = 0; j < Path1.Num() - 1; j++)
-	{
-		int id = astar.findPoint(Path1[j]);
-		if (id != -1 && j != 0)
-		{
-			astar.points[id].blocked = true;
-		}
-	}
-
-	for (int j = 0; j < Path2.Num() - 1; j++)
-	{
-		int id = astar.findPoint(Path2[j]);
-		if (id != -1 && j != 0)
-		{
-			astar.points[id].blocked = true;
-		}
-	}
-
-	for (int j = 0; j < Path3.Num() - 1; j++)
-	{
-		int id = astar.findPoint(Path3[j]);
-		if (id != -1 && j != 0)
-		{
-			astar.points[id].blocked = true;
-		}
-	}
-
-	FRotator PathRotation;
-	if( Path1.Num() > 2)// Might Be an unnessary check
-		PathRotation = UKismetMathLibrary::FindLookAtRotation(FVector(Path1[0].X,Path1[0].Y,0),FVector(Path1[Path1.Num() - 1].X,Path1[Path1.Num() - 1].Y,0));
-
-	for (int i = 0; i < Path1.Num(); i++)
-	{
-		FTransform SpawnTransfrom;
-		SpawnTransfrom.SetRotation(PathRotation.Quaternion());
-		SpawnTransfrom.SetScale3D(FVector(1, 1, 1));
-		SpawnTransfrom.SetLocation(FVector( Path1[i].X - Dimensions.X / 2, Path1[i].Y - Dimensions.Y / 2, UKismetMathLibrary::Sin(i) * SinWaveAmplitude));
-
-
-		if (i >= StartToEndPath.Num())
-		{
-			StartToEndPath.Add(CreateBasicCube(SpawnTransfrom * WorldLocation));
-		}
-
-		SplineComponent1->AddSplinePoint((SpawnTransfrom * WorldLocation).GetLocation(), ESplineCoordinateSpace::Type::World, true);
-		SpawnTransfrom.AddToTranslation(FVector(0 ,50, 50));
-		SpawnTransfrom *= WorldLocation;
-		CameraSplineComponent1->AddSplinePoint(SpawnTransfrom.GetLocation(), ESplineCoordinateSpace::Type::World, true);
-	}
-
-	if( Path2.Num() > 2)// Might Be an unnessary check
-		PathRotation = UKismetMathLibrary::FindLookAtRotation(FVector(Path2[0].X,Path2[0].Y,0),FVector(Path2[Path2.Num() - 1].X,Path2[Path2.Num() - 1].Y,0));
-	
-	for (int i = 0; i < Path2.Num(); i++)
-	{
-		FTransform SpawnTransfrom;
-		SpawnTransfrom.SetRotation(PathRotation.Quaternion());
-		SpawnTransfrom.SetScale3D(FVector(1, 1, 1));
-		SpawnTransfrom.SetLocation(FVector( Path2[i].X - Dimensions.X / 2, Path2[i].Y - Dimensions.Y / 2, UKismetMathLibrary::Sin(i) * SinWaveAmplitude));
-
-
-		if (i >= StartToStationPath.Num())
-		{
-			StartToStationPath.Add(CreateBasicCube(SpawnTransfrom * WorldLocation));
-		}
-
-		SplineComponent2->AddSplinePoint((SpawnTransfrom * WorldLocation).GetLocation(), ESplineCoordinateSpace::Type::World, true);
-		SpawnTransfrom.AddToTranslation(FVector(0, 50, 50));
-		SpawnTransfrom *= WorldLocation;
-		CameraSplineComponent2->AddSplinePoint(SpawnTransfrom.GetLocation(), ESplineCoordinateSpace::Type::World, true);
-	}
-
-	if( Path3.Num() > 2)// Might Be an unnessary check
-		PathRotation = UKismetMathLibrary::FindLookAtRotation(FVector(Path3[0].X,Path3[0].Y,0),FVector(Path3[Path3.Num() - 1].X,Path3[Path3.Num() - 1].Y,0));
-
-	for (int i = 0; i < Path3.Num(); i++)
-	{
-		FTransform SpawnTransfrom;
-		SpawnTransfrom.SetRotation(PathRotation.Quaternion());
-		SpawnTransfrom.SetScale3D(FVector(1, 1, 1));
-		SpawnTransfrom.SetLocation(FVector( Path3[i].X - Dimensions.X / 2, Path3[i].Y - Dimensions.Y / 2,UKismetMathLibrary::Sin(i) * SinWaveAmplitude));
-
-
-		if (i >= StationToEndPath.Num())
-		{
-			StationToEndPath.Add(CreateBasicCube(SpawnTransfrom * WorldLocation));
-		}
-
-		SplineComponent3->AddSplinePoint((SpawnTransfrom * WorldLocation).GetLocation(), ESplineCoordinateSpace::Type::World, true);
-		SpawnTransfrom.AddToTranslation(FVector(0, 50, 50));
-		SpawnTransfrom *= WorldLocation;
-		CameraSplineComponent3->AddSplinePoint(SpawnTransfrom.GetLocation(), ESplineCoordinateSpace::Type::World, true);
-	}
-
-
-	FTransform SpawnTransfrom;
-	if (Planets.Num() < 3)
-	{
-
-		SpawnTransfrom.SetRotation(FQuat4d(0, 0, 0, 1.f));
-		SpawnTransfrom.SetScale3D(FVector(PlanetScaling, PlanetScaling, PlanetScaling));
-		SpawnTransfrom.SetLocation(FVector(astar.begin.position.X - Dimensions.X / 2, astar.begin.position.Y - Dimensions.Y / 2, 0));
-
-		Planets.Add(CreatePlanetMainRoute(SpawnTransfrom * WorldLocation));
-		SpawnTransfrom.SetLocation(FVector(astar.end.position.X - Dimensions.X / 2, astar.end.position.Y - Dimensions.Y / 2, 0));
-		Planets.Add(CreatePlanetMainRoute(SpawnTransfrom * WorldLocation));
-		SpawnTransfrom.SetLocation(FVector(checkPoint.X - Dimensions.X / 2, checkPoint.Y - Dimensions.Y / 2 , 0));
-		Planets.Add(CreatePlanetMainRoute(SpawnTransfrom * WorldLocation));
-	}
-
-	GenerateDetails();
-	
-	//for (auto point : astar.points)
-	//{
-	//	if(point.blocked)
-	//		continue;
-	//	
-	//	SpawnTransfrom.SetRotation(FQuat4d(0,0,0,1.f));
-	//	SpawnTransfrom.SetScale3D(FVector(0.5,0.5,0.5));
-	//	SpawnTransfrom.SetLocation(FVector(1,point.position.X - Dimensions.X/2,point.position.Y- Dimensions.Y/2));
-
-	//	Planets.Add(CreateBasicSphere(SpawnTransfrom * WorldLocation));
-	//	
-	//}
-
-	SpawnTransfrom *= WorldLocation;
-
-	auto playerController = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-	if (playerController)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Player Moved")));
-
-		playerController->SetActorLocation(FVector(SpawnTransfrom.GetLocation().X, SpawnTransfrom.GetLocation().Y, 1000));
-	}
-
-
-	// set quests
-	SetQuest();
-
-
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Spline Count: %i,%i,%i"),SplineComponent1->GetNumberOfSplinePoints(),SplineComponent2->GetNumberOfSplinePoints(),SplineComponent3->GetNumberOfSplinePoints()));
-*/
-}
 
 void ARouteExample::GenerateImproved(int FirstPlanetID, FVector Offset)
 {
 
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Silver, FString::Printf(TEXT("Index = %i"), FirstPlanetID));
 	
-	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(),0));
-	
-	
-	do
+	do // Do while we have a valid route
 	{
-	
+		
 	ResetRoute();
 	
 	//Manually Add the Start and End planets to the possible routes
 	FVector2D Max(FMath::RandRange(0.0,Dimensions.X), Dimensions.Y + PointRadius);
 	FVector2D Min(FMath::RandRange(0.0,Dimensions.X), 0 - PointRadius);
 
-	TArray<FVector2D> vect = PoissonDiscSampling::PoissonDiscGenerator(PointRadius, FVector2D((int)Dimensions.X, (int)Dimensions.Y), RejectionRate);
-	vect.Add(Max);
-	vect.Add(Min);
+	//Generate a random but evenly distributed number of points to represent the routes
+	TArray<FVector2D> points = PoissonDiscSampling::PoissonDiscGenerator(PointRadius, FVector2D((int)Dimensions.X, (int)Dimensions.Y), RejectionRate);
+	points.Add(Max);
+	points.Add(Min);
 
-	TArray<Triangle> triangleList = DelaunayTriangulation::GenerateTriangulation(vect);
+	//Create an evenly distributed amount of connections between each point	
+	TArray<Triangle> triangleList = DelaunayTriangulation::GenerateTriangulation(points);
 
 	AStar astar;
 
-	FVector2D min = vect[0];
-	FVector2D max = vect[0];
-	float maxX = abs(vect[0].X);
+
+	FVector2D min = points[0];	//Min = First Planet	
+	FVector2D max = points[0];	//Max = Last Planet	
+	float spaceStation = abs(points[0].X);	//spacestation = checkpoint
 
 	int minID = 0;
 	int maxID = 0;
-	int maxXID = 0;
+	int spaceStationID = 0;
 
 	int sign = 1;
 	if(FMath::RandBool()) // pick weather the space station will be up or down
@@ -679,9 +324,9 @@ void ARouteExample::GenerateImproved(int FirstPlanetID, FVector Offset)
 		sign = -1;
 	}
 	
-	for (int i = 0; i < vect.Num(); i++) // pass all the vertex points to astar
+	for (int i = 0; i < points.Num(); i++) // pass all the vertex points to a-star
 	{
-		astar.AddPoint(vect[i]);
+		astar.AddPoint(points[i]);
 	}
 
 	//Loop Through all triangles in the list and add their connections to the a star points
@@ -704,15 +349,15 @@ void ARouteExample::GenerateImproved(int FirstPlanetID, FVector Offset)
 				maxID = IDs[j];
 			}
 
-			if (sign * abs(Points[j].X) > sign * maxX && Points[j].Y < Dimensions.Y * 0.8 && Points[j].Y > Dimensions.Y * 0.2) // 
+			if (sign * abs(Points[j].X) > sign * spaceStation && Points[j].Y < Dimensions.Y * 0.8 && Points[j].Y > Dimensions.Y * 0.2) // 
 			{
 				/*if(IDs[j] != minID && IDs[j] != maxID) // We dont want the start or end to be a valid candidate for the space station
 				{
 					maxX = abs(Points[j].X);
 					maxXID = IDs[j];
 				}*/
-				maxX = abs(Points[j].X);
-				maxXID = IDs[j];
+				spaceStation = abs(Points[j].X);
+				spaceStationID = IDs[j];
 			}
 		}
 		
@@ -722,85 +367,63 @@ void ARouteExample::GenerateImproved(int FirstPlanetID, FVector Offset)
 		astar.ConnectPoints(IDs[2], IDs[0]);
 		
 	}
-
-	/*for (auto point : astar.points)
-	{
-		if (FMath::RandBool())
-		{
-			point.blocked = true;
-		}
-	}*/
-	
+		
 
 	astar.search(minID,maxID); // Find a route from Start to End planet
 	astar.LockCurrentPath();
 	Path1 = astar.path;
 	
-	astar.search(minID, maxXID); // Find a route to the start planet and space station
+	astar.search(minID, spaceStationID); // Find a route to the start planet and space station
 	astar.LockCurrentPath();
 	Path2 = astar.path;
 
-	astar.search(maxXID, maxID); // Find a route to the space station and end planet
+	astar.search(spaceStationID, maxID); // Find a route to the space station and end planet
 	astar.LockCurrentPath();
 	Path3 = astar.path;
 	FVector2D SpaceStation = astar.begin.position;
 
+	//Place buoys along path and se up the spline	
 	CreatePath(Path1,StartToEndPath,Spline1->Spline, BuoysPercent);
 	CreatePath(Path2,StartToStationPath,Spline2->Spline, BuoysPercent);
 	CreatePath(Path3,StationToEndPath,Spline3->Spline, BuoysPercent);
 
 	FTransform WorldTransform;
 	WorldTransform = GetRootComponent()->GetComponentTransform();
-	
-	/////////////////////////////////////////////
-	
 		
-	if(FirstPlanetID < 0)
+	if(FirstPlanetID < 0) // Make sure we have a valid index for the planet
 	{
 		FirstPlanetID = FMath::RandRange(1,PlanetBP.Num());
 	}
 	
-	
-	FTransform SpawnTransfrom;
+	//Spawn random planets at the generated positions
+	FTransform SpawnTransform;
 	if (Planets.Num() < 3)
 	{
-		SpawnTransfrom.SetRotation(FQuat4d(0, 0, 0, 1.f));
-		SpawnTransfrom.SetScale3D(FVector(PlanetScaling, PlanetScaling, PlanetScaling));
-		SpawnTransfrom.SetLocation(FVector(SpaceStation.X - Dimensions.X / 2, SpaceStation.Y - Dimensions.Y / 2, 0));
-		Planets.Add(CreatePlanetMainRoute(SpawnTransfrom * WorldTransform));
-		SpawnTransfrom.SetLocation(FVector(Min.X - Dimensions.X / 2, Min.Y - Dimensions.Y / 2 , 0));
-		Planets.Add(CreatePlanet(SpawnTransfrom * WorldTransform,FirstPlanetID));
-		SpawnTransfrom.SetLocation(FVector(Max.X - Dimensions.X / 2, Max.Y - Dimensions.Y / 2, 0));
-		Planets.Add(CreatePlanetMainRoute(SpawnTransfrom * WorldTransform));
+		SpawnTransform.SetRotation(FQuat4d(0, 0, 0, 1.f));
+		SpawnTransform.SetScale3D(FVector(PlanetScaling, PlanetScaling, PlanetScaling));
+		SpawnTransform.SetLocation(FVector(SpaceStation.X - Dimensions.X / 2, SpaceStation.Y - Dimensions.Y / 2, 0));
+		Planets.Add(CreatePlanetMainRoute(SpawnTransform * WorldTransform));
+		SpawnTransform.SetLocation(FVector(Min.X - Dimensions.X / 2, Min.Y - Dimensions.Y / 2 , 0));
+		Planets.Add(CreatePlanet(SpawnTransform * WorldTransform,FirstPlanetID));
+		SpawnTransform.SetLocation(FVector(Max.X - Dimensions.X / 2, Max.Y - Dimensions.Y / 2, 0));
+		Planets.Add(CreatePlanetMainRoute(SpawnTransform * WorldTransform));
 	}
 
+	//Generate Details around the completed route	
 	GenerateDetails();
 	
-	//for (auto point : astar.points)
-	//{
-	//	if(point.blocked)
-	//		continue;
-	//	
-	//	SpawnTransfrom.SetRotation(FQuat4d(0,0,0,1.f));
-	//	SpawnTransfrom.SetScale3D(FVector(0.5,0.5,0.5));
-	//	SpawnTransfrom.SetLocation(FVector(1,point.position.X - Dimensions.X/2,point.position.Y- Dimensions.Y/2));
-
-	//	Planets.Add(CreateBasicSphere(SpawnTransfrom * WorldLocation));
-	//	
-	//}
-
-
 	
-	SpawnTransfrom *= WorldTransform;
+	SpawnTransform *= WorldTransform;
 
 	auto playerController = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 	if (playerController)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Player Moved")));
 
-		playerController->SetActorLocation(FVector(SpawnTransfrom.GetLocation().X, SpawnTransfrom.GetLocation().Y, 1000));
+		playerController->SetActorLocation(FVector(SpawnTransform.GetLocation().X, SpawnTransform.GetLocation().Y, 1000)); // Initialize player position
 	}
 
+	//Set the correct text for each planet/stop	
 	std::string Line = "Distance: ";
 	int length = Spline2->Spline->GetSplineLength() / 20;
 	Line += std::to_string(length);
@@ -814,16 +437,17 @@ void ARouteExample::GenerateImproved(int FirstPlanetID, FVector Offset)
 	Planets[2]->Line3 = FText::FromString(FString(Line.c_str()));
 
 	}
-	while (!IsRouteGood());
+	while (!IsRouteGood()); // Check the route look correct / is valid
 		
 	// set quests
 	SetQuest();
 	
-	
+	//Create the splines that highlight on selection
 	Spline1->CreateSpline(DetailScaling);
 	Spline2->CreateSpline(DetailScaling);
 	Spline3->CreateSpline(DetailScaling);
 
+	//Hide the spline meshes until selection
 	for(auto mesh : Spline1->Meshes)
 	{
 		mesh->SetVisibility(false);
@@ -837,7 +461,7 @@ void ARouteExample::GenerateImproved(int FirstPlanetID, FVector Offset)
 		mesh->SetVisibility(false);
 	}
 
-	// remove the higlighting
+	// remove the high lighting
 	Spline1->SetMaterial(1);
 	Spline2->SetMaterial(1);
 	Spline3->SetMaterial(1);
@@ -983,6 +607,7 @@ void ARouteExample::GenerateLoad(TArray<FRouteObjectPair> SavedPlanets, TArray<F
 	}
 }
 
+//Create Bouys along the procedural path and fill the spline points
 void ARouteExample::CreatePath(TArray<FVector2D>& Path, TArray<APath*>& PathMeshes,USplineComponent* SplineComponent, float PathPercentage = 50)
 {
 	FTransform WorldTransform;
@@ -990,12 +615,12 @@ void ARouteExample::CreatePath(TArray<FVector2D>& Path, TArray<APath*>& PathMesh
 	
 	FRotator Rotation;
 	
-	if( Path.Num() > 2)// Might Be an unnessary check
+	if( Path.Num() > 2)// Make the bouys point towards the destination
 		Rotation = UKismetMathLibrary::FindLookAtRotation(FVector(Path[0].X,Path[0].Y,0),FVector(Path[Path.Num() - 1].X,Path[Path.Num() - 1].Y,0));
 
 	float NumberOfPoints = Path.Num();
 	float PointsWanted = NumberOfPoints * (PathPercentage / 100);
-	float Step = NumberOfPoints/PointsWanted;
+	float Step = NumberOfPoints/PointsWanted; // if we have 100 points but want only 10, then every 10 loops we spawn a bouy, so they are spread out evenly
 	float Counter = 0;
 
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Silver, FString::Printf(TEXT("Max: %f"), NumberOfPoints));
@@ -1010,15 +635,16 @@ void ARouteExample::CreatePath(TArray<FVector2D>& Path, TArray<APath*>& PathMesh
 		SpawnTransfrom.SetScale3D(FVector(10, 10, 10));
 		SpawnTransfrom.SetLocation(FVector( Path[i].X - Dimensions.X / 2, Path[i].Y - Dimensions.Y / 2, UKismetMathLibrary::Sin(i) * SinWaveAmplitude));
 		
-		if(i >= Counter)
+		if(i >= Counter) 
 		{
 			auto path = CreateBasicCube(SpawnTransfrom * WorldTransform);
-			path->SetActorScale3D(FVector(PlanetScaling/5, PlanetScaling/5, PlanetScaling/5));
+			path->SetActorScale3D(FVector(PlanetScaling/5, PlanetScaling/5, PlanetScaling/5)); //Bouys are always 5 time smaller than planets
 			PathMeshes.Add(path);
 			
 			Counter += Step;
 		}
 
+		//We add all points to the spline so its not disconnected at the end sometimes
 		SplineComponent->AddSplinePoint((SpawnTransfrom * WorldTransform).GetLocation(), ESplineCoordinateSpace::Type::World, true);
 		SpawnTransfrom.AddToTranslation(FVector(0 ,50, 50));
 		SpawnTransfrom *= WorldTransform;
@@ -1026,6 +652,7 @@ void ARouteExample::CreatePath(TArray<FVector2D>& Path, TArray<APath*>& PathMesh
 	}
 }
 
+//Reset all procedural route related data
 void ARouteExample::ResetRoute()
 {
 	Path1.Empty();
@@ -1100,30 +727,31 @@ void ARouteExample::ResetRoute()
 		FlushPersistentDebugLines(GetWorld());
 }
 
+//Spawn Details around the generated route
 void ARouteExample::GenerateDetails()
 {
-	bool Success = false;
 	
-	for(int i = 0; i< DetailsWanted; i++)
+	for(int i = 0; i< DetailsWanted; i++) // repeat for how many details we want
 	{
-		int RandomIndex = FMath::RandRange(0,DetailBP.Num() - 1);
+		int RandomIndex = FMath::RandRange(0,DetailBP.Num() - 1); // Get a random Detail Mesh
 		FTransform transform(FVector(0,0,0));
-		transform.SetScale3D(FVector(DetailScaling, DetailScaling, DetailScaling));
+		transform.SetScale3D(FVector(DetailScaling, DetailScaling, DetailScaling)); // Give appropriate size
 		
 		ADetails* Detail = CreateDetail(transform,RandomIndex);
 		
-		for(int j = 0; j < DetailRejectionRate; j++)
+		for(int j = 0; j < DetailRejectionRate; j++) // There is a possibility a detail cant be spawned, so only attempt a certain amount of times as to not make an infinite  loop
 		{
-			
 			FVector Origin;
-			FVector Radius; // Planets are uniformly sized so only need the raidus of 1 dimension
+			FVector Radius; // Planets are uniformly sized so only need the radius of 1 dimension
 			Detail->GetActorBounds(true,Origin,Radius);
 
 
 			//DrawDebugBox(GetWorld(), FVector((Planets[0]->GetActorLocation().X - Planets[1]->GetActorLocation().X) * 0.25,0,0), FVector((Planets[0]->GetActorLocation().X - Planets[1]->GetActorLocation().X) * 0.75,(Planets[2]->GetActorLocation().Y - Planets[1]->GetActorLocation().Y) / 2,0), FColor::Purple, true, -1, 0, 10);
 
+			//Get a random position inside the routes Bounding Box
 			FVector RandomPosition = UKismetMathLibrary::RandomPointInBoundingBox(FVector((Planets[0]->GetActorLocation().X - Planets[1]->GetActorLocation().X) * 0.25,0,0),FVector((Planets[0]->GetActorLocation().X - Planets[1]->GetActorLocation().X) * 0.75,(Planets[2]->GetActorLocation().Y - Planets[1]->GetActorLocation().Y) / 2,0));
 
+			//Find how close it is to each spline
 			FVector ClosestPoint1 = Spline1->Spline->FindLocationClosestToWorldLocation(RandomPosition, ESplineCoordinateSpace::World);
 			FVector ClosestPoint2 = Spline2->Spline->FindLocationClosestToWorldLocation(RandomPosition, ESplineCoordinateSpace::World);
 			FVector ClosestPoint3 = Spline3->Spline->FindLocationClosestToWorldLocation(RandomPosition, ESplineCoordinateSpace::World);
@@ -1137,6 +765,7 @@ void ARouteExample::GenerateDetails()
 				continue;
 			}
 
+			//Make sure its not spawning where the fight area is taking place
 			if(FVector::Distance(FVector(0,0,0),RandomPosition) + 600 < DetailMinDistance + Radius.GetMax())
 			{
 				//continue;
@@ -1147,20 +776,20 @@ void ARouteExample::GenerateDetails()
 			for(auto detail : Details)
 			{
 				if(FVector::Distance(RandomPosition,detail->GetActorLocation()) < DetailMinDistance + Radius.GetMax()){
-					failed = true;
+					failed = true; 
 				}
 			}
 
 			if(failed)
 				continue;
-			
+
+			//Set up details position
 			Detail->SetActorLocation(RandomPosition);
 			Detail->StartingLocation = RandomPosition;
 
 			//Details.Add(CreatePlanet(SpawnTransfrom * GetRootComponent()->GetComponentTransform(),RandomPlanetIndex));
 			Details.Add(Detail);
-			Success = true;
-
+			
 			break;
 		}
 	}
@@ -1176,18 +805,7 @@ void ARouteExample::ClearRouteData()
 	
 }
 
-void  ARouteExample::SwitchCamera()
-{
-
-	/*if(CameraIndex >= Planets.Num())
-	{
-		CameraIndex = 0;
-	}
-
-	UGameplayStatics::GetPlayerController(GetWorld(),0)->SetViewTargetWithBlend(Planets[CameraIndex],CameraTransitionSpeed,EViewTargetBlendFunction::VTBlend_Linear);
-	CameraIndex++;*/
-}
-
+//Move along the current spline towards a planet, exit when close enough
 bool ARouteExample::MoveAlongPath(UPathData* PathData , float DeltaTime)
 {
 
@@ -1196,84 +814,29 @@ bool ARouteExample::MoveAlongPath(UPathData* PathData , float DeltaTime)
 	auto player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	splineTimer += DeltaTime * player->MovementSpeed / SplineLength;
 
-	/*GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple,  FString::Printf( TEXT("Spline Length %f"),SplineLength));
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple,  FString::Printf( TEXT("Travel Time %f"),PlayerTravelTime));
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple,  FString::Printf( TEXT("Spline Timer %f"),splineTimer));
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Purple,  FString::Printf( TEXT("Spline Count %i"),PathData->Splines[PathData->Index]->GetNumberOfSplinePoints()));*/
-	
+
+	//Get where we are on the spline and lerp the player towards it
 	float DistanceTraveled = FMath::Lerp(SplineLength, 0, splineTimer);
 	FVector PlayerPosition = PathData->Splines[PathData->Index]->GetLocationAtDistanceAlongSpline(DistanceTraveled, ESplineCoordinateSpace::Type::World);
 	FRotator PlayerRotation = PathData->Splines[PathData->Index]->GetRotationAtDistanceAlongSpline(DistanceTraveled, ESplineCoordinateSpace::Type::World);
-
-	//PlayerRotation = FRotator(PlayerRotation.Pitch, PlayerRotation.Yaw, 180);
 	
-	//Make the Camera Face the direction we are moving
-	/*
-	ASpaceshipCharacter* Charac = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	
-
-	FVector StartPoint = Charac->TopDownCamera->GetComponentLocation();
-	FVector EndPoint = Charac->GetActorLocation();
-
-	FRotator CameraRotation = UKismetMathLibrary::FindLookAtRotation(StartPoint,EndPoint);
-	Charac->TopDownCamera->SetWorldRotation(FQuat::Slerp(CameraRotation.Quaternion(), Charac->GetActorRotation().Quaternion(), CameraLerpSpeed * DeltaTime));
-	*/
-
-	
-	/*StartPoint =Charac->TopDownCamera->GetComponentLocation();
-	EndPoint = RouteData->Splines[RouteData->Index]->GetLocationAtDistanceAlongSpline(SplineLength, ESplineCoordinateSpace::Type::World);
-
-	FRotator PlanetRotation = UKismetMathLibrary::FindLookAtRotation(EndPoint,StartPoint);
-
-	FRotator NewRotation = FQuat::Slerp(CameraRotation.Quaternion(), PlanetRotation.Quaternion(), 0.5).Rotator();
-
-	Charac->CameraBoom->SetWorldRotation(FQuat::Slerp(NewRotation.Quaternion(), Charac->GetActorRotation().Quaternion(), CameraLerpSpeed * DeltaTime));*/
-	
-
-	
-	//TODO gives the spaceship a "Hover Feel" but not working currently
-	/*
-	FVector Offset;
-	Offset.X = UKismetMathLibrary::Sin(timer);
-	Offset.Y = UKismetMathLibrary::Cos(timer);
-	Offset.Z = UKismetMathLibrary::Cos(timer * 2);
-	*/
-	//PlayerPosition += Offset * 500;
-
+	//Set player transform 
 	UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->SetActorLocation(PlayerPosition);
 	UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->SetActorRotation(PlayerRotation);
-	AudioManager->ThrusterSoundComponent->SetWorldLocation(PlayerPosition);
-
-	/* // TODO F key scaling stuff, can probably be removed for the final build
-	if(Temp)
-	{
-		Temp = false;
-		PlayerController->SetViewTargetWithBlend(this,CameraTransitionSpeed,EViewTargetBlendFunction::VTBlend_Linear);
-		UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->SetActorScale3D(FVector(10,10,10));
-	}
-
-	if(Temp2)
-	{
-		Temp2 = false;
-		PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0),CameraTransitionSpeed,EViewTargetBlendFunction::VTBlend_Linear);
-		UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->SetActorScale3D(FVector(1,1,1));
-
-	}
-	*/
-
+	AudioManager->ThrusterSoundComponent->SetWorldLocation(PlayerPosition); // move the thruster sound to follow the player
 	
-	if (splineTimer > PathStartEndPercent.Y)
+	if (splineTimer > PathStartEndPercent.Y) // if we are close enough to the end of the spline
 	{
-		splineTimer = PathStartEndPercent.X;
-		PlayerController->SetViewTargetWithBlend(PathData->Stops[PathData->Index], CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
-		// with the checkpoint I would imagine it would be something like this
+		splineTimer = PathStartEndPercent.X; // reset spline timer 
+		PlayerController->SetViewTargetWithBlend(PathData->Stops[PathData->Index], CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear); // change to planet camera
 		
-		if (PathData->Stops[PathData->Index]->IsCheckpoint)
+		// with the checkpoint I would imagine it would be something like this
+		if (PathData->Stops[PathData->Index]->IsCheckpoint) // if its a checkpoint we are at then there is different functionality
 		{
 			PathData->Stops[PathData->Index]->CurrentPlanet = true;
 			CheckpointTransitionDelegate.Broadcast();
 		}
-		else
+		else // We reached a planet
 		{
 			// update the current planet
 			// this bool in the planet class is used by the vendor UI
@@ -1282,13 +845,14 @@ bool ARouteExample::MoveAlongPath(UPathData* PathData , float DeltaTime)
 			EventsComponent->ResetEvents();
 			OrbitTransitionDelegate.Broadcast();
 
-			ASpaceSkyBox* SpaceSkyBox = Cast<ASpaceSkyBox>(UGameplayStatics::GetActorOfClass(GetWorld(), ASpaceSkyBox::StaticClass()));
+			//Change Skybox color, but only at planets
+			ASpaceSkyBox* SpaceSkyBox = Cast<ASpaceSkyBox>(UGameplayStatics::GetActorOfClass(GetWorld(), ASpaceSkyBox::StaticClass())); 
 			SpaceSkyBox->OffsetColor();
 
 
 			// probably better if I put a function
 			// to swap states like the route but...
-			// reset the minigame when you reach a planet
+			// reset the mini-game when you reach a planet
 			player->EngineStatus = CRUISING;
 			player->MovementSpeed = PlayerMovementSpeed;
 			player->CurrentAcceleration = player->BaseAcceleration;
@@ -1315,9 +879,11 @@ void ARouteExample::OrbitPlanet(UPathData* PathData, float DeltaTime)
 {
 	
 }
+
+//Used to select path based of mouse position
+//Is no longer in use but is probably worth keeping
 void ARouteExample::SelectPath()
 {
-
 	for(int i =0; i < Planets.Num();i++)
 	{
 		Planets[i]->HideUI = false;
@@ -1502,6 +1068,8 @@ void ARouteExample::SelectPath()
 
 }
 
+//Used to find where the planet is on screen, can play UI element based on where the planet was
+//Is no longer in use as an alternative was found 
 FVector2D ARouteExample::GetPlanetsOnScreenPosition(int Index)
 {
 	if(Index >= Planets.Num())
@@ -1534,21 +1102,21 @@ FVector2D ARouteExample::GetPlanetsOnScreenPosition(int Index)
 	return FVector2D (Location.X,Location.Y);
 }
 
+//Swap camera to route selection camera
 void ARouteExample::TransitionToMap()
 {
 	PlayerController->SetViewTargetWithBlend(GetRootComponent()->GetAttachmentRootActor(), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
 	SwapState(Selecting);
 }
 
+//Swap to orbiting the reached planet 
 void ARouteExample::SwapToOrbiting()
 {
-	
-	//TODO change skybox color;
-	
-	// it would probably look better 
-	// if we made all other planets and the path invisible when we are in a planet
-	// either do this or make the UI more opaque
+	//Hide All other Route meshes 
 	ChangeVisibilityOfRoute(true);
+
+	//Show our current Planet only
+
 	for (auto it : Planets)
 	{
 		if (it->CurrentPlanet)
@@ -1558,11 +1126,11 @@ void ARouteExample::SwapToOrbiting()
 		}
 	}
 
-	if(RouteData->AtFirstPlanet)
+	if(RouteData->AtFirstPlanet) // if we were at first planet and now reached a new planet, we are no longer at the first planet
 	{
 		RouteData->AtFirstPlanet = false;
 	}
-	else
+	else //Increment the index, used for what spline we travel along
 	{
 		RouteData->Index++;
 	}
@@ -1574,11 +1142,10 @@ void ARouteExample::SwapToOrbiting()
 //Use this when orbiting the first planet as to not mess up the routes
 void ARouteExample::BeginToOrbiting()
 {
-	// it would probably look better 
-	// if we made all other planets and the path invisible when we are in a planet
-	// either do this or make the UI more opaque
+	//Hide All other Route meshes 
 	ChangeVisibilityOfRoute(true);
 
+	//Show our current Planet only
 	for (auto it : Planets)
 	{
 		if (it->CurrentPlanet)
@@ -1592,17 +1159,17 @@ void ARouteExample::BeginToOrbiting()
 	}
 
 	SwapState(Orbiting);
-
 }
 
+//initialize everything for swapping to moving
 void ARouteExample::SwapToMoving()
 {
-	NavIncidentsTimer = 0.0f;
+	NavIncidentsTimer = 0.0f; // reset the event timer
 	SwapState(Moving);
 	ASpaceshipCharacter* Charac = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	Charac->SetHidden(false);
-	Charac->TopDownCamera->SetActive(true);
-	PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
+	Charac->SetHidden(false); // enable visibility of the character
+	Charac->TopDownCamera->SetActive(true); // enable their camera
+	PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear); //swap to the player camera
 
 
 	
@@ -1612,39 +1179,9 @@ void ARouteExample::SwapToMoving()
 	FVector EndPoint = RouteData->Splines[RouteData->Index]->GetLocationAtDistanceAlongSpline(SplineLength, ESplineCoordinateSpace::Type::World) - FVector(0,0,-50);
 	
 	Charac->CameraBoom->SetWorldRotation(UKismetMathLibrary::FindLookAtRotation(EndPoint, StartPoint) + CameraAngle);
-	//Charac->CameraBoom->AddWorldRotation(FRotator(0,0,15));
-	
-	
-	/*if (RouteData->Index >= RouteData->Max)
-	{
-		//TODO probably make a functions for reseting everyting
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Turquoise, FString::Printf(TEXT("AAAAAAAAAAAAAAAAAAAAAA: %i"), RouteData->Index ));
-
-		
-		RouteData->Reset();
-
-		SplineComponent1->ClearSplinePoints();
-		SplineComponent2->ClearSplinePoints();
-		SplineComponent3->ClearSplinePoints();
-
-		CameraSplineComponent1->ClearSplinePoints();
-		CameraSplineComponent2->ClearSplinePoints();
-		CameraSplineComponent3->ClearSplinePoints();
-
-		Generate();
-
-		PlayerController->SetViewTargetWithBlend(GetRootComponent()->GetAttachmentRootActor(), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
-
-		SelectTransitionDelegate.Broadcast();
-
-	}
-	else
-	{
-		PlayerController->SetViewTargetWithBlend(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
-	}*/
-
 }
 
+//Set up for swapping to selecting
 void ARouteExample::SwapToSelecting()
 {
 	ASpaceshipCharacter* Charac = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
@@ -1652,18 +1189,20 @@ void ARouteExample::SwapToSelecting()
 	Camera->SetActive(true);
 	PlayerController->SetViewTargetWithBlend(GetRootComponent()->GetAttachmentRootActor(), CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
 	SwapState(Selecting);
+
 	// if leaving planet
 	// put all planets as not being the current planet
 	// this is not the best away to go about this
 	// but this way we have to change less stuff
+	
+	//Make all the splines and planet available for selecting
 	if (PreviousState == Orbiting)
 	{
 		for (auto it : Planets)
 		{
 			it->CurrentPlanet = false;
 		}
-
-
+		
 		for(auto mesh : Spline1->Meshes)
 		{
 			mesh->SetVisibility(true);
@@ -1682,15 +1221,19 @@ void ARouteExample::SwapToSelecting()
 
 }
 
+//When swapping to combat we dont want to get an immediate event afterwards, so reset event timer
 void ARouteExample::SwapToCombat()
 {
 	NavIncidentsTimer = 0.0f;
 }
 
 
+//Simple test to make sure the route works
 bool ARouteExample::IsRouteGood()
 {
 
+	//Make sure there is more than 0 so that a route is available
+	//But also more than 3 so it at least looks good
 	if(Spline1->Spline->GetNumberOfSplinePoints() <= 3)
 		return false;
 
@@ -1701,47 +1244,45 @@ bool ARouteExample::IsRouteGood()
 		return false;
 
 
-	return true;
+	return true; 
 }
 
+//Swap state is used to handle closing previous states properly
+//It also keeps track of the previous state which is useful
 void ARouteExample::SwapState(PlayerStates State)
 {
 	PreviousState = PlayerState;
 	PlayerState = State;
 
+	//if the previous state was moving then movement sounds should all stop
 	if(PreviousState == Moving)
 	{
 		AudioManager->ThrusterSoundComponent->Stop();
 		AudioManager->TurboSoundComponent->Stop();
+		//AudioManager->AmbientSoundComponent->SetPaused(true);
 	}
-	else if (PlayerState == Moving)
+	else if (PlayerState == Moving)// if we now are moving then play thruster sound
 	{
 		AudioManager->ThrusterSoundComponent->Play();
 
-	}
-
-	if (PlayerState == Fighting)
-	{
-		AudioManager->BattleSoundComponent->Play();
-	}
-	else if(PreviousState == Fighting)
-	{
-		AudioManager->BattleSoundComponent->Stop();
-	}
-
-	if (PlayerState == Moving)
-	{
 		if (AudioManager->AmbientSoundComponent->bIsPaused)
 			AudioManager->AmbientSoundComponent->SetPaused(false);
 		else
 			AudioManager->AmbientSoundComponent->Play();
+
 	}
-	else if(PreviousState == Moving)
+	
+	if (PlayerState == Fighting) // Play combat music if we are fighting
 	{
-		AudioManager->AmbientSoundComponent->SetPaused(true);
+		AudioManager->BattleSoundComponent->Play();
+	}
+	else if(PreviousState == Fighting) // Stop combat music if we are leaving fighting
+	{
+		AudioManager->BattleSoundComponent->Stop();
 	}
 
-	if(PreviousState == Selecting)
+	
+	if(PreviousState == Selecting) // disable all route meshes if we are no longer selecting
 	{
 		for(auto mesh : Spline1->Meshes)
 		{
@@ -1762,7 +1303,7 @@ void ARouteExample::SwapState(PlayerStates State)
 		}
 	}
 
-	if (PlayerState == Selecting)
+	if (PlayerState == Selecting) // Show UI Markers when selecting
 	{
 		for (int i = 0; i < Planets.Num(); i++)
 		{
@@ -1771,31 +1312,23 @@ void ARouteExample::SwapState(PlayerStates State)
 	}
 }
 
+//BP function allowing it to be displayed in the UI
 void ARouteExample::GetPathSelected(UPathData* path)
 {
 	path = RouteData;
 }
 
+//Dicide what action to take based of which planet we are leaving
 void ARouteExample::LeaveOrbit()
 {
-	/*GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Max: %i"), RouteData->Max));
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Index: %i"), RouteData->Index));*/
-
-
-	//Three Conditions
-	//Leaving Space Station - No need to select or generate route
-	//Leaving Last Planet - Need Camera Transition and to regrenerate a route
-	//Leaving First Planet - No Route so need to generate and then select
-
 
 	for (auto it : Planets)
 	{
 		it->CurrentPlanet = false;
 	}
-
 	ChangeVisibilityOfRoute(false);
 
-	if(RouteData->ID == 0)
+	if(RouteData->ID == 0) // if we are on longer path, only show that paths buoys
 	{
 		for (auto it : StartToStationPath)
 		{
@@ -1812,7 +1345,7 @@ void ARouteExample::LeaveOrbit()
 			it->SetActorHiddenInGame(true);
 		}
 		
-	}else if(RouteData->ID == 1)
+	}else if(RouteData->ID == 1)  // if we are on shorter path, only show that paths buoys
 	{
 		for (auto it : StartToStationPath)
 		{
@@ -1829,39 +1362,40 @@ void ARouteExample::LeaveOrbit()
 			it->SetActorHiddenInGame(false);
 		}
 	}
-	
+
+	//Three Conditions
+	//Leaving Space Station - No need to select or generate route
+	//Leaving Last Planet - Need Camera Transition and to regenerate a route
+	//Leaving First Planet - No Route so need to generate and then select
 	
 	if(RouteData->Max == 0) // First Planet
 	{
-
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("First Planet")));
-
-		SelectTransitionDelegate.Broadcast();
+		SelectTransitionDelegate.Broadcast(); // if we are leaving first planet then go to selection
 	}
 	else if(RouteData->Max == RouteData->Index) // Last Planet
 	{
-
+		//If we are at the last planet we generate the route again before going to selection
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Last Planet")));
-		//UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetViewTargetWithBlend(this, CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBB: %i"), RouteData->Max));
 		GenerateImproved(Planets[2]->Index,FVector(0,0,0));
-
 		SelectTransitionDelegate.Broadcast();
 	}
 	else // Space Station
 	{
+		//just go back to moving if leaving the space station, no need to select
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Spacestation")));
 		MovingTransitionDelegate.Broadcast();
 	}
 	
 }
 
+//BP Function, set up splines and route data based on the button pressed
 UPathData* ARouteExample::SelectRoute(bool WhichRoute)
 {
 	if(WhichRoute)
 	{
-		Spline1->SetMaterial(0);
-		Spline2->SetMaterial(1);
+		Spline1->SetMaterial(0); // 0 is off
+		Spline2->SetMaterial(1); // 1 is highlighted
 		Spline3->SetMaterial(1);
 		
 		CurrentSpline = Spline1->Spline;
@@ -1893,6 +1427,7 @@ UPathData* ARouteExample::SelectRoute(bool WhichRoute)
 
 }
 
+//Once a route has been confirmed selected, set up the route data and visibility 
 void ARouteExample::FinalSelectRoute()
 {
 
@@ -1941,17 +1476,24 @@ void ARouteExample::FinalSelectRoute()
 	PathClickedDelegate.Broadcast(RouteData);
 }
 
+//Start Game is called after selecting a spaceship
 void ARouteExample::StartGame()
 {
+
+	//First we Generate a route
+
 	//if(!IsLoadSaveSuccessful())
 	//{
 		GenerateImproved(-1,FVector(0,0,0));
 	//}
 
+
+	//Set the player to be at the first planet
 	UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetViewTargetWithBlend(Planets[1], CameraTransitionSpeed, EViewTargetBlendFunction::VTBlend_Linear);
 	Planets[1]->CurrentPlanet = true;
 	CurrentPlanet = Planets[1];
 
+	//Initialize player variables
 	PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	PlayerController->SetShowMouseCursor(true);
 
@@ -1966,6 +1508,7 @@ void ARouteExample::StartGame()
 	Spline3->SetMaterial(1);
 }
 
+//This function either hides all route meshes or makes them all visible
 void ARouteExample::ChangeVisibilityOfRoute(bool toHide)
 {
 	for (auto it : Planets)
@@ -2021,9 +1564,9 @@ void ARouteExample::SetQuest()
 	
 }
 
+//Main combat loop
 void ARouteExample::FightScene(float DeltaTime) {
-
-
+	
 	
 	ASpaceshipCharacter* player = Cast<ASpaceshipCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 

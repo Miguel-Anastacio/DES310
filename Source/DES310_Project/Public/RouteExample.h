@@ -36,8 +36,8 @@ enum PlayerStates
 	Orbiting,
 	Selecting,
 	Fighting,
-	Event
-
+	Event,
+	None,
 };
 
 
@@ -82,7 +82,6 @@ public:
 	APlanet* CreatePlanet(FTransform transform, int i);
 	ADetails* CreateDetail(FTransform transform, int Index);
 	
-	void SwitchCamera();
 
 	//State Variables
 	/*BaseState* CurrentState;
@@ -93,7 +92,7 @@ public:
 
 
 	//---Procedural Route---
-	void Generate(); //Original Functions which isn't used, but can be used as reference
+
 	void GenerateImproved(int FirstPlanetID, FVector Offset); //Using Poisson,Delaunay and A* We generate a procedural route with various parameters 
 	void GenerateLoad(TArray<FRouteObjectPair> SavedPlanets, TArray<FRouteObjectPair> SavedDetails); //Generates a route but using Pre-selected Planets, in order to generate a similar route from the loaded game
 	void ResetRoute(); // Reset Everything to do with the Route Data and meshes
@@ -211,12 +210,9 @@ public:
 
 	//---Timers---
 	float timer = 0;
-	float cameraTimer = 0;
 	float splineTimer = 0;
 
 	float CombatTimer = 0;
-	UPROPERTY(EditAnywhere) float RouteTickRate = 200000000;
-	UPROPERTY(EditAnywhere) float CameraRate = 2;
 	UPROPERTY(EditAnywhere) float SpinRate = 2;
 
 

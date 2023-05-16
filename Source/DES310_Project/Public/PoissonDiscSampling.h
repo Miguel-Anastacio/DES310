@@ -8,17 +8,15 @@
 
 #include "CoreMinimal.h"
 
-/**
- * 
- */
+//Used to Generate Random Points but evenly spread, so that they arent place on top of each other
 class DES310_PROJECT_API PoissonDiscSampling
 {
 public:
 	PoissonDiscSampling();
 	~PoissonDiscSampling();
 
-	static TArray<FVector2D>  PoissonDiscGenerator(float radius,FVector2D dimensions, int RejectionRate);
+	static TArray<FVector2D>  PoissonDiscGenerator(float Radius,FVector2D Dimensions, int RejectionRate);
 	
-	static int ArrayCoords(int x, int y, int width);
-	static bool IsValid(FVector2D newPoint,FVector2D dimensions, float cellSize,float radius ,const TArray<FVector2D>& points, const TArray<int>& grid);
+	static int ArrayCoords(int x, int y, int width); //convert from 2D coords to 1D
+	static bool IsValid(FVector2D NewPoint,FVector2D Dimensions, float CellSize,float Radius ,const TArray<FVector2D>& Points, const TArray<int>& Grid);
 };
